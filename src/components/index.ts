@@ -10,8 +10,11 @@
 
 // — Material layer —
 export { HyField } from './field/hy-field.js';
+export type { HyFieldState } from './field/hy-field.js';
 export { HyPane } from './pane/hy-pane.js';
 export type { HyPaneDock } from './pane/hy-pane.js';
+export { HyPulse } from './pulse/hy-pulse.js';
+export type { HyPulseState } from './pulse/hy-pulse.js';
 
 // — Tactile controls (ported from the Tactile Kit) —
 export { HyKnob } from './knob/hy-knob.js';

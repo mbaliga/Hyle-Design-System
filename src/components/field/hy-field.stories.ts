@@ -4,6 +4,11 @@ import './hy-field.js';
 import '../pane/hy-pane.js';
 import '../chip/hy-chip.js';
 import '../button/hy-button.js';
+import '../pulse/hy-pulse.js';
+
+const setState = (s: string) => {
+  document.querySelector('hy-field#state-demo')?.setAttribute('state', s);
+};
 
 const meta: Meta = {
   title: 'Material/Field',
@@ -47,20 +52,31 @@ export const WithPane: Story = {
 };
 
 /**
- * The resting state — no engine wired in. The field is matte and inky, light
- * only gathering faintly. This is "idle", shown without a label.
+ * The procedural state field, bound to system state. Flip the state and watch
+ * the material respond: idle is matte and near-still; thinking stirs; deep fills
+ * the frame with slow, monumental motion. No engine, fully owned by the system.
  */
-export const AtRest: Story = {
-  args: { src: '' },
-  render: ({ label }) => html`
-    <hy-field label=${label} style="height:100vh; border-radius:0;">
-      <hy-pane dock="bottom" heading="At rest" style="margin:18px;">
-        <p style="margin:0; color:var(--color-text-secondary); font-size:14px; max-width:46ch;">
-          No field is running. The surface is still and dark — light is spent only where
-          thinking happens.
-        </p>
+export const StateField: Story = {
+  parameters: { backgrounds: { default: 'field' } },
+  render: () => html`
+    <hy-field id="state-demo" state="idle" style="height:100vh; border-radius:0;">
+      <hy-pane dock="bottom" heading="System state" style="margin:18px;">
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <hy-button variant="secondary" size="sm" @hy-click=${() => setState('idle')}>Idle</hy-button>
+          <hy-button variant="secondary" size="sm" @hy-click=${() => setState('thinking')}>Thinking</hy-button>
+          <hy-button variant="primary" size="sm" @hy-click=${() => setState('deep')}>Deep</hy-button>
+        </div>
       </hy-pane>
     </hy-field>
+  `,
+};
+
+/** Driven by an explicit activity level (0..1) via the control. */
+export const Activity: Story = {
+  argTypes: { activity: { control: { type: 'range', min: 0, max: 1, step: 0.01 } } },
+  args: { src: '', activity: 0.3 } as Record<string, unknown>,
+  render: ({ activity }) => html`
+    <hy-field activity=${activity} style="height:100vh; border-radius:0;"></hy-field>
   `,
 };
 
@@ -75,15 +91,19 @@ export const FloatingPane: Story = {
         >
           <div style="display:flex; flex-direction:column; gap:12px;">
             <div style="display:flex; align-items:center; gap:10px;">
-              <span
-                style="width:8px; height:8px; border-radius:50%; background:var(--color-provenance-native); box-shadow:0 0 10px var(--color-provenance-native);"
-              ></span>
+              <hy-pulse state="watched">
+                <span
+                  style="width:8px; height:8px; border-radius:50%; background:var(--color-provenance-native); box-shadow:0 0 10px var(--color-provenance-native);"
+                ></span>
+              </hy-pulse>
               <span style="font-size:13px;">On-device · native</span>
             </div>
             <div style="display:flex; align-items:center; gap:10px;">
-              <span
-                style="width:8px; height:8px; border-radius:50%; background:var(--color-provenance-cloud); box-shadow:0 0 10px var(--color-provenance-cloud);"
-              ></span>
+              <hy-pulse state="watched">
+                <span
+                  style="width:8px; height:8px; border-radius:50%; background:var(--color-provenance-cloud); box-shadow:0 0 10px var(--color-provenance-cloud);"
+                ></span>
+              </hy-pulse>
               <span style="font-size:13px;">Cloud · foreign</span>
             </div>
           </div>
