@@ -1,0 +1,13 @@
+{
+  "control": {
+    "$description": "Tactile-control surfaces, distilled from the Tactile Kit's jet theme. The physical-control layer (soft brutalism) references these.",
+    "surface":        { "$value": "#16161a", "$type": "color", "$description": "Panel / control body." },
+    "surface-raised": { "$value": "#212128", "$type": "color", "$description": "A lifted face (knob cap, fader cap)." },
+    "surface-high":   { "$value": "#2c2c34", "$type": "color", "$description": "Highest face." },
+    "groove":         { "$value": "#050506", "$type": "color", "$description": "Recessed slot / channel." },
+    "edge":           { "$value": "#3a3a44", "$type": "color", "$description": "Hard machined edge." },
+    "rim":            { "$value": "rgba(255, 255, 255, 0.16)", "$type": "color", "$description": "Top highlight rim." },
+    "rim-soft":       { "$value": "rgba(255, 255, 255, 0.09)", "$type": "color" },
+    "indicator":      { "$value": "#6b6760", "$type": "color", "$description": "Engraved glyph / pointer when inactive." }
+  }
+}

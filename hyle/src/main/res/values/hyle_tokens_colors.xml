@@ -43,4 +43,12 @@
   <color name="color_feedback_danger">#ffe5564b</color>
   <color name="color_feedback_warning">#ffe0941a</color>
   <color name="color_feedback_success">#ff5bbf7a</color>
+  <color name="control_surface">#ff16161a</color>
+  <color name="control_surface_raised">#ff212128</color>
+  <color name="control_surface_high">#ff2c2c34</color>
+  <color name="control_groove">#ff050506</color>
+  <color name="control_edge">#ff3a3a44</color>
+  <color name="control_rim">#29ffffff</color>
+  <color name="control_rim_soft">#17ffffff</color>
+  <color name="control_indicator">#ff6b6760</color>
 </resources>

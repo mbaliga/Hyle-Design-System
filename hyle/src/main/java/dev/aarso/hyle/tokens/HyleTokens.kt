@@ -51,6 +51,14 @@ object HyleTokens {
         const val colorFeedbackDanger: Argb = 0xFFE5564BL
         const val colorFeedbackWarning: Argb = 0xFFE0941AL
         const val colorFeedbackSuccess: Argb = 0xFF5BBF7AL
+        const val controlSurface: Argb = 0xFF16161AL
+        const val controlSurfaceRaised: Argb = 0xFF212128L
+        const val controlSurfaceHigh: Argb = 0xFF2C2C34L
+        const val controlGroove: Argb = 0xFF050506L
+        const val controlEdge: Argb = 0xFF3A3A44L
+        const val controlRim: Argb = 0x29FFFFFFL
+        const val controlRimSoft: Argb = 0x17FFFFFFL
+        const val controlIndicator: Argb = 0xFF6B6760L
     }
 
     /** Dimensions, in density-independent pixels (dp; type scale is sp). */

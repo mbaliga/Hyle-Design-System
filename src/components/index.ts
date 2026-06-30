@@ -13,6 +13,11 @@ export { HyField } from './field/hy-field.js';
 export { HyPane } from './pane/hy-pane.js';
 export type { HyPaneDock } from './pane/hy-pane.js';
 
+// — Tactile controls (ported from the Tactile Kit) —
+export { HyKnob } from './knob/hy-knob.js';
+export { HyFader } from './fader/hy-fader.js';
+export { HyToggle } from './toggle/hy-toggle.js';
+
 // — Controls —
 export { HyChip } from './chip/hy-chip.js';
 export { HyButton } from './button/hy-button.js';
