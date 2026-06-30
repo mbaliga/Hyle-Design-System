@@ -27,3 +27,4 @@ dependencyResolutionManagement {
 rootProject.name = "Hyle"
 include(":hyle")
 include(":hyle-probe")
+include(":wallpaper")

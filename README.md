@@ -27,7 +27,10 @@ tokens/*.json   ──►  scripts/build-tokens.js (Style Dictionary)  ──►
 The publishable Kotlin library (`dev.aarso:hyle:0.1.0`): the hand-authored
 contract — `Finish` (Reflective / Radiant), `Pulse` ("heartbeat, not weather"),
 `RadiantHues` — **plus** the generated `HyleTokens` object compiled from the
-shared token source. `:hyle-probe` is the on-device render harness.
+shared token source. `:hyle-probe` is the on-device render harness, and
+`:wallpaper` ([Hyle Worlds](wallpaper/)) is a Brutalist **live wallpaper** that
+runs the Form-World raymarcher (the procedural worlds) as an OpenGL ES 2.0
+`WallpaperService`, themed from the same tokens.
 
 ```bash
 ./gradlew :hyle:test                 # JVM token tests
@@ -77,6 +80,7 @@ Mock apps that compose the components live under **Storybook → Mock Apps**.
 | `scripts/build-tokens.js` | Style Dictionary pipeline → Kotlin / Android res / web / iOS.     |
 | `hyle/`                   | Android library: `Finish`/`Pulse`/`RadiantHues` + generated tokens. |
 | `hyle-probe/`             | Android on-device render harness.                                |
+| `wallpaper/`              | **Hyle Worlds** — Brutalist live wallpaper (Form-World via GLES2).|
 | `src/components/`         | Lit web components, one folder per component, with stories.      |
 | `field/`                  | The Form-World engine + its README / ARCHITECTURE / ROADMAP.     |
 | `kit/`                    | The Tactile Kit (physical-control language) + its README.        |
