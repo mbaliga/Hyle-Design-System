@@ -1,0 +1,44 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Introduction" />
+
+# Hyle Design System
+
+A **cross-platform** design system. One set of design tokens is the single
+source of truth; it compiles to native artifacts for every platform, while a
+set of framework-agnostic web components consumes those tokens on the web.
+
+## Architecture
+
+```
+tokens/*.json  ──►  Style Dictionary  ──►  build/web   (CSS vars, SCSS, JS/JSON)
+(W3C DTCG)                              ──►  build/android (colors.xml, dimens.xml)
+                                        ──►  build/ios   (Tokens.swift)
+
+src/components/*  ──►  Lit web components  ──►  <hy-button>, <hy-card>, <hy-input>
+                       (consume CSS vars)       usable in React, Vue, Angular, plain HTML
+```
+
+## Why this shape
+
+- **Tokens are the contract.** Designers and engineers agree on `color.action.primary`,
+  not on a hex value. Re-theming is a token edit, never a component rewrite.
+- **Every platform from one definition.** Web gets CSS variables, Android gets
+  resource XML, iOS gets Swift constants — generated, never hand-synced.
+- **Web Components, not a framework lock-in.** `<hy-button>` is a standard custom
+  element, so the same component drops into any web stack.
+
+## Using it on the web
+
+```js
+import 'hyle-design-system/tokens.css'; // load the token layer once
+import 'hyle-design-system';            // register <hy-*> elements
+
+// then anywhere in your markup:
+// <hy-button variant="primary">Save</hy-button>
+```
+
+## Explore
+
+- **Foundations / Tokens** — the colors, spacing, radius and type scale.
+- **Components** — Button, Card and Input, each driven entirely by tokens.

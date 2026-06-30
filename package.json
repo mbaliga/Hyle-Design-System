@@ -1,0 +1,38 @@
+{
+  "name": "hyle-design-system",
+  "version": "0.1.0",
+  "description": "Cross-platform design system — one set of tokens for web, Android, and iOS, with Lit web components and Storybook docs.",
+  "type": "module",
+  "license": "MIT",
+  "files": [
+    "build",
+    "src"
+  ],
+  "exports": {
+    ".": "./src/components/index.ts",
+    "./tokens.css": "./build/web/tokens.css",
+    "./tokens": "./build/web/tokens.js"
+  },
+  "scripts": {
+    "tokens:build": "node scripts/build-tokens.js",
+    "prestorybook": "npm run tokens:build",
+    "storybook": "storybook dev -p 6006 --no-open",
+    "prebuild-storybook": "npm run tokens:build",
+    "build-storybook": "storybook build",
+    "build": "npm run tokens:build",
+    "format": "prettier --write \"**/*.{ts,js,json,css,md}\""
+  },
+  "dependencies": {
+    "lit": "^3.2.1"
+  },
+  "devDependencies": {
+    "@storybook/addon-essentials": "^8.6.14",
+    "@storybook/blocks": "^8.6.14",
+    "@storybook/web-components-vite": "^8.6.14",
+    "prettier": "^3.4.2",
+    "storybook": "^8.6.14",
+    "style-dictionary": "^4.3.0",
+    "typescript": "^5.7.3",
+    "vite": "^5.4.11"
+  }
+}
