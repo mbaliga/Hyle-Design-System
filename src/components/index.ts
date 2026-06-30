@@ -17,6 +17,8 @@ export type { HyPaneDock } from './pane/hy-pane.js';
 export { HyKnob } from './knob/hy-knob.js';
 export { HyFader } from './fader/hy-fader.js';
 export { HyToggle } from './toggle/hy-toggle.js';
+export { HyMeter } from './meter/hy-meter.js';
+export { HyVu } from './meter/hy-vu.js';
 
 // — Controls —
 export { HyChip } from './chip/hy-chip.js';
