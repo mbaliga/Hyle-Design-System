@@ -1,8 +1,8 @@
 {
   "font": {
     "family": {
-      "sans": { "$value": "ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif", "$type": "fontFamily" },
-      "mono": { "$value": "ui-monospace, SFMono-Regular, Menlo, 'JetBrains Mono', monospace", "$type": "fontFamily", "$description": "Diagnostic / fallback voice (e.g. the WebGL fallback message)." }
+      "sans": { "$value": "'Archivo Variable', Archivo, ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif", "$type": "fontFamily", "$description": "Archivo — a grotesque with squared terminals: brutalist and highly legible." },
+      "mono": { "$value": "'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace", "$type": "fontFamily", "$description": "Diagnostic / data voice." }
     },
     "weight": {
       "regular":  { "$value": "400", "$type": "fontWeight" },

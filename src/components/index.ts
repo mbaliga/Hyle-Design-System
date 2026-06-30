@@ -44,3 +44,12 @@ export type { HyInputSize } from './input/hy-input.js';
 // — Surfaces —
 export { HyCard } from './card/hy-card.js';
 export type { HyCardElevation } from './card/hy-card.js';
+
+// — Iconography —
+export { HyIcon } from './icon/hy-icon.js';
+export { ICONS, ICON_NAMES } from './icon/icons.js';
+export type { HyIconName } from './icon/icons.js';
+
+// — Theming (user-selectable accent + iwanthue supporting palette) —
+export { createTheme, applyTheme, randomAccent } from '../theme/theme.js';
+export type { Theme, ThemeOptions } from '../theme/theme.js';
