@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <dimen name="spacing_0">0dp</dimen>
+  <dimen name="spacing_1">4dp</dimen>
+  <dimen name="spacing_2">8dp</dimen>
+  <dimen name="spacing_3">12dp</dimen>
+  <dimen name="spacing_4">16dp</dimen>
+  <dimen name="spacing_5">20dp</dimen>
+  <dimen name="spacing_6">24dp</dimen>
+  <dimen name="spacing_8">32dp</dimen>
+  <dimen name="spacing_10">40dp</dimen>
+  <dimen name="spacing_12">48dp</dimen>
+  <dimen name="spacing_16">64dp</dimen>
+  <dimen name="radius_none">0dp</dimen>
+  <dimen name="radius_sm">4dp</dimen>
+  <dimen name="radius_md">8dp</dimen>
+  <dimen name="radius_lg">12dp</dimen>
+  <dimen name="radius_xl">16dp</dimen>
+  <dimen name="radius_full">9999dp</dimen>
+  <dimen name="size_control_sm">32dp</dimen>
+  <dimen name="size_control_md">40dp</dimen>
+  <dimen name="size_control_lg">48dp</dimen>
+  <dimen name="size_border_thin">1dp</dimen>
+  <dimen name="size_border_thick">2dp</dimen>
+  <dimen name="font_size_micro">9.5sp</dimen>
+  <dimen name="font_size_label">11sp</dimen>
+  <dimen name="font_size_xs">12sp</dimen>
+  <dimen name="font_size_sm">14sp</dimen>
+  <dimen name="font_size_md">16sp</dimen>
+  <dimen name="font_size_lg">18sp</dimen>
+  <dimen name="font_size_xl">20sp</dimen>
+  <dimen name="font_size_2xl">24sp</dimen>
+  <dimen name="font_size_3xl">32sp</dimen>
+</resources>

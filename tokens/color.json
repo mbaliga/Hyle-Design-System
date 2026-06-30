@@ -19,8 +19,8 @@
         "violet-deep":  { "$value": "#7867e6", "$type": "color" }
       },
       "provenance": {
-        "native": { "$value": "#6be6a4", "$type": "color", "$description": "Radium-green = on-device / home. MUST pair with a non-colour channel (WCAG 1.4.1)." },
-        "cloud":  { "$value": "#4fd6e6", "$type": "color", "$description": "Alien-cyan = cloud / foreign. MUST pair with a non-colour channel (WCAG 1.4.1)." }
+        "native": { "$value": "#c7ef9e", "$type": "color", "$description": "Radium yellow-green = on-device / home (matches hyle RadiantHues.RADIUM). MUST pair with a non-colour channel (WCAG 1.4.1)." },
+        "cloud":  { "$value": "#35e0ff", "$type": "color", "$description": "Cold cyan = cloud / from-elsewhere (matches hyle RadiantHues.COLD_CYAN). MUST pair with a non-colour channel (WCAG 1.4.1)." }
       },
       "hairline": {
         "default": { "$value": "rgba(255, 255, 255, 0.08)", "$type": "color" },
