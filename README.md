@@ -22,6 +22,9 @@ Hyle is built in two layers:
   near-still at rest, moving only on real computation.
 - **The Pane** (`<hy-pane>`) — frosted glass floating over the Field, carrying
   the readable controls. Glass means legibility; it stays calm and still.
+- **The Tactile Kit** ([`kit/`](kit/)) — the physical-control language ("soft
+  brutalism"): knobs, faders, toggles, crater buttons and meters in honest
+  materials. Themeable by surface / accent / finish / texture.
 
 On the glass: **chips** (`<hy-chip>`), buttons, inputs — quiet hairline outlines
 until pressed, when they invert to solid ink. The lone violet accent
@@ -61,6 +64,8 @@ npm run storybook      # browse the Field, Pane, tokens, components at :6006
 | `src/components/`         | Lit web components, one folder per component, with stories.      |
 | `field/`                  | The Form-World engine + its README / ARCHITECTURE / ROADMAP.     |
 | `public/field/`           | The runnable engine, served to Storybook for `<hy-field>`.       |
+| `kit/`                    | The Tactile Kit (physical-control language) + its README.        |
+| `public/kit/`             | The runnable kit, served to Storybook.                           |
 | `docs/PHILOSOPHY.md`      | Hyle — Ethos & Lineage (the theory behind the law).              |
 | `stories/`                | Introduction + Foundations (token) docs.                         |
 
