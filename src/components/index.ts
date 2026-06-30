@@ -19,6 +19,17 @@ export { HyFader } from './fader/hy-fader.js';
 export { HyToggle } from './toggle/hy-toggle.js';
 export { HyMeter } from './meter/hy-meter.js';
 export { HyVu } from './meter/hy-vu.js';
+export { HySlider } from './slider/hy-slider.js';
+export type { HySliderVariant } from './slider/hy-slider.js';
+export { HyTransport } from './transport/hy-transport.js';
+export { HyKey } from './key/hy-key.js';
+export { HyJoystick } from './joystick/hy-joystick.js';
+export { HyDial } from './dial/hy-dial.js';
+
+// — Displays & surfaces —
+export { HyWaveform } from './waveform/hy-waveform.js';
+export { HyScreen } from './screen/hy-screen.js';
+export { HyGrille, HyJack } from './surface/hy-surface.js';
 
 // — Controls —
 export { HyChip } from './chip/hy-chip.js';

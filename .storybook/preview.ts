@@ -24,7 +24,7 @@ const preview: Preview = {
     },
     options: {
       storySort: {
-        order: ['Introduction', 'Foundations', 'Material', 'Tactile', 'Controls', 'Surfaces', 'Mock Apps'],
+        order: ['Introduction', 'Foundations', 'Material', 'Tactile', 'Displays', 'Controls', 'Surfaces', 'Mock Apps'],
       },
     },
   },

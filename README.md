@@ -53,6 +53,22 @@ npm run tokens:build   # compile tokens → :hyle module + build/{web,ios}
 npm run storybook      # browse the Field, Pane, tokens, components at :6006
 ```
 
+#### Component inventory
+
+| Group     | Elements                                                                 |
+| --------- | ------------------------------------------------------------------------ |
+| Material  | `hy-field` · `hy-pane`                                                    |
+| Controls  | `hy-chip` · `hy-button` · `hy-input` · `hy-slider`                        |
+| Tactile   | `hy-knob` · `hy-fader` · `hy-toggle` · `hy-key` · `hy-joystick` · `hy-dial` · `hy-transport` |
+| Displays  | `hy-meter` · `hy-vu` · `hy-waveform` · `hy-screen`                        |
+| Surfaces  | `hy-card` · `hy-grille` · `hy-jack`                                       |
+
+Two larger, app-specific pieces from the Tactile Kit are intentionally **left
+living in [`kit/`](kit/)** rather than reimplemented as components: the full HSL
+**colour picker** (ring/slice/palette) and the **folders** browser. They're
+better used as references or embedded whole than distilled into primitives.
+Mock apps that compose the components live under **Storybook → Mock Apps**.
+
 ## Project layout
 
 | Path                      | What it is                                                       |
