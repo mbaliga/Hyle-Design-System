@@ -3,7 +3,7 @@ import { html } from 'lit';
 import './hy-button.js';
 
 const meta: Meta = {
-  title: 'Components/Button',
+  title: 'Controls/Button',
   component: 'hy-button',
   tags: ['autodocs'],
   argTypes: {

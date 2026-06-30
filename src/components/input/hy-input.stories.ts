@@ -3,7 +3,7 @@ import { html } from 'lit';
 import './hy-input.js';
 
 const meta: Meta = {
-  title: 'Components/Input',
+  title: 'Controls/Input',
   component: 'hy-input',
   tags: ['autodocs'],
   argTypes: {

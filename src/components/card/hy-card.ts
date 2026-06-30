@@ -29,7 +29,7 @@ export class HyCard extends LitElement {
       overflow: hidden;
     }
     :host([elevation='flat']) .card {
-      border: var(--size-border-thin, 1px) solid var(--color-border-default, #d8dce3);
+      border: var(--size-border-thin, 1px) solid var(--color-border-hairline, rgba(255, 255, 255, 0.08));
     }
     :host([elevation='sm']) .card {
       box-shadow: var(--shadow-sm, 0 1px 2px rgba(16, 24, 40, 0.06));
@@ -46,12 +46,12 @@ export class HyCard extends LitElement {
       padding: var(--spacing-5, 20px);
     }
     .header {
-      border-bottom: var(--size-border-thin, 1px) solid var(--color-border-default, #d8dce3);
+      border-bottom: var(--size-border-thin, 1px) solid var(--color-border-hairline, rgba(255, 255, 255, 0.08));
       font-weight: var(--font-weight-semibold, 600);
       color: var(--color-text-primary, #161a23);
     }
     .footer {
-      border-top: var(--size-border-thin, 1px) solid var(--color-border-default, #d8dce3);
+      border-top: var(--size-border-thin, 1px) solid var(--color-border-hairline, rgba(255, 255, 255, 0.08));
     }
     .body {
       color: var(--color-text-secondary, #5f6b80);

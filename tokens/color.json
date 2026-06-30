@@ -1,79 +1,78 @@
 {
   "color": {
     "palette": {
-      "white": { "$value": "#ffffff", "$type": "color" },
-      "black": { "$value": "#0a0a0b", "$type": "color" },
-      "neutral": {
-        "50":  { "$value": "#f7f8fa", "$type": "color" },
-        "100": { "$value": "#eceef2", "$type": "color" },
-        "200": { "$value": "#d8dce3", "$type": "color" },
-        "300": { "$value": "#b9c0cc", "$type": "color" },
-        "400": { "$value": "#8b95a7", "$type": "color" },
-        "500": { "$value": "#5f6b80", "$type": "color" },
-        "600": { "$value": "#485263", "$type": "color" },
-        "700": { "$value": "#363e4d", "$type": "color" },
-        "800": { "$value": "#232936", "$type": "color" },
-        "900": { "$value": "#161a23", "$type": "color" }
+      "field": {
+        "void":   { "$value": "#000000", "$type": "color", "$description": "Pure black — the art/Field canvas only (see ethos: SEM is colourless)." },
+        "near":   { "$value": "#0a0809", "$type": "color", "$description": "The inky base behind glass." },
+        "raised": { "$value": "#121212", "$type": "color", "$description": "UI surfaces sit at #121212-class, never pure black, to reduce halation (WCAG/ethos §5e)." },
+        "deep":   { "$value": "#050009", "$type": "color", "$description": "Fallback / deepest backdrop." }
       },
-      "brand": {
-        "50":  { "$value": "#eef2ff", "$type": "color" },
-        "100": { "$value": "#dbe3ff", "$type": "color" },
-        "200": { "$value": "#bccaff", "$type": "color" },
-        "300": { "$value": "#8fa5ff", "$type": "color" },
-        "400": { "$value": "#5f78f8", "$type": "color" },
-        "500": { "$value": "#3a51e8", "$type": "color" },
-        "600": { "$value": "#2c3ccb", "$type": "color" },
-        "700": { "$value": "#2531a3", "$type": "color" },
-        "800": { "$value": "#222d82", "$type": "color" },
-        "900": { "$value": "#1c2566", "$type": "color" }
+      "ink": {
+        "pure":  { "$value": "#ece8e4", "$type": "color", "$description": "Warm off-white at full opacity." },
+        "full":  { "$value": "rgba(236, 232, 228, 0.92)", "$type": "color", "$description": "Primary text." },
+        "dim":   { "$value": "rgba(236, 232, 228, 0.42)", "$type": "color", "$description": "Secondary text." },
+        "faint": { "$value": "rgba(236, 232, 228, 0.18)", "$type": "color", "$description": "Micro-labels, hairline text." }
       },
-      "green": {
-        "100": { "$value": "#d9f5e3", "$type": "color" },
-        "500": { "$value": "#18a957", "$type": "color" },
-        "700": { "$value": "#0f7d3f", "$type": "color" }
+      "accent": {
+        "violet":       { "$value": "#8e7bff", "$type": "color", "$description": "The single north-star accent. Light is scarce; spend it here." },
+        "violet-bright":{ "$value": "#a593ff", "$type": "color" },
+        "violet-deep":  { "$value": "#7867e6", "$type": "color" }
       },
-      "amber": {
-        "100": { "$value": "#fdf0cf", "$type": "color" },
-        "500": { "$value": "#e0941a", "$type": "color" },
-        "700": { "$value": "#a96a0b", "$type": "color" }
+      "provenance": {
+        "native": { "$value": "#6be6a4", "$type": "color", "$description": "Radium-green = on-device / home. MUST pair with a non-colour channel (WCAG 1.4.1)." },
+        "cloud":  { "$value": "#4fd6e6", "$type": "color", "$description": "Alien-cyan = cloud / foreign. MUST pair with a non-colour channel (WCAG 1.4.1)." }
       },
-      "red": {
-        "100": { "$value": "#fbdcdc", "$type": "color" },
-        "500": { "$value": "#dc3a3a", "$type": "color" },
-        "700": { "$value": "#a52525", "$type": "color" }
+      "hairline": {
+        "default": { "$value": "rgba(255, 255, 255, 0.08)", "$type": "color" },
+        "strong":  { "$value": "rgba(255, 255, 255, 0.14)", "$type": "color" }
+      },
+      "glass": {
+        "pane": { "$value": "rgba(10, 8, 9, 0.52)", "$type": "color", "$description": "Frosted-glass panel fill; pair with backdrop-blur." }
+      },
+      "signal": {
+        "danger":  { "$value": "#e5564b", "$type": "color" },
+        "warning": { "$value": "#e0941a", "$type": "color" },
+        "success": { "$value": "#5bbf7a", "$type": "color" }
+      },
+      "material": {
+        "stone": { "$value": "#9b958c", "$type": "color", "$description": "Form-World stone/smog/light, kept separate. Surface albedo of the forms behind the pane." },
+        "smog":  { "$value": "#cc1a0a", "$type": "color", "$description": "Atmosphere / fog colour." },
+        "light": { "$value": "#ffd2b0", "$type": "color", "$description": "Key light, specular, sun disc." }
       }
     },
+
     "text": {
-      "primary":   { "$value": "{color.palette.neutral.900}", "$type": "color" },
-      "secondary": { "$value": "{color.palette.neutral.500}", "$type": "color" },
-      "disabled":  { "$value": "{color.palette.neutral.400}", "$type": "color" },
-      "inverse":   { "$value": "{color.palette.white}", "$type": "color" },
-      "brand":     { "$value": "{color.palette.brand.600}", "$type": "color" }
+      "primary":   { "$value": "{color.palette.ink.full}", "$type": "color" },
+      "secondary": { "$value": "{color.palette.ink.dim}", "$type": "color" },
+      "faint":     { "$value": "{color.palette.ink.faint}", "$type": "color" },
+      "inverse":   { "$value": "{color.palette.field.near}", "$type": "color", "$description": "Ink-on-light, e.g. a pressed chip." },
+      "accent":    { "$value": "{color.palette.accent.violet}", "$type": "color" }
     },
     "background": {
-      "canvas":  { "$value": "{color.palette.neutral.50}", "$type": "color" },
-      "surface": { "$value": "{color.palette.white}", "$type": "color" },
-      "raised":  { "$value": "{color.palette.white}", "$type": "color" },
-      "inverse": { "$value": "{color.palette.neutral.900}", "$type": "color" }
+      "field":   { "$value": "{color.palette.field.void}", "$type": "color" },
+      "surface": { "$value": "{color.palette.field.raised}", "$type": "color" },
+      "glass":   { "$value": "{color.palette.glass.pane}", "$type": "color" },
+      "inverse": { "$value": "{color.palette.ink.pure}", "$type": "color" }
     },
     "border": {
-      "default": { "$value": "{color.palette.neutral.200}", "$type": "color" },
-      "strong":  { "$value": "{color.palette.neutral.300}", "$type": "color" },
-      "focus":   { "$value": "{color.palette.brand.500}", "$type": "color" }
+      "hairline": { "$value": "{color.palette.hairline.default}", "$type": "color" },
+      "strong":   { "$value": "{color.palette.hairline.strong}", "$type": "color" },
+      "focus":    { "$value": "{color.palette.accent.violet}", "$type": "color" }
     },
     "action": {
-      "primary":         { "$value": "{color.palette.brand.500}", "$type": "color" },
-      "primary-hover":   { "$value": "{color.palette.brand.600}", "$type": "color" },
-      "primary-active":  { "$value": "{color.palette.brand.700}", "$type": "color" },
-      "on-primary":      { "$value": "{color.palette.white}", "$type": "color" }
+      "primary":        { "$value": "{color.palette.accent.violet}", "$type": "color" },
+      "primary-hover":  { "$value": "{color.palette.accent.violet-bright}", "$type": "color" },
+      "primary-active": { "$value": "{color.palette.accent.violet-deep}", "$type": "color" },
+      "on-primary":     { "$value": "{color.palette.field.near}", "$type": "color" }
+    },
+    "provenance": {
+      "native": { "$value": "{color.palette.provenance.native}", "$type": "color" },
+      "cloud":  { "$value": "{color.palette.provenance.cloud}", "$type": "color" }
     },
     "feedback": {
-      "success": { "$value": "{color.palette.green.500}", "$type": "color" },
-      "warning": { "$value": "{color.palette.amber.500}", "$type": "color" },
-      "danger":  { "$value": "{color.palette.red.500}", "$type": "color" },
-      "success-surface": { "$value": "{color.palette.green.100}", "$type": "color" },
-      "warning-surface": { "$value": "{color.palette.amber.100}", "$type": "color" },
-      "danger-surface":  { "$value": "{color.palette.red.100}", "$type": "color" }
+      "danger":  { "$value": "{color.palette.signal.danger}", "$type": "color" },
+      "warning": { "$value": "{color.palette.signal.warning}", "$type": "color" },
+      "success": { "$value": "{color.palette.signal.success}", "$type": "color" }
     }
   }
 }

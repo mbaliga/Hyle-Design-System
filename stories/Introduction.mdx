@@ -2,43 +2,56 @@ import { Meta } from '@storybook/blocks';
 
 <Meta title="Introduction" />
 
-# Hyle Design System
+# Hyle
 
-A **cross-platform** design system. One set of design tokens is the single
-source of truth; it compiles to native artifacts for every platform, while a
-set of framework-agnostic web components consumes those tokens on the web.
+> *Hyle* (ὕλη) — Aristotle's word for matter: pure potentiality awaiting form.
+
+Hyle is a cross-platform design system built on a single law:
+
+## The core law
+
+> **State is SHOWN by material behavior, never SAID by language.**
+
+No status words. No spinners. The interface tells the truth about one thing —
+*computation* — and tells it through material: light only where thinking
+happens, motion only when there is real state, mass proportional to depth of
+thought. Honesty is relocated from *substance* to *behavior*.
+
+## The two layers
+
+Hyle is built as a material stack:
+
+1. **The Field** — a living layer of monumental forms in coloured haze
+   (the Form-World WebGL engine). Matte and near-still at rest; it moves only
+   when there is real computation. This is where state is *shown*.
+2. **The Pane** — frosted glass that floats over the Field carrying the
+   readable controls. Glass means legibility; it stays calm and still, animating
+   only to enter or leave.
+
+Controls on the glass — **chips**, sliders, micro-labels — are quiet hairline
+outlines until pressed, when they invert to solid ink. The single violet accent
+(`#8E7BFF`) is the only colour spent freely; everything else is earned.
 
 ## Architecture
 
 ```
-tokens/*.json  ──►  Style Dictionary  ──►  build/web   (CSS vars, SCSS, JS/JSON)
-(W3C DTCG)                              ──►  build/android (colors.xml, dimens.xml)
-                                        ──►  build/ios   (Tokens.swift)
+tokens/*.json        Style Dictionary        build/
+(W3C DTCG)      ──►   build-tokens.js   ──►   web/      tokens.css · scss · js
+                                              android/  colors.xml · dimens.xml
+                                              ios/      Tokens.swift
 
-src/components/*  ──►  Lit web components  ──►  <hy-button>, <hy-card>, <hy-input>
-                       (consume CSS vars)       usable in React, Vue, Angular, plain HTML
+src/components/   ──► Lit web components ──►   <hy-field> <hy-pane> <hy-chip> …
+field/            ──► Form-World engine  ──►   the living material behind the pane
 ```
 
-## Why this shape
+One token definition compiles to every platform — Android, web, iOS — because
+Hyle is meant to live everywhere, not just the browser.
 
-- **Tokens are the contract.** Designers and engineers agree on `color.action.primary`,
-  not on a hex value. Re-theming is a token edit, never a component rewrite.
-- **Every platform from one definition.** Web gets CSS variables, Android gets
-  resource XML, iOS gets Swift constants — generated, never hand-synced.
-- **Web Components, not a framework lock-in.** `<hy-button>` is a standard custom
-  element, so the same component drops into any web stack.
+## Read next
 
-## Using it on the web
-
-```js
-import 'hyle-design-system/tokens.css'; // load the token layer once
-import 'hyle-design-system';            // register <hy-*> elements
-
-// then anywhere in your markup:
-// <hy-button variant="primary">Save</hy-button>
-```
-
-## Explore
-
-- **Foundations / Tokens** — the colors, spacing, radius and type scale.
-- **Components** — Button, Card and Input, each driven entirely by tokens.
+- **Foundations / Tokens** — the field, the ink, the accent, the material triad.
+- **Material / Field** — the Form-World engine behind a glass pane.
+- **Material / Pane** and **Controls / Chip** — the on-glass primitives.
+- **`docs/PHILOSOPHY.md`** — the full ethos & lineage (hylomorphism, calm
+  technology, affordances, truth-to-materials, the ferrofluid/cymatics/SEM/
+  brutalist arguments) and the accessibility gates.

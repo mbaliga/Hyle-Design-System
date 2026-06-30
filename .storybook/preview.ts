@@ -7,6 +7,7 @@ import '../src/components/index.js';
 
 const preview: Preview = {
   parameters: {
+    layout: 'centered',
     controls: {
       matchers: {
         color: /(background|color)$/i,
@@ -14,16 +15,16 @@ const preview: Preview = {
       },
     },
     backgrounds: {
-      default: 'canvas',
+      default: 'field',
       values: [
-        { name: 'canvas', value: '#f7f8fa' },
-        { name: 'surface', value: '#ffffff' },
-        { name: 'inverse', value: '#161a23' },
+        { name: 'field', value: '#000000' },
+        { name: 'near', value: '#0a0809' },
+        { name: 'raised', value: '#121212' },
       ],
     },
     options: {
       storySort: {
-        order: ['Introduction', 'Foundations', 'Components'],
+        order: ['Introduction', 'Foundations', 'Material', 'Controls', 'Surfaces'],
       },
     },
   },

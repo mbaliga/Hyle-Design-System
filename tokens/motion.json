@@ -1,0 +1,11 @@
+{
+  "duration": {
+    "instant": { "$value": "120", "$type": "duration" },
+    "calm":    { "$value": "300", "$type": "duration", "$description": "Default state change. 280–320ms, weight not bounce (ethos rec #3)." },
+    "pane":    { "$value": "420", "$type": "duration", "$description": "Pane slide in/out." }
+  },
+  "easing": {
+    "standard": { "$value": "cubic-bezier(0.4, 0, 0.2, 1)",    "$type": "cubicBezier", "$description": "Calm weighted ease. No spring." },
+    "pane":     { "$value": "cubic-bezier(0.22, 0.61, 0.36, 1)", "$type": "cubicBezier", "$description": "Pane enter/exit." }
+  }
+}

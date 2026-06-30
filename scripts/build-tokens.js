@@ -45,6 +45,15 @@ StyleDictionary.registerTransform({
   transform: (t) => `${parseFloat(t.$value)}`,
 });
 
+// Durations are stored as unitless milliseconds; web wants the `ms` suffix.
+StyleDictionary.registerTransform({
+  name: 'hyle/time/ms',
+  type: 'value',
+  transitive: true,
+  filter: (t) => t.$type === 'duration',
+  transform: (t) => `${parseFloat(t.$value)}ms`,
+});
+
 // --- Custom formats ----------------------------------------------------------
 
 StyleDictionary.registerFormat({
@@ -95,7 +104,7 @@ StyleDictionary.registerFormat({
 
 // --- Platforms ---------------------------------------------------------------
 
-const webTransforms = ['attribute/cti', 'name/kebab', 'color/css', 'hyle/size/px'];
+const webTransforms = ['attribute/cti', 'name/kebab', 'color/css', 'hyle/size/px', 'hyle/time/ms'];
 
 const sd = new StyleDictionary({
   source: ['tokens/**/*.json'],
@@ -118,7 +127,7 @@ const sd = new StyleDictionary({
       files: [{ destination: '_tokens.scss', format: 'scss/variables' }],
     },
     js: {
-      transforms: ['attribute/cti', 'name/camel', 'color/css', 'hyle/size/px'],
+      transforms: ['attribute/cti', 'name/camel', 'color/css', 'hyle/size/px', 'hyle/time/ms'],
       buildPath: 'build/web/',
       files: [
         { destination: 'tokens.js', format: 'javascript/es6' },

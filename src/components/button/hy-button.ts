@@ -47,7 +47,7 @@ export class HyButton extends LitElement {
       transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
     }
     button:focus-visible {
-      outline: var(--size-border-thick, 2px) solid var(--color-border-focus, #3a51e8);
+      outline: var(--size-border-thick, 2px) solid var(--color-border-focus, #8e7bff);
       outline-offset: 2px;
     }
     button:disabled {
@@ -85,25 +85,25 @@ export class HyButton extends LitElement {
     }
 
     :host([variant='secondary']) button {
-      background: var(--color-background-surface, #fff);
-      color: var(--color-text-primary, #161a23);
-      border-color: var(--color-border-strong, #b9c0cc);
+      background: transparent;
+      color: var(--color-text-primary, rgba(236, 232, 228, 0.92));
+      border-color: var(--color-border-strong, rgba(255, 255, 255, 0.14));
     }
     :host([variant='secondary']) button:hover:not(:disabled) {
-      background: var(--color-background-canvas, #f7f8fa);
+      background: var(--color-border-hairline, rgba(255, 255, 255, 0.08));
     }
 
     :host([variant='ghost']) button {
       background: transparent;
-      color: var(--color-text-brand, #2c3ccb);
+      color: var(--color-text-accent, #8e7bff);
     }
     :host([variant='ghost']) button:hover:not(:disabled) {
-      background: var(--color-background-canvas, #f7f8fa);
+      background: var(--color-border-hairline, rgba(255, 255, 255, 0.08));
     }
 
     :host([variant='danger']) button {
-      background: var(--color-feedback-danger, #dc3a3a);
-      color: var(--color-text-inverse, #fff);
+      background: var(--color-feedback-danger, #e5564b);
+      color: var(--color-text-primary, rgba(236, 232, 228, 0.92));
     }
     :host([variant='danger']) button:hover:not(:disabled) {
       filter: brightness(0.93);

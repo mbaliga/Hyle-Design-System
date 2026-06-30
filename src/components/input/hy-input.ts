@@ -66,7 +66,7 @@ export class HyInput extends LitElement {
       transition: border-color 120ms ease, box-shadow 120ms ease;
     }
     input::placeholder {
-      color: var(--color-text-disabled, #8b95a7);
+      color: var(--color-text-faint, rgba(236, 232, 228, 0.18));
     }
     input:focus {
       outline: none;
@@ -74,7 +74,7 @@ export class HyInput extends LitElement {
       box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-border-focus, #3a51e8) 25%, transparent);
     }
     input:disabled {
-      background: var(--color-background-canvas, #f7f8fa);
+      background: var(--color-border-hairline, rgba(255, 255, 255, 0.06));
       cursor: not-allowed;
       opacity: 0.7;
     }

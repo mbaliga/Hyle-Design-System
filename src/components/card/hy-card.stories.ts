@@ -4,7 +4,7 @@ import './hy-card.js';
 import '../button/hy-button.js';
 
 const meta: Meta = {
-  title: 'Components/Card',
+  title: 'Surfaces/Card',
   component: 'hy-card',
   tags: ['autodocs'],
   argTypes: {

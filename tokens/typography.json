@@ -1,29 +1,34 @@
 {
   "font": {
     "family": {
-      "sans": { "$value": "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif", "$type": "fontFamily" },
-      "mono": { "$value": "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace", "$type": "fontFamily" }
+      "sans": { "$value": "ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif", "$type": "fontFamily" },
+      "mono": { "$value": "ui-monospace, SFMono-Regular, Menlo, 'JetBrains Mono', monospace", "$type": "fontFamily", "$description": "Diagnostic / fallback voice (e.g. the WebGL fallback message)." }
     },
     "weight": {
       "regular":  { "$value": "400", "$type": "fontWeight" },
       "medium":   { "$value": "500", "$type": "fontWeight" },
-      "semibold": { "$value": "600", "$type": "fontWeight" },
-      "bold":     { "$value": "700", "$type": "fontWeight" }
+      "semibold": { "$value": "600", "$type": "fontWeight" }
     },
     "size": {
-      "xs":   { "$value": "12", "$type": "dimension" },
-      "sm":   { "$value": "14", "$type": "dimension" },
-      "md":   { "$value": "16", "$type": "dimension" },
-      "lg":   { "$value": "18", "$type": "dimension" },
-      "xl":   { "$value": "20", "$type": "dimension" },
-      "2xl":  { "$value": "24", "$type": "dimension" },
-      "3xl":  { "$value": "30", "$type": "dimension" },
-      "4xl":  { "$value": "36", "$type": "dimension" }
+      "micro": { "$value": "9.5", "$type": "dimension", "$description": "Uppercase tracked micro-labels behind the pane." },
+      "label": { "$value": "11", "$type": "dimension" },
+      "xs":    { "$value": "12", "$type": "dimension" },
+      "sm":    { "$value": "14", "$type": "dimension" },
+      "md":    { "$value": "16", "$type": "dimension" },
+      "lg":    { "$value": "18", "$type": "dimension" },
+      "xl":    { "$value": "20", "$type": "dimension" },
+      "2xl":   { "$value": "24", "$type": "dimension" },
+      "3xl":   { "$value": "32", "$type": "dimension" }
     },
     "lineHeight": {
       "tight":   { "$value": "1.2", "$type": "number" },
       "normal":  { "$value": "1.5", "$type": "number" },
-      "relaxed": { "$value": "1.7", "$type": "number" }
+      "relaxed": { "$value": "1.6", "$type": "number" }
+    },
+    "tracking": {
+      "normal": { "$value": "0",      "$type": "letterSpacing" },
+      "label":  { "$value": "0.2em",  "$type": "letterSpacing", "$description": "Uppercase micro-label tracking — a core Hyle signature." },
+      "title":  { "$value": "0.34em", "$type": "letterSpacing", "$description": "Pane title tracking." }
     }
   }
 }
