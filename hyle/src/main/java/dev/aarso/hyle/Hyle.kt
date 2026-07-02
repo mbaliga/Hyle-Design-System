@@ -68,3 +68,50 @@ object RadiantHues {
 
     val candidates: List<Argb> = listOf(RADIUM, COLD_CYAN)
 }
+
+/**
+ * Provenance — the single canonical "where did this come from" idiom, consolidating the
+ * **warm = on-device / cyan = from-elsewhere** glow that was re-implemented ad hoc across
+ * the constellation (BOS_launcher, Form-analyser, Music_Player, asystemofcells-figma).
+ * Import this; do not re-express it.
+ *
+ * Colour-blind-safe by construction (WCAG 1.4.1): the hue is NEVER the sole signal. Each
+ * source also carries a distinct [glyph] silhouette and its emission [finish] / pulse, so
+ * provenance reads under red-green *and* blue-yellow colour-blindness and in greyscale
+ * (RADIUM and COLD_CYAN also differ in luminance). Rule: never encode provenance by hue
+ * alone — always pair the hue with the glyph.
+ */
+sealed interface Provenance {
+    /** Emission hue — ALWAYS paired with [glyph], never used alone. */
+    val hue: Argb
+
+    /** The redundant non-colour channel: a distinct silhouette per source. */
+    val glyph: Glyph
+
+    /** How the badge renders — radiant emission on the watched breath. */
+    val finish: Finish
+
+    /** Of-here: computed on this device. Warm radium glow + filled disc. */
+    data object OnDevice : Provenance {
+        override val hue: Argb = RadiantHues.RADIUM
+        override val glyph: Glyph = Glyph.FILLED_DISC
+        override val finish: Finish = Finish.Radiant(hue, Pulse.WATCHED)
+    }
+
+    /** From-elsewhere: a watched cloud provider. Cold cyan glow + hollow ring. */
+    data object Cloud : Provenance {
+        override val hue: Argb = RadiantHues.COLD_CYAN
+        override val glyph: Glyph = Glyph.HOLLOW_RING
+        override val finish: Finish = Finish.Radiant(hue, Pulse.WATCHED)
+    }
+
+    companion object {
+        val all: List<Provenance> = listOf(OnDevice, Cloud)
+    }
+}
+
+/**
+ * The non-colour channel that keeps [Provenance] colour-blind-safe: a source is always
+ * distinguishable by silhouette, independent of hue.
+ */
+enum class Glyph { FILLED_DISC, HOLLOW_RING }
