@@ -11,11 +11,15 @@ interface SpaceDef {
   toChannels(hex: string): { h: number; x: number; y: number };
   /** channels → hex */
   fromChannels(h: number, x: number, y: number): string;
+  /** channels → [r,g,b] 0..255 directly (slice hot path, no hex round-trip) */
+  toRgb(h: number, x: number, y: number): number[];
   xLabel: string;
   yLabel: string;
 }
 
-const OKLCH_CMAX = 0.4;
+// Max sRGB OKLCH chroma is ~0.32; cap the slice's C axis near there so picks
+// stay in gamut and the crosshair doesn't snap away from the pointer.
+const OKLCH_CMAX = 0.33;
 
 const SPACES: Record<HyColorSpace, SpaceDef> = {
   hsl: {
@@ -27,6 +31,7 @@ const SPACES: Record<HyColorSpace, SpaceDef> = {
       return { h: Number.isNaN(h) ? 0 : h, x: s, y: l };
     },
     fromChannels: (h, x, y) => chroma.hsl(h, x, y).hex(),
+    toRgb: (h, x, y) => chroma.hsl(h, x, y).rgb(),
   },
   hsv: {
     label: 'HSV',
@@ -37,6 +42,7 @@ const SPACES: Record<HyColorSpace, SpaceDef> = {
       return { h: Number.isNaN(h) ? 0 : h, x: s, y: v };
     },
     fromChannels: (h, x, y) => chroma.hsv(h, x, y).hex(),
+    toRgb: (h, x, y) => chroma.hsv(h, x, y).rgb(),
   },
   oklch: {
     label: 'OKLCH',
@@ -47,6 +53,7 @@ const SPACES: Record<HyColorSpace, SpaceDef> = {
       return { h: Number.isNaN(h) ? 0 : h, x: Math.min(1, (c || 0) / OKLCH_CMAX), y: l };
     },
     fromChannels: (h, x, y) => chroma.oklch(y, x * OKLCH_CMAX, h).hex(),
+    toRgb: (h, x, y) => chroma.oklch(y, x * OKLCH_CMAX, h).rgb(),
   },
 };
 
@@ -83,6 +90,9 @@ export class HyColorPicker extends LitElement {
   private _lastSliceKey = '';
   private _cube: { p: [number, number, number]; c: [number, number, number] }[] = [];
   private _reduced = false;
+  private _onscreen = true;
+  private _io?: IntersectionObserver;
+  private _mq?: MediaQueryList;
   private _drag: 'ring' | 'slice' | 'model' | null = null;
 
   static styles = css`
@@ -136,7 +146,7 @@ export class HyColorPicker extends LitElement {
       border-radius: 50%;
       cursor: pointer;
       background: conic-gradient(
-        from 90deg,
+        from 0deg,
         hsl(0 90% 55%),
         hsl(60 90% 55%),
         hsl(120 90% 55%),
@@ -155,9 +165,18 @@ export class HyColorPicker extends LitElement {
       height: 26px;
       border-radius: 50%;
       border: 3px solid #fff;
-      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.85), 0 2px 6px rgba(0, 0, 0, 0.5);
       transform: translate(-50%, -50%);
       pointer-events: none;
+    }
+    #ring:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px var(--color-border-focus, #8e7bff), 0 4px 14px rgba(0, 0, 0, 0.4);
+    }
+    #slice:focus-visible,
+    .seg:focus-visible {
+      outline: 2px solid var(--color-border-focus, #8e7bff);
+      outline-offset: 2px;
     }
     #slice {
       position: absolute;
@@ -177,7 +196,7 @@ export class HyColorPicker extends LitElement {
       height: 18px;
       border-radius: 50%;
       border: 2px solid #fff;
-      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.75), inset 0 0 0 1px rgba(0, 0, 0, 0.4);
       transform: translate(-50%, -50%);
       pointer-events: none;
     }
@@ -282,28 +301,36 @@ export class HyColorPicker extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this._reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
-    // 6^3 RGB cube point cloud, centred on the origin.
-    const N = 6;
-    for (let r = 0; r < N; r++)
-      for (let g = 0; g < N; g++)
-        for (let b = 0; b < N; b++) {
-          const rr = Math.round((r / (N - 1)) * 255);
-          const gg = Math.round((g / (N - 1)) * 255);
-          const bb = Math.round((b / (N - 1)) * 255);
-          this._cube.push({ p: [rr / 255 - 0.5, gg / 255 - 0.5, bb / 255 - 0.5], c: [rr, gg, bb] });
-        }
+    // 6^3 RGB cube point cloud — build once (guard against reconnect duplication).
+    if (this._cube.length === 0) {
+      const N = 6;
+      for (let r = 0; r < N; r++)
+        for (let g = 0; g < N; g++)
+          for (let b = 0; b < N; b++) {
+            const rr = Math.round((r / (N - 1)) * 255);
+            const gg = Math.round((g / (N - 1)) * 255);
+            const bb = Math.round((b / (N - 1)) * 255);
+            this._cube.push({ p: [rr / 255 - 0.5, gg / 255 - 0.5, bb / 255 - 0.5], c: [rr, gg, bb] });
+          }
+    }
+    this._mq = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+    this._reduced = this._mq?.matches ?? false;
+    this._mq?.addEventListener?.('change', this._onReducedChange);
+    if (this.hasUpdated) this._observe(); // re-arm after a disconnect/reconnect
   }
 
   firstUpdated() {
     this._paintSlice(true);
     this._paintPalette();
-    this._loop();
+    this._observe();
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     cancelAnimationFrame(this._raf);
+    this._raf = 0;
+    this._io?.disconnect();
+    this._mq?.removeEventListener?.('change', this._onReducedChange);
   }
 
   updated(changed: Map<string, unknown>) {
@@ -312,6 +339,38 @@ export class HyColorPicker extends LitElement {
     // count/mode changes, or on a value change only when not actively dragging.
     if (changed.has('paletteCount') || changed.has('colorBlind')) this._paintPalette();
     else if (changed.has('value') && !this._drag) this._paintPalette();
+    // Move the cube's current-colour marker even when the loop is idle.
+    if (changed.has('value') && this._onscreen && !this._raf) this._paintModel();
+  }
+
+  private _onReducedChange = (e: MediaQueryListEvent) => {
+    this._reduced = e.matches;
+    this._kick();
+  };
+
+  private _observe() {
+    this._io?.disconnect();
+    this._io = new IntersectionObserver(
+      (entries) => {
+        this._onscreen = entries[0]?.isIntersecting ?? true;
+        this._kick();
+      },
+      { threshold: 0.01 }
+    );
+    this._io.observe(this);
+    this._kick();
+  }
+
+  /** Animate only when it earns it: onscreen, and either dragging or motion allowed. */
+  private _kick() {
+    const animate = this._onscreen && (this._drag === 'model' || !this._reduced);
+    if (animate) {
+      if (!this._raf) this._loop();
+    } else {
+      cancelAnimationFrame(this._raf);
+      this._raf = 0;
+      if (this._onscreen) this._paintModel(); // one static frame
+    }
   }
 
   // --- geometry ---
@@ -333,7 +392,7 @@ export class HyColorPicker extends LitElement {
     const key = `${this.space}:${Math.round(h)}`;
     if (!force && key === this._lastSliceKey) return;
     this._lastSliceKey = key;
-    const size = 72;
+    const size = 96;
     cv.width = size;
     cv.height = size;
     const ctx = cv.getContext('2d');
@@ -344,7 +403,7 @@ export class HyColorPicker extends LitElement {
       for (let xx = 0; xx < size; xx++) {
         const x = xx / (size - 1);
         const y = 1 - yy / (size - 1);
-        const [r, g, b] = chroma(def.fromChannels(h, x, y)).rgb();
+        const [r, g, b] = def.toRgb(h, x, y); // direct rgb, no hex serialize/reparse
         const i = (yy * size + xx) * 4;
         img.data[i] = r;
         img.data[i + 1] = g;
@@ -357,7 +416,12 @@ export class HyColorPicker extends LitElement {
 
   // --- 3D RGB cube ---
   private _loop = () => {
-    if (!this._drag && !this._reduced) this._yaw += 0.006;
+    if (!this._onscreen || (this._reduced && this._drag !== 'model')) {
+      this._raf = 0;
+      if (this._onscreen) this._paintModel();
+      return;
+    }
+    if (this._drag !== 'model') this._yaw += 0.006;
     this._paintModel();
     this._raf = requestAnimationFrame(this._loop);
   };
@@ -366,8 +430,14 @@ export class HyColorPicker extends LitElement {
     const cv = this._modelCv;
     if (!cv) return;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const w = (cv.width = Math.max(1, cv.clientWidth * dpr));
-    const h = (cv.height = Math.max(1, cv.clientHeight * dpr));
+    const tw = Math.max(1, Math.round(cv.clientWidth * dpr));
+    const th = Math.max(1, Math.round(cv.clientHeight * dpr));
+    if (cv.width !== tw || cv.height !== th) {
+      cv.width = tw;
+      cv.height = th;
+    }
+    const w = cv.width;
+    const h = cv.height;
     const ctx = cv.getContext('2d');
     if (!ctx) return;
     ctx.clearRect(0, 0, w, h);
@@ -443,7 +513,10 @@ export class HyColorPicker extends LitElement {
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     if (kind === 'ring') this._onRing(e);
     else if (kind === 'slice') this._onSlice(e);
-    else this._lastModel = { x: e.clientX, y: e.clientY };
+    else {
+      this._lastModel = { x: e.clientX, y: e.clientY };
+      this._kick(); // rotate even under reduced-motion while actively dragging
+    }
   }
   private _lastModel = { x: 0, y: 0 };
   private _moveDrag(e: PointerEvent) {
@@ -466,6 +539,8 @@ export class HyColorPicker extends LitElement {
     if (was === 'ring' || was === 'slice') {
       this._commit(this.value, 'hy-change');
       this._paintPalette(); // deferred from during-drag
+    } else if (was === 'model') {
+      this._kick(); // resume auto-rotate, or settle to a static frame under reduced-motion
     }
   }
 
@@ -488,13 +563,15 @@ export class HyColorPicker extends LitElement {
       else return;
     }
     e.preventDefault();
+    // updated() recomputes the palette once (not dragging) — no explicit call here.
     this._commit(def.fromChannels(nh, nx, ny), 'hy-change');
-    this._paintPalette();
   }
 
   private _onHex(e: Event) {
-    const v = (e.target as HTMLInputElement).value.trim();
+    const el = e.target as HTMLInputElement;
+    const v = el.value.trim();
     if (chroma.valid(v)) this._commit(chroma(v).hex(), 'hy-change');
+    el.value = this.value; // re-sync the field to the canonical value (invalid/equal entries)
   }
 
   private _copy() {
@@ -515,11 +592,10 @@ export class HyColorPicker extends LitElement {
     const ty = 50 + thumbR * Math.sin(rad(h));
     return html`
       <div class="app" part="app">
-        <div class="spaces" role="tablist">
+        <div class="spaces" role="group" aria-label="Colour space">
           ${(Object.keys(SPACES) as HyColorSpace[]).map(
             (s) => html`<button
               class="seg"
-              role="tab"
               aria-pressed=${this.space === s ? 'true' : 'false'}
               @click=${() => (this.space = s)}
             >
@@ -547,7 +623,7 @@ export class HyColorPicker extends LitElement {
           <canvas
             id="slice"
             role="application"
-            aria-label=${`${SPACES[this.space].xLabel} / ${SPACES[this.space].yLabel}`}
+            aria-label=${`Colour field: ${SPACES[this.space].xLabel} ${Math.round(x * 100)}%, ${SPACES[this.space].yLabel} ${Math.round(y * 100)}%. Arrow keys to adjust.`}
             tabindex="0"
             @pointerdown=${(e: PointerEvent) => this._startDrag('slice', e)}
             @pointermove=${this._moveDrag}
@@ -558,6 +634,7 @@ export class HyColorPicker extends LitElement {
           <div id="cross" style="left:calc(27% + ${x * 46}%); top:calc(27% + ${(1 - y) * 46}%);"></div>
           <canvas
             id="model"
+            aria-hidden="true"
             title="Drag to rotate the RGB cube"
             @pointerdown=${(e: PointerEvent) => this._startDrag('model', e)}
             @pointermove=${this._moveDrag}
@@ -568,7 +645,13 @@ export class HyColorPicker extends LitElement {
 
         <div class="readout">
           <div class="swatch" style="background:${this.value}"></div>
-          <input class="hex" .value=${this.value} @change=${this._onHex} spellcheck="false" />
+          <input
+            class="hex"
+            aria-label="Hex colour value"
+            .value=${this.value}
+            @change=${this._onHex}
+            spellcheck="false"
+          />
           <button class="btn" @click=${this._copy}>Copy</button>
         </div>
 
@@ -586,6 +669,7 @@ export class HyColorPicker extends LitElement {
         <div class="row">
           <input
             type="range"
+            aria-label="Number of palette colours"
             min="3"
             max="10"
             .value=${String(this.paletteCount)}
