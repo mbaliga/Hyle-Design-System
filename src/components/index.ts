@@ -45,6 +45,10 @@ export type { HyInputSize } from './input/hy-input.js';
 export { HyCard } from './card/hy-card.js';
 export type { HyCardElevation } from './card/hy-card.js';
 
+// — Colour —
+export { HyColorPicker } from './color-picker/hy-color-picker.js';
+export type { HyColorSpace } from './color-picker/hy-color-picker.js';
+
 // — Iconography —
 export { HyIcon } from './icon/hy-icon.js';
 export { ICONS, ICON_NAMES } from './icon/icons.js';
