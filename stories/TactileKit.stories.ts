@@ -25,7 +25,7 @@ type Story = StoryObj;
 
 const frame = (title: string) => html`
   <iframe
-    src="/kit/tactile-kit.html"
+    src="kit/tactile-kit.html"
     title=${title}
     style="border:0; width:100%; height:100vh; display:block; background:#000;"
   ></iframe>
