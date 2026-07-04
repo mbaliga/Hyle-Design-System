@@ -1,180 +1,176 @@
-import { LitElement, css, html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { html, type PropertyValues } from 'lit';
+import { customElement, property, query, state } from 'lit/decorators.js';
+import { KitElement } from '../../kit/kit-element.js';
+import { SFX, HX, ctx } from '../../kit/kit-runtime.js';
 
-const SWEEP = 270; // degrees of travel
-const START = -135; // degrees from 12 o'clock
+/** Knob variants, lifted verbatim from the kit's Knobs section (lines 708-711). */
+export type HyKnobVariant = 'precision' | 'standard' | 'minimal' | 'dial';
 
 /**
- * A rotary knob — drag vertically (or use ↑/↓) to set a value. The pointer and
- * an accent arc show the value; nothing is written in words.
+ * A rotary knob — extracted verbatim from the Tactile Kit. Drag vertically (or
+ * scroll) to turn; value is shown only by the pointer's rotation, never in words.
+ * Each detent clicks (audio + haptic) exactly as it does in the kit.
+ *
+ * Four faithful variants:
+ *  - `precision` — the etched 140px scale ring (kit `.kscale`, with `buildRing`)
+ *  - `standard`  — the 104px collar knob with an accent dot (kit `.kplain`)
+ *  - `minimal`   — the bare 78px knob with an accent line (kit `.ksmall`)
+ *  - `dial`      — the outlined sphere with a concave dimple (kit `.kdial`)
  *
  * @element hy-knob
- * @fires hy-input - `detail.value` as the knob turns.
+ * @fires hy-input  - `detail.value` as the knob turns.
  * @fires hy-change - `detail.value` on release.
  */
 @customElement('hy-knob')
-export class HyKnob extends LitElement {
+export class HyKnob extends KitElement {
+  @property() variant: HyKnobVariant = 'precision';
   @property({ type: Number }) min = 0;
   @property({ type: Number }) max = 100;
-  @property({ type: Number }) value = 50;
-  @property({ type: Number }) size = 72;
-  @property({ type: Boolean, reflect: true }) disabled = false;
+  @property({ type: Number }) value = 40;
 
-  static styles = css`
-    :host {
-      display: inline-flex;
-      touch-action: none;
-    }
-    .dial {
-      position: relative;
-      border-radius: 50%;
-      cursor: ns-resize;
-      background:
-        repeating-radial-gradient(
-            circle at 50% 50%,
-            rgba(255, 255, 255, 0.05) 0 0.5px,
-            transparent 0.5px 2.5px,
-            rgba(0, 0, 0, 0.08) 2.5px 3px,
-            transparent 3px 5.5px
-          ),
-        radial-gradient(circle at 50% 32%, var(--control-surface-high, #2c2c34), var(--control-surface, #16161a) 72%);
-      box-shadow:
-        inset 0 1px 0 var(--control-rim, rgba(255, 255, 255, 0.16)),
-        inset 0 -3px 6px var(--control-groove, #050506),
-        0 3px 6px rgba(0, 0, 0, 0.5);
-      outline: none;
-    }
-    .dial:focus-visible {
-      box-shadow:
-        inset 0 1px 0 var(--control-rim, rgba(255, 255, 255, 0.16)),
-        0 0 0 2px var(--color-border-focus, #8e7bff);
-    }
-    :host([disabled]) .dial {
-      cursor: not-allowed;
-      opacity: 0.5;
-    }
-    svg {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      overflow: visible;
-    }
-    .track {
-      fill: none;
-      stroke: var(--control-groove, #050506);
-      stroke-linecap: round;
-    }
-    .fill {
-      fill: none;
-      stroke: var(--color-action-primary, #8e7bff);
-      stroke-linecap: round;
-    }
-    .pointer {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 2px;
-      height: 38%;
-      margin-left: -1px;
-      border-radius: 2px;
-      background: var(--control-indicator, #6b6760);
-      transform-origin: 50% 100%;
-    }
-  `;
+  @query('.knob-root') private _el!: HTMLElement;
+  @query('.kscale svg') private _svg?: SVGSVGElement;
 
-  private _dragging = false;
-  private _startY = 0;
-  private _startVal = 0;
+  // The rendered read-out (the kit shows a numeric `.cval` beside each knob).
+  @state() private _display = 0;
 
-  private get _ratio() {
-    const r = (this.value - this.min) / (this.max - this.min);
-    return Math.min(1, Math.max(0, isFinite(r) ? r : 0));
+  static styles = KitElement.kitStyles;
+
+  firstUpdated() {
+    if (this.variant === 'precision' && this._svg) this._buildRing(this._svg, 70, 70, 68, 50);
+    this._makeKnob(this._el, (v: number) => {
+      this._display = Math.round(v);
+    });
   }
 
-  private _arc(ratio: number) {
-    // describe an SVG arc on a 100x100 viewBox, radius 42, centre 50,50
-    const a0 = (START - 90) * (Math.PI / 180);
-    const a1 = (START + SWEEP * ratio - 90) * (Math.PI / 180);
-    const r = 42;
-    const x0 = 50 + r * Math.cos(a0);
-    const y0 = 50 + r * Math.sin(a0);
-    const x1 = 50 + r * Math.cos(a1);
-    const y1 = 50 + r * Math.sin(a1);
-    const large = SWEEP * ratio > 180 ? 1 : 0;
-    return `M ${x0} ${y0} A ${r} ${r} 0 ${large} 1 ${x1} ${y1}`;
+  /** Verbatim from the kit (line 976): draw the etched scale ring into the svg. */
+  private _buildRing(svg: SVGSVGElement, cx: number, cy: number, Ro: number, Ri: number) {
+    const N = 27;
+    let h = '';
+    for (let i = 0; i <= N; i++) {
+      const a = (-135 + (270 / N) * i) * Math.PI / 180;
+      const maj = i % Math.round(N / 4) === 0;
+      const r1 = maj ? Ri + 4 : Ri + 7;
+      const x1 = cx + r1 * Math.sin(a),
+        y1 = cy - r1 * Math.cos(a);
+      const x2 = cx + (Ro - 2) * Math.sin(a),
+        y2 = cy - (Ro - 2) * Math.cos(a);
+      h += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="currentColor" stroke-width="${maj ? 1.5 : 1}" opacity="${maj ? 0.6 : 0.3}"/>`;
+      if (maj && i > 0 && i < N) {
+        const v = Math.round((i / N) * 100);
+        const tr = r1 - 7,
+          tx = cx + tr * Math.sin(a),
+          ty = cy - tr * Math.cos(a);
+        h += `<text x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" fill="currentColor" font-family="ui-monospace,monospace" font-size="7.5" opacity=".45">${v}</text>`;
+      }
+    }
+    h += `<circle cx="${cx}" cy="${cy}" r="${Ro - 1.5}" fill="none" stroke="currentColor" stroke-width=".8" opacity=".18"/>`;
+    svg.innerHTML = h;
   }
 
-  private _set(v: number, change = false) {
-    const clamped = Math.min(this.max, Math.max(this.min, v));
-    if (clamped === this.value && !change) return;
-    this.value = clamped;
-    this.dispatchEvent(
-      new CustomEvent(change ? 'hy-change' : 'hy-input', {
-        detail: { value: this.value },
-        bubbles: true,
-        composed: true,
-      })
+  /** Verbatim from the kit (line 979): drag / wheel to turn, click per detent. */
+  private _makeKnob(el: HTMLElement, onChg: (v: number, t: number) => void) {
+    const rotEl = (el.querySelector('.rot') || el.querySelector('.kface')) as HTMLElement;
+    const min = this.min,
+      max = this.max;
+    let val = this.value,
+      prevS = -999;
+    const render = () => {
+      const t = (val - min) / (max - min);
+      rotEl.style.transform = `rotate(${-135 + 270 * t}deg)`;
+      this.value = val;
+      onChg(val, t);
+    };
+    let drag = false,
+      sy = 0,
+      sv = 0;
+    el.addEventListener('pointerdown', (e: any) => {
+      drag = true;
+      sy = (e.touches ? e.touches[0] : e).clientY;
+      sv = val;
+      el.setPointerCapture?.(e.pointerId);
+      e.preventDefault();
+      ctx();
+    });
+    window.addEventListener('pointermove', (e: any) => {
+      if (!drag) return;
+      const y = (e.touches ? e.touches[0] : e).clientY;
+      val = Math.max(min, Math.min(max, sv + (sy - y) / 165 * (max - min)));
+      const s = Math.floor((val - min) / (max - min) * 20);
+      if (s !== prevS) {
+        SFX.tick();
+        HX.tick();
+        prevS = s;
+      }
+      render();
+      this._emit('hy-input');
+    });
+    window.addEventListener('pointerup', () => {
+      if (drag) {
+        drag = false;
+        this._emit('hy-change');
+      }
+    });
+    el.addEventListener(
+      'wheel',
+      (e: WheelEvent) => {
+        e.preventDefault();
+        const ps = Math.floor((val - min) / (max - min) * 20);
+        val = Math.max(min, Math.min(max, val - Math.sign(e.deltaY) * (max - min) / 40));
+        if (Math.floor((val - min) / (max - min) * 20) !== ps) {
+          SFX.tick();
+          HX.tick();
+        }
+        render();
+        this._emit('hy-input');
+        this._emit('hy-change');
+      },
+      { passive: false }
     );
+    render();
   }
 
-  private _onDown(e: PointerEvent) {
-    if (this.disabled) return;
-    this._dragging = true;
-    this._startY = e.clientY;
-    this._startVal = this.value;
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  private _emit(type: 'hy-input' | 'hy-change') {
+    this.dispatchEvent(new CustomEvent(type, { detail: { value: this.value }, bubbles: true, composed: true }));
   }
 
-  private _onMove(e: PointerEvent) {
-    if (!this._dragging) return;
-    const dy = this._startY - e.clientY;
-    const range = this.max - this.min;
-    this._set(this._startVal + (dy / 160) * range);
+  private _face() {
+    switch (this.variant) {
+      case 'standard':
+        return html`<div class="kface"><div class="kdot"></div></div>`;
+      case 'minimal':
+        return html`<div class="kface"><div class="kind"></div></div>`;
+      case 'dial':
+        return html`<div class="dsphere"></div><div class="kface"><div class="ddimple"></div></div>`;
+      case 'precision':
+      default:
+        return html`<svg viewBox="0 0 140 140"></svg><div class="kface"><div class="kind"></div></div>`;
+    }
   }
 
-  private _onUp(e: PointerEvent) {
-    if (!this._dragging) return;
-    this._dragging = false;
-    (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
-    this._set(this.value, true);
-  }
-
-  private _onKey(e: KeyboardEvent) {
-    const step = (this.max - this.min) / 100;
-    if (e.key === 'ArrowUp' || e.key === 'ArrowRight') this._set(this.value + step * 5, true);
-    else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') this._set(this.value - step * 5, true);
-    else return;
-    e.preventDefault();
+  private _cls() {
+    return { precision: 'kscale', standard: 'kplain', minimal: 'ksmall', dial: 'kdial' }[this.variant];
   }
 
   render() {
-    const ratio = this._ratio;
-    const angle = START + SWEEP * ratio;
     return html`
-      <div
-        class="dial"
-        part="dial"
-        style="width:${this.size}px;height:${this.size}px"
-        role="slider"
-        tabindex=${this.disabled ? -1 : 0}
-        aria-valuemin=${this.min}
-        aria-valuemax=${this.max}
-        aria-valuenow=${Math.round(this.value)}
-        @pointerdown=${this._onDown}
-        @pointermove=${this._onMove}
-        @pointerup=${this._onUp}
-        @pointercancel=${this._onUp}
-        @keydown=${this._onKey}
-      >
-        <svg viewBox="0 0 100 100">
-          <path class="track" d=${this._arc(1)} stroke-width="2.5"></path>
-          <path class="fill" d=${this._arc(ratio)} stroke-width="2.5"></path>
-        </svg>
-        <span class="pointer" style="transform:translateY(-100%) rotate(${angle}deg)"></span>
+      <div class="col">
+        <div
+          class="knob-root ${this._cls()}"
+          data-min=${this.min}
+          data-max=${this.max}
+          data-val=${this.value}
+        >
+          ${this._face()}
+        </div>
+        <div class="cval" part="value">${this._display}</div>
       </div>
     `;
+  }
+
+  // Keep the numeric read-out in sync when value is set programmatically.
+  protected updated(changed: PropertyValues) {
+    if (changed.has('value') && !Number.isNaN(this.value)) this._display = Math.round(this.value);
   }
 }
 
