@@ -1,93 +1,77 @@
-import { LitElement, css, html } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
-
-const SEGMENTS = 16;
+import { html } from 'lit';
+import { customElement, query, queryAll } from 'lit/decorators.js';
+import { KitElement } from '../../kit/kit-element.js';
 
 /**
- * A stereo level meter — segmented bars that fill with signal. A read-only state
- * display: level is shown by how much material lights, the top segments in the
- * danger hue. Set `live` to drive a gentle demo signal.
+ * A stereo segmented level meter — lifted verbatim from the Tactile Kit's Meters
+ * section. Read-only: the level is SHOWN by how much material lights (the top
+ * segments in the hot red hue), with a monospace peak read-out in the header.
+ * The signal self-animates exactly as the kit's demo does.
+ *
+ * Markup: tactile-kit.html line 784. Behaviour: lines 1016–1018.
  *
  * @element hy-meter
- * @attr left  - L level, 0–100.
- * @attr right - R level, 0–100.
- * @attr live  - Self-animate a demo signal.
  */
 @customElement('hy-meter')
-export class HyMeter extends LitElement {
-  @property({ type: Number }) left = 0;
-  @property({ type: Number }) right = 0;
-  @property({ type: Boolean, reflect: true }) live = false;
+export class HyMeter extends KitElement {
+  @query('.pk') private _pk!: HTMLSpanElement;
+  @queryAll('.mbars') private _rows!: NodeListOf<HTMLElement>;
 
-  @state() private _l = 0;
-  @state() private _r = 0;
+  static styles = KitElement.kitStyles;
 
   private _raf = 0;
+  private _reduced = false;
 
-  static styles = css`
-    :host {
-      display: inline-block;
-      font-family: var(--font-family-sans);
-    }
-    .meter {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      padding: 12px;
-      border-radius: var(--radius-md, 8px);
-      background: var(--control-surface, #16161a);
-      box-shadow: inset 0 1px 0 var(--control-rim-soft, rgba(255, 255, 255, 0.09));
-    }
-    .hd {
-      font-size: var(--font-size-micro, 9.5px);
-      letter-spacing: var(--font-tracking-label, 0.2em);
-      text-transform: uppercase;
-      color: var(--color-text-faint, rgba(236, 232, 228, 0.18));
-    }
-    .row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .ch {
-      width: 10px;
-      font-size: var(--font-size-micro, 9.5px);
-      color: var(--color-text-faint, rgba(236, 232, 228, 0.18));
-    }
-    .bars {
-      display: flex;
-      gap: 2px;
-      flex: 1;
-    }
-    .seg {
-      flex: 1;
-      height: 8px;
-      border-radius: 1px;
-      background: var(--control-groove, #050506);
-    }
-    .seg.on {
-      background: var(--color-action-primary, #8e7bff);
-    }
-    .seg.on.hot {
-      background: var(--color-feedback-warning, #e0941a);
-    }
-    .seg.on.peak {
-      background: var(--color-feedback-danger, #e5564b);
-    }
-  `;
+  firstUpdated() {
+    this._reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 
-  private _bars(level: number) {
-    const lit = Math.round((Math.min(100, Math.max(0, level)) / 100) * SEGMENTS);
-    return Array.from({ length: SEGMENTS }, (_, i) => {
-      const on = i < lit;
-      const cls = on ? (i >= SEGMENTS - 2 ? 'on peak' : i >= SEGMENTS - 5 ? 'on hot' : 'on') : '';
-      return html`<span class="seg ${cls}"></span>`;
-    });
-  }
+    // Verbatim (line 1016): N=22, fill each .mbars with N <i></i>, seed levels.
+    const N = 22;
+    const mkBars = (el: HTMLElement) => {
+      el.innerHTML = Array(N).fill('<i></i>').join('');
+      return [...el.children] as HTMLElement[];
+    };
+    const [rowL, rowR] = this._rows;
+    const bL = mkBars(rowL),
+      bR = mkBars(rowR);
+    const lvl = [0.42, 0.38];
 
-  connectedCallback() {
-    super.connectedCallback();
-    if (this.live) this._tick();
+    // Verbatim (line 1017): light segments, top three "hot".
+    const litBars = (bars: HTMLElement[], v: number) => {
+      const lit = Math.round(v * N);
+      bars.forEach((b, i) => {
+        if (i < lit) {
+          const hot = i >= N - 3;
+          b.style.background = hot ? '#e83020' : 'var(--acc)';
+          b.style.opacity = hot ? '1' : '.85';
+        } else {
+          b.style.background = 'var(--srf2)';
+          b.style.opacity = '1';
+        }
+      });
+    };
+
+    // Verbatim (line 1018): random-walk both channels, update header peak.
+    const animFrame = () => {
+      [bL, bR].forEach((bars, c) => {
+        const t = 0.18 + Math.random() * 0.65;
+        lvl[c] += (t - lvl[c]) * 0.28;
+        litBars(bars, lvl[c]);
+      });
+      const db = -20 + lvl[0] * 25;
+      this._pk.textContent = (db > 0 ? '+' : '') + db.toFixed(1) + ' dB';
+      this._raf = requestAnimationFrame(animFrame);
+    };
+
+    if (this._reduced) {
+      // One static frame, no RAF (like other Hyle canvas components).
+      litBars(bL, lvl[0]);
+      litBars(bR, lvl[1]);
+      const db = -20 + lvl[0] * 25;
+      this._pk.textContent = (db > 0 ? '+' : '') + db.toFixed(1) + ' dB';
+    } else {
+      animFrame();
+    }
   }
 
   disconnectedCallback() {
@@ -95,30 +79,12 @@ export class HyMeter extends LitElement {
     cancelAnimationFrame(this._raf);
   }
 
-  updated(changed: Map<string, unknown>) {
-    if (changed.has('live')) {
-      cancelAnimationFrame(this._raf);
-      if (this.live) this._tick();
-    }
-  }
-
-  private _tick = () => {
-    // Smooth, bounded wander — "alive" without churn.
-    const ease = (cur: number, target: number) => cur + (target - cur) * 0.12;
-    this._l = ease(this._l, 35 + Math.abs(Math.sin(performance.now() / 700)) * 55);
-    this._r = ease(this._r, 30 + Math.abs(Math.sin(performance.now() / 620 + 1)) * 58);
-    this.requestUpdate();
-    this._raf = requestAnimationFrame(this._tick);
-  };
-
   render() {
-    const l = this.live ? this._l : this.left;
-    const r = this.live ? this._r : this.right;
     return html`
-      <div class="meter" part="meter">
-        <div class="hd">Level</div>
-        <div class="row"><span class="ch">L</span><div class="bars">${this._bars(l)}</div></div>
-        <div class="row"><span class="ch">R</span><div class="bars">${this._bars(r)}</div></div>
+      <div class="meter">
+        <div class="meter-hd"><span>LEVEL</span><span class="pk">-inf</span></div>
+        <div class="mrow"><span class="mch">L</span><div class="mbars"></div></div>
+        <div class="mrow"><span class="mch">R</span><div class="mbars"></div></div>
       </div>
     `;
   }

@@ -16,10 +16,12 @@ export type { HyPaneDock } from './pane/hy-pane.js';
 export { HyPulse } from './pulse/hy-pulse.js';
 export type { HyPulseState } from './pulse/hy-pulse.js';
 
-// — Tactile controls (ported from the Tactile Kit) —
+// — Tactile controls (extracted verbatim from the Tactile Kit) —
 export { HyKnob } from './knob/hy-knob.js';
+export type { HyKnobVariant } from './knob/hy-knob.js';
 export { HyFader } from './fader/hy-fader.js';
 export { HyToggle } from './toggle/hy-toggle.js';
+export type { HyToggleVariant } from './toggle/hy-toggle.js';
 export { HyMeter } from './meter/hy-meter.js';
 export { HyVu } from './meter/hy-vu.js';
 export { HyScrollWheel } from './scroll-wheel/hy-scroll-wheel.js';
@@ -27,6 +29,7 @@ export { HySlider } from './slider/hy-slider.js';
 export type { HySliderVariant } from './slider/hy-slider.js';
 export { HyTransport } from './transport/hy-transport.js';
 export { HyKey } from './key/hy-key.js';
+export type { HyKeyVariant } from './key/hy-key.js';
 export { HyJoystick } from './joystick/hy-joystick.js';
 export { HyDial } from './dial/hy-dial.js';
 
@@ -38,7 +41,7 @@ export { HyGrille, HyJack } from './surface/hy-surface.js';
 // — Controls —
 export { HyChip } from './chip/hy-chip.js';
 export { HyButton } from './button/hy-button.js';
-export type { HyButtonVariant, HyButtonSize } from './button/hy-button.js';
+export type { HyButtonVariant, HyButtonIcon } from './button/hy-button.js';
 export { HyInput } from './input/hy-input.js';
 export type { HyInputSize } from './input/hy-input.js';
 
@@ -46,9 +49,8 @@ export type { HyInputSize } from './input/hy-input.js';
 export { HyCard } from './card/hy-card.js';
 export type { HyCardElevation } from './card/hy-card.js';
 
-// — Colour —
+// — Colour (the kit's 3D THREE.js picker, verbatim) —
 export { HyColorPicker } from './color-picker/hy-color-picker.js';
-export type { HyColorSpace } from './color-picker/hy-color-picker.js';
 
 // — Iconography —
 export { HyIcon } from './icon/hy-icon.js';

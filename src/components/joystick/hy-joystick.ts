@@ -1,155 +1,174 @@
-import { LitElement, css, html, svg } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { html } from 'lit';
+import { customElement } from 'lit/decorators.js';
+import { KitElement } from '../../kit/kit-element.js';
+import { SFX, HX, ctx } from '../../kit/kit-runtime.js';
 
 /**
- * A joystick. Drag the knob in its bowl; direction arrows light as you push.
- * Releases back to centre unless `sticky`. Reports a normalised vector.
+ * An analogue joystick — extracted verbatim from the Tactile Kit's
+ * "Dial & Joystick" section (line 778, behaviour lines 843–869). Drag the knob
+ * within its bowl; the four direction arrows glow as you push and the knob
+ * springs back to centre on release. The travel edge ticks (haptic); the
+ * release clicks (audio).
  *
  * @element hy-joystick
- * @fires hy-move - `detail.x`, `detail.y` in -1..1.
- * @fires hy-end  - on release.
+ * @fires hy-input  - `detail.{x,y}` normalised -1..1 as the stick moves.
+ * @fires hy-change - `detail.{x:0,y:0}` on release.
  */
 @customElement('hy-joystick')
-export class HyJoystick extends LitElement {
-  @property({ type: Boolean }) sticky = false;
-  @property({ type: Number }) size = 120;
-  @property({ type: Boolean, reflect: true }) disabled = false;
+export class HyJoystick extends KitElement {
+  static styles = KitElement.kitStyles;
 
-  @state() private _x = 0;
-  @state() private _y = 0;
-  private _dragging = false;
+  firstUpdated() {
+    const emit = (type: 'hy-input' | 'hy-change', x: number, y: number) =>
+      this.dispatchEvent(new CustomEvent(type, { detail: { x, y }, bubbles: true, composed: true }));
 
-  static styles = css`
-    :host {
-      display: inline-block;
-      touch-action: none;
-    }
-    .wrap {
-      position: relative;
-    }
-    .housing {
-      position: absolute;
-      inset: 14%;
-      border-radius: 50%;
-      background: radial-gradient(circle at 50% 35%, var(--control-surface-high, #2c2c34), var(--control-groove, #050506) 80%);
-      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.85), inset 0 1px 0 var(--control-rim-soft, rgba(255, 255, 255, 0.09));
-    }
-    .knob {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 38%;
-      height: 38%;
-      border-radius: 50%;
-      cursor: grab;
-      background: radial-gradient(circle at 50% 32%, var(--control-surface-high, #2c2c34), var(--control-surface, #16161a) 72%);
-      box-shadow: inset 0 1px 0 var(--control-rim, rgba(255, 255, 255, 0.16)), 0 3px 8px rgba(0, 0, 0, 0.6);
-      transition: transform 60ms linear;
-    }
-    .knob:active {
-      cursor: grabbing;
-    }
-    .arrow {
-      fill: var(--control-indicator, #6b6760);
-      transition: fill var(--duration-instant, 120ms) var(--easing-standard, ease);
-    }
-    .arrow.on {
-      fill: var(--color-action-primary, #8e7bff);
-    }
-    :host([disabled]) .knob {
-      cursor: not-allowed;
-      opacity: 0.5;
-    }
-  `;
-
-  private _emit(type: 'hy-move' | 'hy-end') {
-    this.dispatchEvent(
-      new CustomEvent(type, { detail: { x: this._x, y: this._y }, bubbles: true, composed: true })
-    );
-  }
-
-  private _onDown(e: PointerEvent) {
-    if (this.disabled) return;
-    this._dragging = true;
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    this._move(e);
-  }
-  private _move(e: PointerEvent) {
-    if (!this._dragging) return;
-    const host = this.getBoundingClientRect();
-    const cx = host.left + host.width / 2;
-    const cy = host.top + host.height / 2;
-    const r = host.width * 0.31; // travel radius
-    let dx = (e.clientX - cx) / r;
-    let dy = (e.clientY - cy) / r;
-    const mag = Math.hypot(dx, dy);
-    if (mag > 1) {
-      dx /= mag;
-      dy /= mag;
-    }
-    this._x = dx;
-    this._y = -dy; // up is positive
-    this._emit('hy-move');
-  }
-  private _onUp(e: PointerEvent) {
-    if (!this._dragging) return;
-    this._dragging = false;
-    (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
-    if (!this.sticky) {
-      this._x = 0;
-      this._y = 0;
-    }
-    this._emit('hy-end');
-  }
-  private _onKey(e: KeyboardEvent) {
-    const d: Record<string, [number, number]> = {
-      ArrowUp: [0, 1],
-      ArrowDown: [0, -1],
-      ArrowLeft: [-1, 0],
-      ArrowRight: [1, 0],
-    };
-    if (!d[e.key]) return;
-    e.preventDefault();
-    this._x = d[e.key][0];
-    this._y = d[e.key][1];
-    this._emit('hy-move');
+    // Verbatim from the kit (lines 843–857), scoped to the shadow root.
+    this.renderRoot.querySelectorAll('.joy2').forEach((stickEl) => {
+      const stick = stickEl as HTMLElement;
+      var housing = stick.querySelector('.j2-housing') as HTMLElement,
+        bowl = stick.querySelector('.j2-bowl') as HTMLElement,
+        knob = stick.querySelector('.j2-knob') as HTMLElement,
+        knobSh = stick.querySelector('.j2-ksh') as HTMLElement;
+      var A = {
+        up: stick.querySelector('.j2a-up') as HTMLElement,
+        down: stick.querySelector('.j2a-down') as HTMLElement,
+        left: stick.querySelector('.j2a-left') as HTMLElement,
+        right: stick.querySelector('.j2a-right') as HTMLElement,
+      };
+      A.up.dataset.base = 'translate(-50%,-50%)';
+      A.down.dataset.base = 'translate(-50%,-50%) rotate(180deg)';
+      A.left.dataset.base = 'translate(-50%,-50%) rotate(-90deg)';
+      A.right.dataset.base = 'translate(-50%,-50%) rotate(90deg)';
+      var cx = 0,
+        cy = 0,
+        maxTravel = 0,
+        baseDrop = 0,
+        active = false,
+        atEdge = false,
+        curx = 0,
+        cury = 0;
+      function measure() {
+        var r = housing.getBoundingClientRect();
+        cx = r.left + r.width / 2;
+        cy = r.top + r.height / 2;
+        var bR = bowl.getBoundingClientRect().width / 2,
+          kR = knob.getBoundingClientRect().width / 2;
+        maxTravel = bR - kR * 0.8;
+        baseDrop = kR * 0.16;
+        place(0, 0);
+      }
+      function place(dx: number, dy: number) {
+        knob.style.transform =
+          'translate(-50%,-50%) translate(' + dx.toFixed(1) + 'px,' + dy.toFixed(1) + 'px)';
+        knobSh.style.transform =
+          'translate(-50%,-50%) translate(' +
+          (dx * 1.12).toFixed(1) +
+          'px,' +
+          (dy * 1.12 + baseDrop).toFixed(1) +
+          'px)';
+      }
+      function setArrow(el: HTMLElement, t: number) {
+        el.style.filter =
+          'drop-shadow(0 0 ' +
+          (5 + t * 15).toFixed(1) +
+          'px rgba(var(--acc-rgb),.6)) drop-shadow(0 0 ' +
+          (3 + t * 4).toFixed(1) +
+          'px rgba(var(--acc-rgb),.6)) brightness(' +
+          (1 + t * 0.45).toFixed(2) +
+          ')';
+        el.style.transform = el.dataset.base + ' scale(' + (1 + t * 0.16).toFixed(2) + ')';
+      }
+      function render() {
+        setArrow(A.up, Math.max(0, cury));
+        setArrow(A.down, Math.max(0, -cury));
+        setArrow(A.right, Math.max(0, curx));
+        setArrow(A.left, Math.max(0, -curx));
+      }
+      function update(px: number, py: number) {
+        var dx = px - cx,
+          dy = py - cy;
+        var d = Math.hypot(dx, dy);
+        if (maxTravel > 0 && d > maxTravel) {
+          var k = maxTravel / d;
+          dx *= k;
+          dy *= k;
+          if (!atEdge) {
+            HX.tick();
+            atEdge = true;
+          }
+        } else atEdge = false;
+        place(dx, dy);
+        curx = maxTravel > 0 ? dx / maxTravel : 0;
+        cury = maxTravel > 0 ? -dy / maxTravel : 0;
+        render();
+        emit('hy-input', curx, cury);
+      }
+      function onDown(e: any) {
+        measure();
+        active = true;
+        atEdge = false;
+        stick.classList.add('active');
+        stick.classList.remove('snapping');
+        try {
+          housing.setPointerCapture(e.pointerId);
+        } catch (_) {}
+        ctx();
+        HX.tick();
+        var p = e.touches ? e.touches[0] : e;
+        update(p.clientX, p.clientY);
+        e.preventDefault();
+      }
+      function onMove(e: any) {
+        if (!active) return;
+        var p = e.touches ? e.touches[0] : e;
+        update(p.clientX, p.clientY);
+      }
+      function onUp() {
+        if (!active) return;
+        active = false;
+        stick.classList.remove('active');
+        stick.classList.add('snapping');
+        place(0, 0);
+        curx = 0;
+        cury = 0;
+        render();
+        SFX.click(0.12);
+        emit('hy-change', 0, 0);
+      }
+      housing.addEventListener('pointerdown', onDown);
+      housing.addEventListener('pointermove', onMove);
+      housing.addEventListener('pointerup', onUp);
+      housing.addEventListener('pointercancel', onUp);
+      housing.addEventListener('lostpointercapture', onUp);
+      window.addEventListener('resize', measure);
+      measure();
+    });
   }
 
   render() {
-    const s = this.size;
-    const travel = s * 0.31; // px
-    const tx = this._x * travel;
-    const ty = -this._y * travel;
-    const lit = (cond: boolean) => (cond ? 'arrow on' : 'arrow');
-    const T = 0.4;
     return html`
-      <div
-        class="wrap"
-        part="wrap"
-        style="width:${s}px;height:${s}px"
-        role="application"
-        aria-label="Joystick"
-        tabindex=${this.disabled ? -1 : 0}
-        @keydown=${this._onKey}
-      >
-        <svg viewBox="0 0 100 100" style="position:absolute;inset:0;width:100%;height:100%">
-          ${svg`
-            <polygon class=${lit(this._y > T)} points="50,2 56,12 44,12"/>
-            <polygon class=${lit(this._y < -T)} points="50,98 56,88 44,88"/>
-            <polygon class=${lit(this._x < -T)} points="2,50 12,44 12,56"/>
-            <polygon class=${lit(this._x > T)} points="98,50 88,44 88,56"/>
-          `}
-        </svg>
-        <div class="housing"></div>
-        <div
-          class="knob"
-          part="knob"
-          style="transform:translate(-50%,-50%) translate(${tx}px, ${ty}px)"
-          @pointerdown=${this._onDown}
-          @pointermove=${this._move}
-          @pointerup=${this._onUp}
-          @pointercancel=${this._onUp}
-        ></div>
+      <div class="joy2">
+        <span class="j2a j2a-up"
+          ><svg viewBox="0 0 28 26">
+            <polygon points="14,5 23.5,22 4.5,22" stroke-width="4" stroke-linejoin="round" /></svg
+        ></span>
+        <span class="j2a j2a-down"
+          ><svg viewBox="0 0 28 26">
+            <polygon points="14,5 23.5,22 4.5,22" stroke-width="4" stroke-linejoin="round" /></svg
+        ></span>
+        <span class="j2a j2a-left"
+          ><svg viewBox="0 0 28 26">
+            <polygon points="14,5 23.5,22 4.5,22" stroke-width="4" stroke-linejoin="round" /></svg
+        ></span>
+        <span class="j2a j2a-right"
+          ><svg viewBox="0 0 28 26">
+            <polygon points="14,5 23.5,22 4.5,22" stroke-width="4" stroke-linejoin="round" /></svg
+        ></span>
+        <div class="j2-housing">
+          <div class="j2-bowl"></div>
+          <div class="j2-ksh"></div>
+          <div class="j2-knob"></div>
+        </div>
       </div>
     `;
   }

@@ -1,166 +1,101 @@
-import { LitElement, css, html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { html, type PropertyValues } from 'lit';
+import { customElement, property, query, state } from 'lit/decorators.js';
+import { KitElement } from '../../kit/kit-element.js';
+import { ctx } from '../../kit/kit-runtime.js';
 
 /**
- * A vertical channel fader — drag the cap (or ↑/↓) to set a level. An accent
- * fill rises from the floor of the slot.
+ * A vertical channel fader — extracted verbatim from the Tactile Kit's Faders
+ * section (line 727). Drag the cap along its slot to set a level; the numeric
+ * read-out below mirrors the kit's `.cval`.
+ *
+ * The kit's `makeVFader` (line 992) has no per-detent sound — only a single
+ * `ctx()` on grab — so this control stays silent while moving, faithfully.
  *
  * @element hy-fader
- * @fires hy-input - `detail.value` as it moves.
+ * @fires hy-input  - `detail.value` as the cap moves.
  * @fires hy-change - `detail.value` on release.
  */
 @customElement('hy-fader')
-export class HyFader extends LitElement {
-  @property({ type: Number }) min = 0;
-  @property({ type: Number }) max = 100;
-  @property({ type: Number }) value = 60;
-  @property({ type: Number }) height = 168;
-  @property({ type: Boolean, reflect: true }) disabled = false;
+export class HyFader extends KitElement {
+  @property({ type: Number, reflect: true }) value = 72;
 
-  static styles = css`
-    :host {
-      display: inline-flex;
-      touch-action: none;
-    }
-    .body {
-      position: relative;
-      width: 36px;
-      display: flex;
-      justify-content: center;
-      cursor: ns-resize;
-      outline: none;
-    }
-    :host([disabled]) .body {
-      cursor: not-allowed;
-      opacity: 0.5;
-    }
-    .slot {
-      position: absolute;
-      top: 8px;
-      bottom: 8px;
-      width: 6px;
-      border-radius: 3px;
-      background: var(--control-groove, #050506);
-      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.9);
-      overflow: hidden;
-    }
-    .fill {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: var(--color-action-primary, #8e7bff);
-      opacity: 0.85;
-    }
-    .cap {
-      position: absolute;
-      width: 30px;
-      height: 16px;
-      margin-top: -8px;
-      border-radius: 4px;
-      background: linear-gradient(
-        180deg,
-        var(--control-surface-high, #2c2c34),
-        var(--control-surface, #16161a)
-      );
-      box-shadow:
-        inset 0 1px 0 var(--control-rim, rgba(255, 255, 255, 0.16)),
-        0 2px 4px rgba(0, 0, 0, 0.6);
-    }
-    .cap::after {
-      content: '';
-      position: absolute;
-      left: 4px;
-      right: 4px;
-      top: 50%;
-      height: 1px;
-      background: var(--control-groove, #050506);
-    }
-    .body:focus-visible .cap {
-      box-shadow: 0 0 0 2px var(--color-border-focus, #8e7bff);
-    }
-  `;
+  @query('.vf') private _el!: HTMLElement;
+  @query('.vf-cap') private _cap!: HTMLElement;
 
-  private _dragging = false;
+  // The rendered read-out (the kit shows a numeric `.cval` beneath each fader).
+  @state() private _display = 0;
 
-  private get _ratio() {
-    const r = (this.value - this.min) / (this.max - this.min);
-    return Math.min(1, Math.max(0, isFinite(r) ? r : 0));
+  static styles = KitElement.kitStyles;
+
+  firstUpdated() {
+    this._makeVFader(this._el, this._cap, (v: number) => {
+      this._display = Math.round(v);
+    });
   }
 
-  private _set(v: number, change = false) {
-    const clamped = Math.min(this.max, Math.max(this.min, v));
-    if (clamped === this.value && !change) return;
-    this.value = clamped;
-    this.dispatchEvent(
-      new CustomEvent(change ? 'hy-change' : 'hy-input', {
-        detail: { value: this.value },
-        bubbles: true,
-        composed: true,
-      })
-    );
+  /** Verbatim from the kit (line 992): drag the cap along its slot. */
+  private _makeVFader(wrap: HTMLElement, cap: HTMLElement, onChg: (v: number) => void) {
+    const CAP_H = 22;
+    let val = +(wrap.dataset.val as string) / 100,
+      drag = false;
+    const render = () => {
+      const slot = wrap.querySelector('.vf-slot') as HTMLElement,
+        h = slot.clientHeight || 180,
+        travel = h - CAP_H;
+      cap.style.top = (1 - val) * travel + 'px';
+      this.value = val * 100;
+      onChg(val * 100);
+    };
+    const fromE = (e: any) => {
+      const slot = wrap.querySelector('.vf-slot') as HTMLElement,
+        r = slot.getBoundingClientRect();
+      val = Math.max(0, Math.min(1, 1 - ((e.touches ? e.touches[0] : e).clientY - r.top) / (r.height - CAP_H)));
+      render();
+    };
+    wrap.addEventListener('pointerdown', (e: any) => {
+      drag = true;
+      fromE(e);
+      ctx();
+      this._emit('hy-input');
+    });
+    window.addEventListener('pointermove', (e: any) => {
+      if (drag) {
+        fromE(e);
+        this._emit('hy-input');
+      }
+    });
+    window.addEventListener('pointerup', () => {
+      if (drag) {
+        drag = false;
+        this._emit('hy-change');
+      }
+    });
+    requestAnimationFrame(render);
   }
 
-  private _fromClientY(clientY: number, el: HTMLElement) {
-    const rect = el.getBoundingClientRect();
-    const pad = 8 + 8; // top+bottom padding of the slot ends
-    const usable = rect.height - pad;
-    const y = clientY - (rect.top + 8);
-    const ratio = 1 - Math.min(1, Math.max(0, y / usable));
-    this._set(this.min + ratio * (this.max - this.min));
-  }
-
-  private _onDown(e: PointerEvent) {
-    if (this.disabled) return;
-    this._dragging = true;
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    this._fromClientY(e.clientY, e.currentTarget as HTMLElement);
-  }
-
-  private _onMove(e: PointerEvent) {
-    if (!this._dragging) return;
-    this._fromClientY(e.clientY, e.currentTarget as HTMLElement);
-  }
-
-  private _onUp(e: PointerEvent) {
-    if (!this._dragging) return;
-    this._dragging = false;
-    (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
-    this._set(this.value, true);
-  }
-
-  private _onKey(e: KeyboardEvent) {
-    const step = (this.max - this.min) / 20;
-    if (e.key === 'ArrowUp') this._set(this.value + step, true);
-    else if (e.key === 'ArrowDown') this._set(this.value - step, true);
-    else return;
-    e.preventDefault();
+  private _emit(type: 'hy-input' | 'hy-change') {
+    this.dispatchEvent(new CustomEvent(type, { detail: { value: this.value }, bubbles: true, composed: true }));
   }
 
   render() {
-    const ratio = this._ratio;
-    const capTop = 8 + (1 - ratio) * (this.height - 16); // centre of the cap
     return html`
-      <div
-        class="body"
-        part="body"
-        style="height:${this.height}px"
-        role="slider"
-        tabindex=${this.disabled ? -1 : 0}
-        aria-valuemin=${this.min}
-        aria-valuemax=${this.max}
-        aria-valuenow=${Math.round(this.value)}
-        aria-orientation="vertical"
-        @pointerdown=${this._onDown}
-        @pointermove=${this._onMove}
-        @pointerup=${this._onUp}
-        @pointercancel=${this._onUp}
-        @keydown=${this._onKey}
-      >
-        <div class="slot"><div class="fill" style="height:${ratio * 100}%"></div></div>
-        <div class="cap" part="cap" style="top:${capTop}px"></div>
+      <div class="col">
+        <div class="vf" data-val=${this.value}>
+          <div class="vf-body">
+            <div class="vf-slot"><div class="vf-cap"></div></div>
+            <div class="vf-scale">
+              <span>10</span><span>8</span><span>6</span><span>4</span><span>2</span><span>0</span>
+            </div>
+          </div>
+        </div>
+        <div class="cval" part="value">${this._display}</div>
       </div>
     `;
+  }
+
+  // Keep the numeric read-out in sync when value is set programmatically.
+  protected updated(changed: PropertyValues) {
+    if (changed.has('value') && !Number.isNaN(this.value)) this._display = Math.round(this.value);
   }
 }
 
