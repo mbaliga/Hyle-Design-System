@@ -2,7 +2,8 @@ import { LitElement, css, html } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 
 /**
- * The 3D colour picker — extracted verbatim from the Tactile Kit's Color section.
+ * The 3D colour picker — extracted verbatim from the Tactile Kit's Color section
+ * and mounted here as a drop-in web component.
  *
  * The kit's picker is a self-contained THREE.js application (a hue ring, an
  * HSV/RGB/Lab/HCL slice, a live 3D model of the space, a palette builder). It is
