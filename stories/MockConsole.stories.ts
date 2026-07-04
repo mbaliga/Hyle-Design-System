@@ -30,7 +30,7 @@ const col = (label: string, control: unknown) => html`
 
 export const Console: Story = {
   render: () => html`
-    <hy-field src="/field/form-world-bg.html" style="height:100vh; border-radius:0;">
+    <hy-field src="field/form-world-bg.html" style="height:100vh; border-radius:0;">
       <hy-pane dock="bottom" heading="Console" style="margin:16px;">
         <div style="display:flex; flex-direction:column; gap:18px;">
           <!-- top: screen + transport + meters -->

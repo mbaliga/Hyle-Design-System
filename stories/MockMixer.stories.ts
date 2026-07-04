@@ -35,7 +35,7 @@ const channel = (name: string, level: number, pan: number, muted = false) => htm
 
 export const Mixer: Story = {
   render: () => html`
-    <hy-field src="/field/form-world-bg.html" style="height:100vh; border-radius:0;">
+    <hy-field src="field/form-world-bg.html" style="height:100vh; border-radius:0;">
       <hy-pane dock="bottom" heading="Mixer · 4 ch" style="margin:18px;">
         <div style="display:flex; gap:28px; justify-content:center; align-items:flex-end; flex-wrap:wrap; padding:8px 4px;">
           ${channel('Ch A', 72, 40)} ${channel('Ch B', 50, 55)} ${channel('Ch C', 38, 50, true)}

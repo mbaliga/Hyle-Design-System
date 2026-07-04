@@ -25,13 +25,13 @@ const frame = (src: string, title: string) => html`
 /** The Form-World engine, full and interactive — the living background's source. */
 export const FormWorldEngine: Story = {
   name: 'The Field — Form-World (interactive)',
-  render: () => frame('/field/form-world.html', 'Form-World engine'),
+  render: () => frame('field/form-world.html', 'Form-World engine'),
 };
 
 /** The Tactile Kit in full, with its native orange default + user-selectable accent. */
 export const TactileKit: Story = {
   name: 'The Tactile Kit',
-  render: () => frame('/kit/tactile-kit.html', 'Tactile Kit'),
+  render: () => frame('kit/tactile-kit.html', 'Tactile Kit'),
 };
 
 /** The haptic scroll wheel. Drag / scroll / arrow keys — a click per detent. */

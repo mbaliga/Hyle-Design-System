@@ -21,8 +21,10 @@ import { customElement, property, query, state } from 'lit/decorators.js';
 export class HyColorPicker extends LitElement {
   /** Selected colour as a hex string. */
   @property({ reflect: true }) value = '#8e7bff';
-  /** Path to the generated standalone picker document. */
-  @property() src = '/kit/color-picker.html';
+  /** Path to the generated standalone picker document. Relative by default so it
+   *  resolves against the host document — works at a site root and under a
+   *  sub-path (e.g. GitHub Pages project sites). Set an absolute URL to override. */
+  @property() src = 'kit/color-picker.html';
 
   @query('iframe') private _frame?: HTMLIFrameElement;
   @state() private _height = 560;
