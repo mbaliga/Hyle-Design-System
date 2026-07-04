@@ -1,160 +1,112 @@
-import { LitElement, css, html } from 'lit';
+import { html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { KitElement } from '../../kit/kit-element.js';
+import { ctx } from '../../kit/kit-runtime.js';
 
-export type HySliderVariant = 'channel' | 'hairline' | 'minimal';
+/** Horizontal-slider variants, lifted verbatim from the kit's Sliders section (lines 717-721). */
+export type HySliderVariant = 'hairline' | 'channel' | 'minimal';
+
+/** The kit's per-variant default value (`data-val`): hsh=30, hsf=60, hsd=45. */
+const DEFAULTS: Record<HySliderVariant, number> = { hairline: 30, channel: 60, minimal: 45 };
 
 /**
- * A horizontal slider. `channel` is a filled track, `hairline` is a thin rail
- * (good for pan, with a centre origin), `minimal` is a rail with a dimple knob.
+ * A horizontal slider — extracted verbatim from the Tactile Kit. Drag anywhere on
+ * the track to set the value; a numeric `.cval` read-out sits beside it.
+ *
+ * Three faithful variants:
+ *  - `hairline` — the thin rail with a round thumb (kit `.hsh`, with `makeHSlider`)
+ *  - `channel`  — the inset filled track (kit `.hsf`, with `makeFSlider`; PAD=20,
+ *                 read-out wraps its value in `<em>`)
+ *  - `minimal`  — the rail with an end-cap and a dimple knob (kit `.hsd`, inline IIFE)
+ *
+ * These sliders carry no per-detent tick in the kit, so no sound is wired — only
+ * the shared `ctx()` is resumed on pointerdown, exactly as the kit does.
  *
  * @element hy-slider
  * @fires hy-input  - `detail.value` as it moves.
  * @fires hy-change - `detail.value` on release.
  */
 @customElement('hy-slider')
-export class HySlider extends LitElement {
-  @property({ type: Number }) min = 0;
-  @property({ type: Number }) max = 100;
-  @property({ type: Number }) value = 50;
+export class HySlider extends KitElement {
   @property({ reflect: true }) variant: HySliderVariant = 'channel';
-  /** `start` fills from the left; `center` fills from the middle (pan). */
-  @property() origin: 'start' | 'center' = 'start';
-  @property({ type: Boolean, reflect: true }) disabled = false;
+  @property({ type: Number, reflect: true }) value = NaN;
 
-  static styles = css`
-    :host {
-      display: block;
-      touch-action: none;
-    }
-    .track {
-      position: relative;
-      height: 28px;
-      display: flex;
-      align-items: center;
-      cursor: pointer;
-      outline: none;
-    }
-    :host([disabled]) .track {
-      cursor: not-allowed;
-      opacity: 0.5;
-    }
-    .rail {
-      position: absolute;
-      left: 0;
-      right: 0;
-      height: 4px;
-      border-radius: 2px;
-      background: var(--control-groove, #050506);
-      box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.9);
-    }
-    :host([variant='hairline']) .rail {
-      height: 2px;
-    }
-    .fill {
-      position: absolute;
-      height: inherit;
-      border-radius: 2px;
-      background: var(--color-action-primary, #8e7bff);
-      opacity: 0.85;
-    }
-    .thumb {
-      position: absolute;
-      width: 16px;
-      height: 16px;
-      margin-left: -8px;
-      border-radius: 50%;
-      background: linear-gradient(180deg, var(--control-surface-high, #2c2c34), var(--control-surface, #16161a));
-      box-shadow: inset 0 1px 0 var(--control-rim, rgba(255, 255, 255, 0.16)), 0 2px 4px rgba(0, 0, 0, 0.6);
-    }
-    :host([variant='minimal']) .thumb::after {
-      content: '';
-      position: absolute;
-      inset: 5px;
-      border-radius: 50%;
-      background: var(--control-groove, #050506);
-    }
-    .track:focus-visible .thumb {
-      box-shadow: 0 0 0 2px var(--color-border-focus, #8e7bff);
-    }
-  `;
+  static styles = KitElement.kitStyles;
 
-  private _dragging = false;
-
-  private get _ratio() {
-    const r = (this.value - this.min) / (this.max - this.min);
-    return Math.min(1, Math.max(0, isFinite(r) ? r : 0));
+  willUpdate() {
+    if (Number.isNaN(this.value)) this.value = DEFAULTS[this.variant];
   }
 
-  private _set(v: number, change = false) {
-    const clamped = Math.min(this.max, Math.max(this.min, v));
-    if (clamped === this.value && !change) return;
-    this.value = clamped;
-    this.dispatchEvent(
-      new CustomEvent(change ? 'hy-change' : 'hy-input', {
-        detail: { value: this.value },
-        bubbles: true,
-        composed: true,
-      })
-    );
+  firstUpdated() {
+    const root = this.renderRoot as unknown as HTMLElement;
+    const disp = root.querySelector('.cval') as HTMLElement;
+    if (this.variant === 'hairline') {
+      const wrap = root.querySelector('.hsh') as HTMLElement;
+      this._makeHSlider(wrap, wrap.querySelector('.fill') as HTMLElement, wrap.querySelector('.thumb') as HTMLElement, disp);
+    } else if (this.variant === 'minimal') {
+      const wrap = root.querySelector('.hsd') as HTMLElement;
+      this._makeDSlider(wrap, wrap.querySelector('.knob') as HTMLElement, disp);
+    } else {
+      const wrap = root.querySelector('.hsf') as HTMLElement;
+      this._makeFSlider(wrap, wrap.querySelector('.fill') as HTMLElement, wrap.querySelector('.thumb') as HTMLElement, disp);
+    }
   }
 
-  private _fromClientX(clientX: number, el: HTMLElement) {
-    const rect = el.getBoundingClientRect();
-    const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
-    this._set(this.min + ratio * (this.max - this.min));
+  private _emit(type: 'hy-input' | 'hy-change') {
+    this.dispatchEvent(new CustomEvent(type, { detail: { value: this.value }, bubbles: true, composed: true }));
   }
 
-  private _onDown(e: PointerEvent) {
-    if (this.disabled) return;
-    this._dragging = true;
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    this._fromClientX(e.clientX, e.currentTarget as HTMLElement);
+  /** Verbatim from the kit (line 986): the hairline slider. */
+  private _makeHSlider(wrap: HTMLElement, fill: HTMLElement, thumb: HTMLElement, disp: HTMLElement) {
+    let val = +wrap.dataset.val! / 100, drag = false;
+    const render = () => { const w = wrap.clientWidth, px = val * w; fill.style.width = px + 'px'; thumb.style.left = px + 'px'; if (disp) disp.textContent = Math.round(val * 100) + '%'; this.value = val * 100; };
+    const fromE = (e: any) => { const r = wrap.getBoundingClientRect(); val = Math.max(0, Math.min(1, ((e.touches ? e.touches[0] : e).clientX - r.left) / r.width)); render(); this._emit('hy-input'); };
+    wrap.addEventListener('pointerdown', e => { drag = true; fromE(e); ctx(); });
+    window.addEventListener('pointermove', e => { if (drag) fromE(e); });
+    window.addEventListener('pointerup', () => { if (drag) { drag = false; this._emit('hy-change'); } });
+    requestAnimationFrame(render);
   }
-  private _onMove(e: PointerEvent) {
-    if (this._dragging) this._fromClientX(e.clientX, e.currentTarget as HTMLElement);
+
+  /** Verbatim from the kit (line 989): the channel slider (PAD=20, `<em>` read-out). */
+  private _makeFSlider(wrap: HTMLElement, fill: HTMLElement, thumb: HTMLElement, disp: HTMLElement) {
+    const PAD = 20;
+    let val = +wrap.dataset.val! / 100, drag = false;
+    const render = () => { const w = wrap.clientWidth - PAD * 2, px = PAD + val * w; fill.style.width = (val * 100) + '%'; thumb.style.left = px + 'px'; if (disp) disp.innerHTML = `<em>${Math.round(val * 100)}%</em>`; this.value = val * 100; };
+    const fromE = (e: any) => { const r = wrap.getBoundingClientRect(); val = Math.max(0, Math.min(1, ((e.touches ? e.touches[0] : e).clientX - r.left - PAD) / (r.width - PAD * 2))); render(); this._emit('hy-input'); };
+    wrap.addEventListener('pointerdown', e => { drag = true; fromE(e); ctx(); });
+    window.addEventListener('pointermove', e => { if (drag) fromE(e); });
+    window.addEventListener('pointerup', () => { if (drag) { drag = false; this._emit('hy-change'); } });
+    requestAnimationFrame(render);
   }
-  private _onUp(e: PointerEvent) {
-    if (!this._dragging) return;
-    this._dragging = false;
-    (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
-    this._set(this.value, true);
+
+  /** Verbatim from the kit (line 1000): the minimal / dimple slider (inline IIFE). */
+  private _makeDSlider(wrap: HTMLElement, k: HTMLElement, d: HTMLElement) {
+    let val = +wrap.dataset.val! / 100, drag = false;
+    const render = () => { const px = 10 + val * (wrap.clientWidth - 28); k.style.left = px + 'px'; if (d) d.textContent = Math.round(val * 100) + '%'; this.value = val * 100; };
+    const fromE = (e: any) => { const r = wrap.getBoundingClientRect(); val = Math.max(0, Math.min(1, ((e.touches ? e.touches[0] : e).clientX - r.left - 10) / (r.width - 28))); render(); this._emit('hy-input'); };
+    wrap.addEventListener('pointerdown', e => { drag = true; fromE(e); ctx(); });
+    window.addEventListener('pointermove', e => { if (drag) fromE(e); });
+    window.addEventListener('pointerup', () => { if (drag) { drag = false; this._emit('hy-change'); } });
+    requestAnimationFrame(render);
   }
-  private _onKey(e: KeyboardEvent) {
-    const step = (this.max - this.min) / 100;
-    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') this._set(this.value + step * 2, true);
-    else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') this._set(this.value - step * 2, true);
-    else return;
-    e.preventDefault();
+
+  private _slider() {
+    switch (this.variant) {
+      case 'hairline':
+        return html`<div class="hsh" data-val=${this.value}><div class="rail"></div><div class="fill"></div><div class="thumb"></div></div>`;
+      case 'minimal':
+        return html`<div class="hsd" data-val=${this.value}><div class="rail"></div><div class="end"></div><div class="knob"></div></div>`;
+      case 'channel':
+      default:
+        return html`<div class="hsf" data-val=${this.value}><div class="track"><div class="fill"></div></div><div class="thumb"></div></div>`;
+    }
   }
 
   render() {
-    const ratio = this._ratio;
-    const pct = ratio * 100;
-    // fill geometry depends on origin
-    const fill =
-      this.origin === 'center'
-        ? pct >= 50
-          ? `left:50%; width:${pct - 50}%`
-          : `left:${pct}%; width:${50 - pct}%`
-        : `left:0; width:${pct}%`;
     return html`
-      <div
-        class="track"
-        part="track"
-        role="slider"
-        tabindex=${this.disabled ? -1 : 0}
-        aria-valuemin=${this.min}
-        aria-valuemax=${this.max}
-        aria-valuenow=${Math.round(this.value)}
-        @pointerdown=${this._onDown}
-        @pointermove=${this._onMove}
-        @pointerup=${this._onUp}
-        @pointercancel=${this._onUp}
-        @keydown=${this._onKey}
-      >
-        <div class="rail"></div>
-        ${this.variant === 'hairline' ? '' : html`<div class="fill" style=${fill}></div>`}
-        <div class="thumb" part="thumb" style="left:${pct}%"></div>
+      <div class="col" style="width:100%;gap:6px">
+        ${this._slider()}
+        <div class="cval" part="value"></div>
       </div>
     `;
   }

@@ -1,63 +1,53 @@
-import { LitElement, css, html } from 'lit';
+import { css, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { KitElement } from '../../kit/kit-element.js';
 
 /**
- * A speaker grille — a perforated panel surface. Decorative; reads as a real
- * acoustic surface (the "as found" honesty of brutalism).
+ * A speaker grille — a perforated panel surface, lifted verbatim from the kit's
+ * Surfaces section (line 808: `<div class="grille" style="width:100%;height:64px"></div>`).
+ * The kit's `.grille` class carries the whole perforated look; the element fills
+ * the host width and takes its height from the `height` property.
  *
  * @element hy-grille
  */
 @customElement('hy-grille')
-export class HyGrille extends LitElement {
-  @property({ type: Number }) height = 64;
+export class HyGrille extends KitElement {
+  @property() height = '64px';
 
-  static styles = css`
-    :host {
-      display: block;
-    }
-    .grille {
-      width: 100%;
-      border-radius: var(--radius-md, 8px);
-      background-color: var(--control-surface, #16161a);
-      background-image: radial-gradient(var(--control-groove, #050506) 1.1px, transparent 1.4px);
-      background-size: 7px 7px;
-      box-shadow: inset 0 1px 0 var(--control-rim-soft, rgba(255, 255, 255, 0.09)), inset 0 0 18px rgba(0, 0, 0, 0.5);
-    }
-  `;
+  static styles = [
+    KitElement.kitStyles,
+    css`
+      :host {
+        display: block;
+      }
+    `,
+  ];
 
   render() {
-    return html`<div class="grille" part="grille" style="height:${this.height}px"></div>`;
+    return html`<div class="grille" part="grille" style="width:100%;height:${this.height}"></div>`;
   }
 }
 
 /**
- * A panel jack / socket. Concentric machined ring around a dark bore.
+ * A panel jack / socket — lifted verbatim from the kit's Surfaces section
+ * (line 811: `<div class="jack"></div>`). The kit's `.jack` class carries the
+ * whole machined-socket look, including its size.
  *
  * @element hy-jack
  */
 @customElement('hy-jack')
-export class HyJack extends LitElement {
-  @property({ type: Number }) size = 36;
-
-  static styles = css`
-    :host {
-      display: inline-block;
-    }
-    .jack {
-      border-radius: 50%;
-      background: radial-gradient(
-        circle at 50% 42%,
-        #000 0 22%,
-        var(--control-groove, #050506) 23% 40%,
-        var(--control-surface-high, #2c2c34) 41% 70%,
-        var(--control-surface, #16161a) 71% 100%
-      );
-      box-shadow: inset 0 1px 0 var(--control-rim, rgba(255, 255, 255, 0.16)), 0 1px 3px rgba(0, 0, 0, 0.6);
-    }
-  `;
+export class HyJack extends KitElement {
+  static styles = [
+    KitElement.kitStyles,
+    css`
+      :host {
+        display: inline-block;
+      }
+    `,
+  ];
 
   render() {
-    return html`<div class="jack" part="jack" style="width:${this.size}px;height:${this.size}px"></div>`;
+    return html`<div class="jack" part="jack"></div>`;
   }
 }
 

@@ -1,125 +1,95 @@
-import { LitElement, css, html, svg } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
-
-const MAX_ANGLE = 52; // degrees either side of centre
+import { html } from 'lit';
+import { customElement, query } from 'lit/decorators.js';
+import { KitElement } from '../../kit/kit-element.js';
 
 /**
- * An analogue VU meter — a needle that swings with the signal, ballistic and
- * unhurried. Read-only: the level is the needle's angle, nothing is spelled out.
+ * An analogue VU meter — lifted verbatim from the Tactile Kit's Meters section.
+ * A needle swings across an etched scale (red past 0 dB); read-only, the level is
+ * the needle's angle. The scale is drawn by the kit's exact builder and the
+ * needle self-animates exactly as the kit's demo does.
+ *
+ * Markup: tactile-kit.html line 785. Scale: line 1014. Needle: line 1018.
  *
  * @element hy-vu
- * @attr value - 0–100.
- * @attr live  - Self-animate a demo signal with realistic needle inertia.
  */
 @customElement('hy-vu')
-export class HyVu extends LitElement {
-  @property({ type: Number }) value = 0;
-  @property({ type: Boolean, reflect: true }) live = false;
+export class HyVu extends KitElement {
+  @query('.vu-sc') private _g!: SVGGElement;
+  @query('.vu-needle') private _needle!: SVGLineElement;
 
-  @state() private _shown = 0;
+  static styles = KitElement.kitStyles;
+
   private _raf = 0;
+  private _reduced = false;
 
-  static styles = css`
-    :host {
-      display: inline-block;
-    }
-    .face {
-      width: 240px;
-      max-width: 100%;
-      padding: 14px 16px 10px;
-      border-radius: var(--radius-md, 8px);
-      background: linear-gradient(180deg, #1b1a16, #100f0c);
-      box-shadow: inset 0 1px 0 var(--control-rim-soft, rgba(255, 255, 255, 0.09));
-    }
-    svg {
-      display: block;
-      width: 100%;
-      height: auto;
-    }
-    .arc {
-      fill: none;
-      stroke: var(--control-indicator, #6b6760);
-      stroke-width: 1.5;
-    }
-    .arc.hot {
-      stroke: var(--color-feedback-danger, #e5564b);
-      stroke-width: 2.5;
-    }
-    .tick {
-      stroke: var(--control-indicator, #6b6760);
-      stroke-width: 1.5;
-    }
-    .needle {
-      stroke: var(--color-text-primary, rgba(236, 232, 228, 0.92));
-      stroke-width: 2;
-      stroke-linecap: round;
-    }
-    .pivot {
-      fill: var(--control-edge, #3a3a44);
-    }
-    .lbl {
-      font-family: var(--font-family-sans);
-      font-size: 9px;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      fill: var(--color-text-faint, rgba(236, 232, 228, 0.18));
-    }
-  `;
+  firstUpdated() {
+    this._reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 
-  private _pt(angleDeg: number, radius: number, cx = 120, cy = 104) {
-    const a = (angleDeg * Math.PI) / 180;
-    return { x: cx + radius * Math.sin(a), y: cy - radius * Math.cos(a) };
+    // Verbatim scale-builder IIFE (line 1014).
+    ((g: SVGGElement) => {
+      const cx = 180,
+        cy = 88,
+        R = 74;
+      const dba = (db: number) => -62 + ((db + 30) / 33) * 94;
+      const pt = (a: number, r: number) => ({
+        x: cx + r * Math.sin((a * Math.PI) / 180),
+        y: cy - r * Math.cos((a * Math.PI) / 180),
+      });
+      const marks: [number, string][] = [
+        [-30, '-30'],
+        [-20, '-20'],
+        [-10, '-10'],
+        [-5, '-5'],
+        [0, '0'],
+        [3, '+3'],
+      ];
+      let h = '';
+      const p1 = pt(dba(-30), R),
+        p2 = pt(dba(3), R);
+      h += `<path fill="none" stroke="currentColor" stroke-width=".8" opacity=".1" d="M ${p1.x.toFixed(1)} ${p1.y.toFixed(1)} A ${R} ${R} 0 0 1 ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}"/>`;
+      marks.forEach(([db, lbl]) => {
+        const a = dba(db),
+          red = db >= 0,
+          i = pt(a, R - 10),
+          o = pt(a, R),
+          tp = pt(a, R + 11);
+        h += `<line x1="${i.x.toFixed(1)}" y1="${i.y.toFixed(1)}" x2="${o.x.toFixed(1)}" y2="${o.y.toFixed(1)}" stroke="${red ? 'var(--acc)' : 'currentColor'}" stroke-width="${red ? 1.4 : 1}" opacity="${red ? 0.75 : 0.4}"/>`;
+        h += `<text x="${tp.x.toFixed(1)}" y="${tp.y.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" fill="${red ? 'var(--acc)' : 'currentColor'}" font-family="ui-monospace,monospace" font-size="8.5" opacity="${red ? 0.75 : 0.38}">${lbl}</text>`;
+      });
+      g.innerHTML = h;
+    })(this._g);
+
+    // Verbatim needle animation (line 1018): random-walk drives the rotation.
+    const lvl = [0.42];
+    const animFrame = () => {
+      const t = 0.18 + Math.random() * 0.65;
+      lvl[0] += (t - lvl[0]) * 0.28;
+      this._needle.style.transform = `rotate(${18 - lvl[0] * 80}deg)`;
+      this._raf = requestAnimationFrame(animFrame);
+    };
+
+    if (this._reduced) {
+      this._needle.style.transform = `rotate(${18 - lvl[0] * 80}deg)`;
+    } else {
+      animFrame();
+    }
   }
 
-  private _arcPath(a0: number, a1: number, r: number) {
-    const p0 = this._pt(a0, r);
-    const p1 = this._pt(a1, r);
-    return `M ${p0.x} ${p0.y} A ${r} ${r} 0 0 1 ${p1.x} ${p1.y}`;
-  }
-
-  connectedCallback() {
-    super.connectedCallback();
-    if (this.live) this._tick();
-  }
   disconnectedCallback() {
     super.disconnectedCallback();
     cancelAnimationFrame(this._raf);
   }
-  updated(changed: Map<string, unknown>) {
-    if (changed.has('live')) {
-      cancelAnimationFrame(this._raf);
-      if (this.live) this._tick();
-    }
-  }
-
-  private _tick = () => {
-    const target = 30 + Math.abs(Math.sin(performance.now() / 650)) * 62;
-    this._shown += (target - this._shown) * 0.08; // needle inertia
-    this.requestUpdate();
-    this._raf = requestAnimationFrame(this._tick);
-  };
 
   render() {
-    const v = this.live ? this._shown : this.value;
-    const angle = -MAX_ANGLE + (Math.min(100, Math.max(0, v)) / 100) * 2 * MAX_ANGLE;
-    const tip = this._pt(angle, 86);
-    const hotStart = MAX_ANGLE * 0.45;
     return html`
-      <div class="face" part="face">
-        <svg viewBox="0 0 240 116" role="img" aria-label="VU meter">
-          ${svg`
-            <path class="arc" d=${this._arcPath(-MAX_ANGLE, hotStart, 92)} />
-            <path class="arc hot" d=${this._arcPath(hotStart, MAX_ANGLE, 92)} />
-            ${[-MAX_ANGLE, -26, 0, 26, MAX_ANGLE].map((a) => {
-              const o = this._pt(a, 92);
-              const i = this._pt(a, 82);
-              return svg`<line class="tick" x1=${o.x} y1=${o.y} x2=${i.x} y2=${i.y} />`;
-            })}
-            <line class="needle" x1="120" y1="104" x2=${tip.x} y2=${tip.y} />
-            <circle class="pivot" cx="120" cy="104" r="5" />
-            <text class="lbl" x="120" y="70" text-anchor="middle">VU</text>
-          `}
-        </svg>
+      <div class="vu-wrap">
+        <div class="vu-face">
+          <svg viewBox="0 0 360 98" preserveAspectRatio="xMidYMid meet">
+            <g class="vu-sc"></g>
+            <line class="vu-needle" x1="180" y1="88" x2="180" y2="12" />
+            <circle class="vu-pivot" cx="180" cy="88" r="6" />
+          </svg>
+        </div>
       </div>
     `;
   }
