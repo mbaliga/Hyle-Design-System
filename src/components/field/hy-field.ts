@@ -58,6 +58,10 @@ export class HyField extends LitElement {
       display: block;
       border: 0;
     }
+    /* The engine is a living backdrop only — panes above it receive all input. */
+    .bg {
+      pointer-events: none;
+    }
     .overlay {
       position: relative;
       z-index: 1;

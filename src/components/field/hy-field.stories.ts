@@ -19,7 +19,7 @@ const meta: Meta = {
     label: { control: 'text' },
   },
   args: {
-    src: '/field/form-world.html',
+    src: '/field/form-world-bg.html',
     label: 'Hyle field — monumental forms in coloured haze',
   },
 };
