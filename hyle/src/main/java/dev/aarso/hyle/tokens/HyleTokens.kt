@@ -59,6 +59,9 @@ object HyleTokens {
         const val controlRim: Argb = 0x29FFFFFFL
         const val controlRimSoft: Argb = 0x17FFFFFFL
         const val controlIndicator: Argb = 0xFF6B6760L
+        const val controlScreen: Argb = 0xFF141210L
+        const val controlScreenInk: Argb = 0xFFDDDBD6L
+        const val controlScreenDim: Argb = 0xFF5C5A56L
     }
 
     /** Dimensions, in density-independent pixels (dp; type scale is sp). */

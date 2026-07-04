@@ -8,6 +8,9 @@
     "edge":           { "$value": "#3a3a44", "$type": "color", "$description": "Hard machined edge." },
     "rim":            { "$value": "rgba(255, 255, 255, 0.16)", "$type": "color", "$description": "Top highlight rim." },
     "rim-soft":       { "$value": "rgba(255, 255, 255, 0.09)", "$type": "color" },
-    "indicator":      { "$value": "#6b6760", "$type": "color", "$description": "Engraved glyph / pointer when inactive." }
+    "indicator":      { "$value": "#6b6760", "$type": "color", "$description": "Engraved glyph / pointer when inactive." },
+    "screen":         { "$value": "#141210", "$type": "color", "$description": "Backlit display glass." },
+    "screen-ink":     { "$value": "#dddbd6", "$type": "color", "$description": "Monochrome display ink — screens are clean, not accent-flooded." },
+    "screen-dim":     { "$value": "#5c5a56", "$type": "color", "$description": "Dim display ink." }
   }
 }

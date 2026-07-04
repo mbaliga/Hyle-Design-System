@@ -51,4 +51,7 @@
   <color name="control_rim">#29ffffff</color>
   <color name="control_rim_soft">#17ffffff</color>
   <color name="control_indicator">#ff6b6760</color>
+  <color name="control_screen">#ff141210</color>
+  <color name="control_screen_ink">#ffdddbd6</color>
+  <color name="control_screen_dim">#ff5c5a56</color>
 </resources>

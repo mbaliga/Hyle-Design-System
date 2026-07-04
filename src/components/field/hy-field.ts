@@ -121,8 +121,9 @@ export class HyField extends LitElement {
     this._raf = requestAnimationFrame(this._loop);
   };
 
-  /** Procedural field: a near-black ground, a violet glow where thinking gathers,
-   *  and concentric cymatic ridges whose motion scales with activity. */
+  /** Procedural field — a lightweight echo of the Form-World "Bowl": concentric
+   *  ridges receding into a warm glowing throat, present even at rest and alive
+   *  with activity. The zero-config fallback when the engine isn't wired in. */
   private _draw(t: number) {
     const c = this._canvas;
     if (!c) return;
@@ -131,39 +132,59 @@ export class HyField extends LitElement {
     const w = c.width;
     const h = c.height;
     const a = this._act;
-    const cx = w * 0.5;
-    const cy = h * 0.62;
-
-    // ground
-    const g = ctx.createLinearGradient(0, 0, 0, h);
-    g.addColorStop(0, '#0a0809');
-    g.addColorStop(1, '#000000');
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, w, h);
-
-    // glow — light only where thinking happens
-    const glowR = Math.max(w, h) * (0.35 + a * 0.4);
-    const glow = ctx.createRadialGradient(cx, h * 0.22, 0, cx, h * 0.22, glowR);
-    glow.addColorStop(0, `rgba(142,123,255,${(0.05 + a * 0.22).toFixed(3)})`);
-    glow.addColorStop(1, 'rgba(142,123,255,0)');
-    ctx.fillStyle = glow;
-    ctx.fillRect(0, 0, w, h);
-
-    // concentric cymatic ridges — mass grows, motion slows, with depth
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const spacing = (26 + a * 26) * dpr;
-    const amp = a * 9 * dpr;
-    const speed = 0.0011 * (1 - 0.45 * a); // monumental = slower
-    const rings = Math.ceil(Math.hypot(w, h) / spacing);
-    ctx.lineWidth = 1 * dpr;
+    const cx = w * 0.5;
+    const cy = h * 0.52;
+    const diag = Math.hypot(w, h);
+
+    // warm-dark ground with depth toward the throat
+    const ground = ctx.createRadialGradient(cx, cy, 0, cx, cy, diag * 0.62);
+    ground.addColorStop(0, '#191210');
+    ground.addColorStop(0.5, '#0b0908');
+    ground.addColorStop(1, '#000000');
+    ctx.fillStyle = ground;
+    ctx.fillRect(0, 0, w, h);
+
+    // concentric ridges receding toward the centre; brighter near the throat
+    const spacing = (22 + a * 18) * dpr;
+    const amp = (1.5 + a * 8) * dpr;
+    const speed = 0.0009 * (1 - 0.4 * a); // monumental = slower
+    const rings = Math.ceil(diag / spacing);
+    ctx.lineWidth = 1.4 * dpr;
     for (let i = 1; i < rings; i++) {
-      const wobble = Math.sin(t * speed + i * 0.55) * amp;
+      const wobble = Math.sin(t * speed + i * 0.5) * amp * (i / rings);
       const r = i * spacing + wobble;
-      const fade = Math.max(0, 1 - r / (Math.hypot(w, h) * 0.7));
-      ctx.strokeStyle = `rgba(236,232,228,${(0.05 * fade + a * 0.04 * fade).toFixed(3)})`;
+      const near = Math.max(0, 1 - r / (diag * 0.55)); // brighter toward centre
+      const alpha = (0.06 + near * 0.16 + a * 0.05).toFixed(3);
+      ctx.strokeStyle = `rgba(200,150,120,${alpha})`;
       ctx.beginPath();
       ctx.arc(cx, cy, r, 0, Math.PI * 2);
       ctx.stroke();
+    }
+
+    // the glowing throat — a warm ember at rest, brightening with activity
+    const throatR = Math.max(w, h) * (0.05 + a * 0.06);
+    const throat = ctx.createRadialGradient(cx, cy, 0, cx, cy, throatR * 3.4);
+    const tb = (0.35 + a * 0.5).toFixed(3);
+    throat.addColorStop(0, `rgba(255,224,190,${tb})`);
+    throat.addColorStop(0.4, `rgba(224,148,79,${(0.18 + a * 0.28).toFixed(3)})`);
+    throat.addColorStop(1, 'rgba(224,148,79,0)');
+    ctx.fillStyle = throat;
+    ctx.fillRect(0, 0, w, h);
+
+    // thinking-glow — a violet cast that only rises with real activity
+    if (a > 0.06) {
+      const tg = ctx.createRadialGradient(cx, h * 0.3, 0, cx, h * 0.3, diag * 0.5);
+      tg.addColorStop(0, `rgba(142,123,255,${(a * 0.14).toFixed(3)})`);
+      tg.addColorStop(1, 'rgba(142,123,255,0)');
+      ctx.fillStyle = tg;
+      ctx.fillRect(0, 0, w, h);
+    }
+
+    // faint grain for atmosphere
+    ctx.fillStyle = 'rgba(255,255,255,0.015)';
+    for (let k = 0; k < (w * h) / 9000; k++) {
+      ctx.fillRect((Math.sin(k * 12.9 + t * 0.0002) * 0.5 + 0.5) * w, (Math.cos(k * 78.2) * 0.5 + 0.5) * h, dpr, dpr);
     }
   }
 

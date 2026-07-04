@@ -13,6 +13,8 @@ import { customElement, property, query } from 'lit/decorators.js';
 export class HyWaveform extends LitElement {
   @property({ type: Boolean, reflect: true }) live = false;
   @property({ type: Number }) bars = 48;
+  /** Tint the waveform with the accent instead of monochrome screen ink. */
+  @property({ type: Boolean }) accent = false;
 
   @query('canvas') private _canvas!: HTMLCanvasElement;
   private _raf = 0;
@@ -58,10 +60,13 @@ export class HyWaveform extends LitElement {
     }
   }
 
-  private _accent() {
-    return (
-      getComputedStyle(this).getPropertyValue('--color-action-primary').trim() || '#8e7bff'
-    );
+  private _ink() {
+    // Screen ink is monochrome by default (the kit's screens are clean, not
+    // accent-flooded); opt into the accent tint with the `accent` attribute.
+    if (this.accent) {
+      return getComputedStyle(this).getPropertyValue('--color-action-primary').trim() || '#8e7bff';
+    }
+    return getComputedStyle(this).getPropertyValue('--control-screen-ink').trim() || '#dddbd6';
   }
 
   private _draw() {
@@ -73,7 +78,7 @@ export class HyWaveform extends LitElement {
     const ctx = c.getContext('2d');
     if (!ctx) return;
     ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = this._accent();
+    ctx.fillStyle = this._ink();
     const n = this._amps.length;
     const gap = w / n;
     const bw = Math.max(1, gap * 0.5);

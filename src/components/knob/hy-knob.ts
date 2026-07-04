@@ -30,6 +30,13 @@ export class HyKnob extends LitElement {
       border-radius: 50%;
       cursor: ns-resize;
       background:
+        repeating-radial-gradient(
+            circle at 50% 50%,
+            rgba(255, 255, 255, 0.05) 0 0.5px,
+            transparent 0.5px 2.5px,
+            rgba(0, 0, 0, 0.08) 2.5px 3px,
+            transparent 3px 5.5px
+          ),
         radial-gradient(circle at 50% 32%, var(--control-surface-high, #2c2c34), var(--control-surface, #16161a) 72%);
       box-shadow:
         inset 0 1px 0 var(--control-rim, rgba(255, 255, 255, 0.16)),
@@ -162,8 +169,8 @@ export class HyKnob extends LitElement {
         @keydown=${this._onKey}
       >
         <svg viewBox="0 0 100 100">
-          <path class="track" d=${this._arc(1)} stroke-width="4"></path>
-          <path class="fill" d=${this._arc(ratio)} stroke-width="4"></path>
+          <path class="track" d=${this._arc(1)} stroke-width="2.5"></path>
+          <path class="fill" d=${this._arc(ratio)} stroke-width="2.5"></path>
         </svg>
         <span class="pointer" style="transform:translateY(-100%) rotate(${angle}deg)"></span>
       </div>
