@@ -1,41 +1,30 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import './hy-meter.js';
-import './hy-vu.js';
+
+const capStyle =
+  'font:600 9px sans-serif;letter-spacing:.1em;color:#6b6760;text-transform:uppercase';
 
 const meta: Meta = {
-  title: 'Tactile/Meters',
+  title: 'Displays/Meter',
+  component: 'hy-meter',
+  tags: ['autodocs'],
   parameters: { backgrounds: { default: 'near' } },
+  render: () => html`<div style="width:420px"><hy-meter></hy-meter></div>`,
 };
 export default meta;
 type Story = StoryObj;
 
-export const Level: Story = {
-  argTypes: {
-    left: { control: { type: 'range', min: 0, max: 100 } },
-    right: { control: { type: 'range', min: 0, max: 100 } },
-    live: { control: 'boolean' },
-  },
-  args: { left: 62, right: 48, live: false },
-  render: ({ left, right, live }) => html`
-    <hy-meter left=${left} right=${right} ?live=${live}></hy-meter>
-  `,
-};
+export const Default: Story = {};
 
-export const VU: Story = {
-  argTypes: {
-    value: { control: { type: 'range', min: 0, max: 100 } },
-    live: { control: 'boolean' },
-  },
-  args: { value: 55, live: false },
-  render: ({ value, live }) => html`<hy-vu value=${value} ?live=${live}></hy-vu>`,
-};
-
-export const Live: Story = {
+export const Gallery: Story = {
+  parameters: { controls: { disable: true } },
   render: () => html`
-    <div style="display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap;">
-      <hy-meter live></hy-meter>
-      <hy-vu live></hy-vu>
+    <div style="display:flex; gap:26px; flex-wrap:wrap; align-items:flex-end">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:10px">
+        <div style="width:420px"><hy-meter></hy-meter></div>
+        <div style=${capStyle}>level meter</div>
+      </div>
     </div>
   `,
 };

@@ -2,37 +2,47 @@ import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import './hy-key.js';
 
+const VARIANTS = ['square', 'oval', 'dot', 'press'] as const;
+const capStyle =
+  'font:600 9px sans-serif;letter-spacing:.1em;color:#6b6760;text-transform:uppercase';
+
 const meta: Meta = {
-  title: 'Tactile/Key',
+  title: 'Controls/Surface Buttons',
   component: 'hy-key',
   tags: ['autodocs'],
   parameters: { backgrounds: { default: 'near' } },
   argTypes: {
-    shape: { control: 'inline-radio', options: ['square', 'oval'] },
-    mode: { control: 'inline-radio', options: ['momentary', 'toggle'] },
-    led: { control: 'boolean' },
-    pressed: { control: 'boolean' },
-    disabled: { control: 'boolean' },
+    variant: { control: 'select', options: VARIANTS },
+    on: { control: 'boolean' },
   },
-  args: { shape: 'square', mode: 'momentary', led: false, pressed: false, disabled: false },
-  render: ({ shape, mode, led, pressed, disabled }) => html`
-    <hy-key shape=${shape} mode=${mode} ?led=${led} ?pressed=${pressed} ?disabled=${disabled}>
-      <svg viewBox="0 0 24 24"><path d="M8 6.5v11l9-5.5z" /></svg>
-    </hy-key>
+  args: { variant: 'square', on: false },
+  render: ({ variant, on }) => html`
+    <hy-key
+      variant=${variant}
+      ?on=${on}
+      @hy-change=${(e: CustomEvent) => console.log('key', e.detail.value)}
+    ></hy-key>
   `,
 };
 export default meta;
 type Story = StoryObj;
 
-export const Momentary: Story = {};
-export const Toggle: Story = { args: { mode: 'toggle', led: true } };
-export const Oval: Story = { args: { shape: 'oval' } };
+export const Default: Story = {};
 
-export const Bank: Story = {
+export const Gallery: Story = {
+  parameters: { controls: { disable: true } },
   render: () => html`
-    <div style="display:flex; gap:10px;">
-      ${['M', 'S', '1', '2'].map(
-        (l) => html`<hy-key mode="toggle" led><span style="font:600 13px var(--font-family-sans)">${l}</span></hy-key>`
+    <div style="display:flex; gap:26px; flex-wrap:wrap; align-items:flex-end">
+      ${VARIANTS.map(
+        (v) => html`
+          <div style="display:flex; flex-direction:column; align-items:center; gap:10px">
+            <div style="display:flex; gap:16px; align-items:flex-end">
+              <hy-key variant=${v}></hy-key>
+              <hy-key variant=${v} on></hy-key>
+            </div>
+            <div style=${capStyle}>${v}</div>
+          </div>
+        `
       )}
     </div>
   `,

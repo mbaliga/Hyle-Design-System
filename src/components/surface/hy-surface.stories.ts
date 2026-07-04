@@ -2,28 +2,48 @@ import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import './hy-surface.js';
 
+const capStyle =
+  'font:600 9px sans-serif;letter-spacing:.1em;color:#6b6760;text-transform:uppercase';
+
 const meta: Meta = {
   title: 'Surfaces/Panel',
+  tags: ['autodocs'],
   parameters: { backgrounds: { default: 'near' } },
 };
 export default meta;
 type Story = StoryObj;
 
 export const Grille: Story = {
-  render: () => html`<div style="width:320px"><hy-grille height="72"></hy-grille></div>`,
+  argTypes: {
+    height: { control: 'text' },
+  },
+  args: { height: '64px' },
+  render: ({ height }) => html`
+    <div style="width:420px"><hy-grille height=${height}></hy-grille></div>
+  `,
 };
 
-export const Jacks: Story = {
+export const Jack: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => html`<hy-jack></hy-jack>`,
+};
+
+export const Gallery: Story = {
+  parameters: { controls: { disable: true } },
   render: () => html`
-    <div style="display:flex; gap:20px; align-items:center;">
-      ${['In L', 'In R', 'Out'].map(
-        (l) => html`
-          <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
-            <hy-jack></hy-jack>
-            <span style="font:600 var(--font-size-micro) var(--font-family-sans); letter-spacing:var(--font-tracking-label); text-transform:uppercase; color:var(--color-text-faint)">${l}</span>
-          </div>
-        `
-      )}
+    <div style="display:flex; gap:26px; flex-wrap:wrap; align-items:flex-end">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:10px">
+        <div style="width:420px"><hy-grille height="64px"></hy-grille></div>
+        <div style=${capStyle}>grille</div>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:10px">
+        <div style="display:flex; gap:16px; align-items:flex-end">
+          <hy-jack></hy-jack>
+          <hy-jack></hy-jack>
+          <hy-jack></hy-jack>
+        </div>
+        <div style=${capStyle}>jack</div>
+      </div>
     </div>
   `,
 };

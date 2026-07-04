@@ -64,7 +64,7 @@ export class HyColorPicker extends LitElement {
     :host {
       display: block;
       width: 100%;
-      max-width: 392px;
+      max-width: 420px;
     }
     iframe {
       display: block;
