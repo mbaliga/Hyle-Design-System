@@ -22,6 +22,7 @@ export { HyFader } from './fader/hy-fader.js';
 export { HyToggle } from './toggle/hy-toggle.js';
 export { HyMeter } from './meter/hy-meter.js';
 export { HyVu } from './meter/hy-vu.js';
+export { HyScrollWheel } from './scroll-wheel/hy-scroll-wheel.js';
 export { HySlider } from './slider/hy-slider.js';
 export type { HySliderVariant } from './slider/hy-slider.js';
 export { HyTransport } from './transport/hy-transport.js';
