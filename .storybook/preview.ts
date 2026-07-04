@@ -1,4 +1,5 @@
 import type { Preview } from '@storybook/web-components';
+import hyle from './hyle-theme';
 
 // Brand fonts — Archivo (UI/display) + JetBrains Mono (data voice).
 import '@fontsource-variable/archivo';
@@ -11,6 +12,7 @@ import '../src/components/index.js';
 const preview: Preview = {
   parameters: {
     layout: 'centered',
+    docs: { theme: hyle },
     controls: {
       matchers: {
         color: /(background|color)$/i,

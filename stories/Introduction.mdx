@@ -2,62 +2,54 @@ import { Meta } from '@storybook/blocks';
 
 <Meta title="Introduction" />
 
-# Hyle
+<div style={{ position: 'relative', height: '78vh', minHeight: 460, borderRadius: 16, overflow: 'hidden', background: '#000', margin: '0 0 8px' }}>
+  <iframe
+    src="/field/form-world-bg.html"
+    title="Hyle — the living Field"
+    aria-hidden="true"
+    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0, pointerEvents: 'none' }}
+  />
+  <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '40px', background: 'linear-gradient(to top, rgba(10,8,9,0.72), rgba(10,8,9,0) 55%)' }}>
+    <div style={{ fontFamily: "'Archivo Variable', system-ui, sans-serif", fontWeight: 700, fontSize: 'clamp(48px, 9vw, 120px)', letterSpacing: '-0.02em', lineHeight: 0.95, color: '#ece8e4' }}>Hyle</div>
+    <div style={{ fontFamily: "'Archivo Variable', system-ui, sans-serif", fontSize: 'clamp(15px, 2.4vw, 24px)', color: 'rgba(236,232,228,0.72)', maxWidth: '40ch', marginTop: 12 }}>
+      State is <strong style={{ color: '#8e7bff' }}>shown</strong> by material behaving — never <em>said</em> by language.
+    </div>
+  </div>
+</div>
 
-> *Hyle* (ὕλη) — Aristotle's word for matter: pure potentiality awaiting form.
+> *Hyle* (ὕλη) — Aristotle's word for **matter**: pure potentiality awaiting form. Above is not a picture of Hyle; it *is* Hyle — the living Field, computing.
 
-Hyle is a cross-platform design system built on a single law:
+---
 
 ## The core law
 
-> **State is SHOWN by material behavior, never SAID by language.**
+<div style={{ fontFamily: "'Archivo Variable', system-ui, sans-serif", fontWeight: 600, fontSize: 'clamp(22px, 4vw, 40px)', lineHeight: 1.15, color: '#ece8e4', borderLeft: '3px solid #8e7bff', padding: '4px 0 4px 20px', margin: '8px 0 24px' }}>
+  State is SHOWN by material behavior,<br/>never SAID by language.
+</div>
 
-No status words. No spinners. The interface tells the truth about one thing —
-*computation* — and tells it through material: light only where thinking
-happens, motion only when there is real state, mass proportional to depth of
-thought. Honesty is relocated from *substance* to *behavior*.
+No status words. No spinners. Hyle tells the truth about one thing — *computation* — and tells it through material: **light only where thinking happens, motion only when there is real state, mass proportional to depth of thought.** Honesty is relocated from *substance* to *behavior*.
 
-## The two layers
+## The material stack
 
-Hyle is built as a material stack:
+Every surface in Hyle is one of these, layered:
 
-1. **The Field** — a living layer of monumental forms in coloured haze
-   (the Form-World WebGL engine). Matte and near-still at rest; it moves only
-   when there is real computation. This is where state is *shown*.
-2. **The Pane** — frosted glass that floats over the Field carrying the
-   readable controls. Glass means legibility; it stays calm and still, animating
-   only to enter or leave.
+- **The Field** — the living layer of monumental forms in coloured haze (the Form-World engine). Matte and near-still at rest; it moves only when there is real computation. This is where state is *shown*. → *Material / Field*
+- **The Pane** — frosted glass floating over the Field, carrying the readable controls. Glass means legibility; it stays calm and still. → *Material / Pane*
+- **The Tactile Kit** — where the interface becomes hardware: knobs, faders, meters, a scroll wheel — "soft brutalism", *controls you want to touch*, in honest materials (machined metal, glass, leather, concrete). → *Material / Tactile Kit*
 
-Controls on the glass — **chips**, sliders, micro-labels — are quiet hairline
-outlines until pressed, when they invert to solid ink. The single violet accent
-(`#8E7BFF`) is the only colour spent freely; everything else is earned.
+The single violet accent (`#8E7BFF`) is the only colour spent freely — and it is **always the user's to choose** (the whole system re-themes from one picked colour). Everything else is earned.
 
-Where the interface becomes hardware, the **Tactile Kit** takes over — Hyle's
-"soft brutalism": knobs, faders, toggles, crater buttons and meters in honest
-materials (machined metal, glass, leather, concrete, sand) that you *want to
-touch*. Material is assigned by meaning, never for nostalgia.
+## The lineage (why it coheres)
 
-## Architecture
+Hyle draws on lineages that all converge on one move — *meaning is carried by matter behaving, not by language describing*:
 
-```
-tokens/*.json        Style Dictionary        build/
-(W3C DTCG)      ──►   build-tokens.js   ──►   web/      tokens.css · scss · js
-                                              android/  colors.xml · dimens.xml
-                                              ios/      Tokens.swift
+**Hylomorphism** (form emerges from matter) · **Calm technology** (Weiser/Case — "technology can communicate but doesn't need to speak") · **Affordances** (Gibson — a surface specifies its own use) · **Truth to materials** (Bauhaus, Rams, brutalism) · **Material perception** (Fleming — the eye reads correct light/refraction as *real*) · **Cymatics & ferrofluid** (a field/frequency *makes* the pattern) · **The mathematical sublime** (Kant — vastness that calms: *"calm because massive"*).
 
-src/components/   ──► Lit web components ──►   <hy-field> <hy-pane> <hy-chip> …
-field/            ──► Form-World engine  ──►   the living material behind the pane
-```
-
-One token definition compiles to every platform — Android, web, iOS — because
-Hyle is meant to live everywhere, not just the browser.
+The full essay: [`docs/PHILOSOPHY.md`](https://github.com/mbaliga/Hyle-Design-System/blob/main/docs/PHILOSOPHY.md).
 
 ## Read next
 
-- **Foundations / Tokens** — the field, the ink, the accent, the material triad.
-- **Material / Field** — the Form-World engine behind a glass pane.
-- **Material / Pane** and **Controls / Chip** — the on-glass primitives.
-- **Material / Tactile Kit** — the physical-control language (soft brutalism).
-- **`docs/PHILOSOPHY.md`** — the full ethos & lineage (hylomorphism, calm
-  technology, affordances, truth-to-materials, the ferrofluid/cymatics/SEM/
-  brutalist arguments) and the accessibility gates.
+- **Material / Field** — the living engine, and the 6 worlds.
+- **Material / Tactile Kit** — the physical-control language, in full.
+- **Foundations / Tokens · Theming · Colour Picker** — the palette, and choosing the accent.
+- **Mock Apps** — the components composed over the living Field.
