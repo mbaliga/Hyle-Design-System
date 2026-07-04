@@ -15,11 +15,13 @@
   },
   "scripts": {
     "tokens:build": "node scripts/build-tokens.js",
-    "prestorybook": "npm run tokens:build",
+    "picker:build": "node scripts/build-color-picker.js",
+    "assets:build": "npm run tokens:build && npm run picker:build",
+    "prestorybook": "npm run assets:build",
     "storybook": "storybook dev -p 6006 --no-open",
-    "prebuild-storybook": "npm run tokens:build",
+    "prebuild-storybook": "npm run assets:build",
     "build-storybook": "storybook build",
-    "build": "npm run tokens:build",
+    "build": "npm run assets:build",
     "format": "prettier --write \"**/*.{ts,js,json,css,md}\""
   },
   "dependencies": {
