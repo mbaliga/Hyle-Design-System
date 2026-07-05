@@ -28,3 +28,4 @@ rootProject.name = "Hyle"
 include(":hyle")
 include(":hyle-probe")
 include(":wallpaper")
+include(":crash-recovery")
