@@ -38,6 +38,37 @@ runs the Form-World raymarcher (the procedural worlds) as an OpenGL ES 2.0
 ```
 Requires an Android SDK (`local.properties` → `sdk.dir`), JDK 17.
 
+### `:crash-recovery` — a shared reliability utility, NOT part of Hyle
+
+Publishable as `dev.aarso:crash-recovery:1.0.0`. It lives in this repo (the
+constellation's one sharing mechanism, D-A) but has **zero dependency on `:hyle`**
+— no Compose, no Material, plain `android.widget` views only — so it is a
+reliability utility, not a design-system dependency. That distinction matters:
+apps with their own visual identity that must never depend on Hyle (Animalcules,
+Horizkeeb — see Personal-Tracker DECISIONS.md D-L) can still take this one
+dependency (see D-O).
+
+Captures a device-only launch/runtime crash (CI never sees these — CI runs unit
+tests, never launches the app) to the app's private files dir, then shows a
+recovery screen on the next launch instead of the app's real content — headline
+first, Share/Copy, Continue, a confirm-gated Reset, and the full trace collapsed
+behind a "Technical details" toggle. Colours are plain `@ColorInt Int`s
+(`CrashRecoveryStyle`) so each consumer themes it to its own palette without
+taking on Hyle's tokens.
+
+```kotlin
+// Application.onCreate(), before constructing anything that could itself throw:
+CrashRecovery.install(this, appLabel = "Runout")
+
+// first thing in the launcher Activity's onCreate():
+if (CrashRecovery.maybeShowRecovery(this, appLabel = "Runout")) return
+```
+
+```bash
+./gradlew :crash-recovery:test                 # JVM tests (formatting/persistence, no Android SDK needed to run)
+./gradlew :crash-recovery:publishToMavenLocal   # prove it stands alone as dev.aarso:crash-recovery:1.0.0
+```
+
 ### Web side — tokens, Lit components & Storybook
 
 Framework-agnostic **Lit web components** consume the same tokens. The two

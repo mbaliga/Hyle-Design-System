@@ -32,5 +32,7 @@ jobs:
           sdkmanager "platforms;android-36" "build-tools;36.0.0"
       - name: Token tests (:hyle:test)
         run: ./gradlew --no-daemon :hyle:test
+      - name: Crash-recovery tests (:crash-recovery:test)
+        run: ./gradlew --no-daemon :crash-recovery:test
       - name: Build the live wallpaper (:wallpaper)
         run: ./gradlew --no-daemon :wallpaper:assembleDebug
