@@ -173,20 +173,39 @@ class CrashRecoveryActivity : Activity() {
         AlertDialog.Builder(this)
             .setTitle("Reset $appLabel's data?")
             .setMessage("This wipes locally-stored app data and restarts $appLabel. This cannot be undone.")
-            .setPositiveButton("Reset") { _, _ -> performReset() }
+            .setPositiveButton("Reset") { _, _ -> performReset(appLabel) }
             .setNegativeButton("Cancel", null)
             .show()
     }
 
-    private fun performReset() {
+    private fun performReset(appLabel: String) {
         CrashRecovery.clear(this)
-        runCatching {
-            (getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager).clearApplicationUserData()
+        // The zero-arg self-clear overload is API 29+ only — several consumers of this module
+        // have a lower minSdk (Animalcules 24, Horizkeeb 28), so there's no in-app equivalent
+        // below 29; guiding to Settings is the honest fallback rather than silently no-op'ing.
+        if (Build.VERSION.SDK_INT >= 29) {
+            runCatching {
+                (getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager).clearApplicationUserData()
+            }
+        } else {
+            Toast.makeText(
+                this,
+                "Please clear $appLabel's storage from Android Settings, then reopen the app.",
+                Toast.LENGTH_LONG,
+            ).show()
         }
     }
 
+    /**
+     * Relaunches the host app's own registered launcher entry point — generic across every
+     * consumer, no app-specific wiring needed, and it leaves no half-initialized Activity
+     * behind (the crashed launcher Activity was already finished by [CrashRecovery.maybeShowRecovery]).
+     */
     private fun continueToApp() {
         CrashRecovery.clear(this)
+        runCatching { packageManager.getLaunchIntentForPackage(packageName) }
+            .getOrNull()
+            ?.let { startActivity(it) }
         finish()
     }
 

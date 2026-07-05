@@ -89,13 +89,17 @@ object CrashRecovery {
 
     /**
      * Call first thing in your launcher Activity's `onCreate`. If a crash is pending, this
-     * starts [CrashRecoveryActivity] and returns `true` — the caller should `return`
-     * immediately without building its real UI. Returns `false` (nothing started) when
-     * there's nothing to recover from.
+     * starts [CrashRecoveryActivity] and **finishes the calling activity** — it was the one
+     * that (or whose process) crashed last time, so it's left in a half-initialized state
+     * (no `setContent`/`setContentView` called); finishing it means "Continue" on the
+     * recovery screen relaunches a clean instance instead of returning to a blank one.
+     * Returns `true` when recovery was shown (the caller should `return` immediately without
+     * building its real UI), `false` when there's nothing to recover from.
      */
     fun maybeShowRecovery(activity: Activity, appLabel: String, style: CrashRecoveryStyle = CrashRecoveryStyle.Default): Boolean {
         if (pending(activity) == null) return false
         activity.startActivity(CrashRecoveryActivity.intent(activity, appLabel, style))
+        activity.finish()
         return true
     }
 
