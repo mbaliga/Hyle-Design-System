@@ -1,0 +1,70 @@
+table GDEF {
+    GlyphClassDef [], [], [], [];
+} GDEF;
+
+
+lookup SingleSubstitution1 {
+    lookupflag 0;
+    ;
+    sub zero by zero.tf;
+    sub one by one.tf;
+    sub two by two.tf;
+    sub three by three.tf;
+    sub four by four.tf;
+    sub five by five.tf;
+    sub six by six.tf;
+    sub seven by seven.tf;
+    sub eight by eight.tf;
+    sub nine by nine.tf;
+    sub zero.slash by zero.slash.tf;
+} SingleSubstitution1;
+
+lookup SingleSubstitution2 {
+    lookupflag 0;
+    ;
+    # Original source: 1 
+    sub zero by zero.slash;
+    sub zero.tf by zero.slash.tf;
+} SingleSubstitution2;
+
+lookup PairPositioning1 {
+    lookupflag 0;
+    ;
+    pos A T -12;
+    pos A V -10;
+    pos A W -8;
+    pos F A -10;
+    pos L T -20;
+    pos L V -16;
+    pos L Y -16;
+    pos P A -12;
+    pos S T -20;
+    pos T A -12;
+    pos T S -12;
+    pos T period -28;
+    pos V A -10;
+    pos V period -24;
+    pos W A -8;
+    pos Y period -24;
+} PairPositioning1;
+
+feature tnum {
+    script DFLT;
+    language dflt;
+            lookup SingleSubstitution1;
+
+} tnum;
+
+feature zero {
+    script DFLT;
+    language dflt;
+            lookup SingleSubstitution2;
+
+} zero;
+
+feature kern {
+    script DFLT;
+    language dflt;
+            lookup PairPositioning1;
+
+} kern;

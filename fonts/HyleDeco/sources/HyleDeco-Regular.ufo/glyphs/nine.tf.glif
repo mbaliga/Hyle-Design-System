@@ -1,0 +1,104 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<glyph name="nine.tf" format="2">
+  <advance width="563"/>
+  <outline>
+    <contour>
+      <point x="257" y="0" type="line"/>
+      <point x="211" y="1" type="line"/>
+      <point x="359" y="368" type="line"/>
+      <point x="345" y="361" type="line"/>
+      <point x="319" y="353" type="line"/>
+      <point x="301" y="350" type="line"/>
+      <point x="274" y="350" type="line"/>
+      <point x="248" y="352" type="line"/>
+      <point x="223" y="359" type="line"/>
+      <point x="199" y="370" type="line"/>
+      <point x="181" y="381" type="line"/>
+      <point x="158" y="400" type="line"/>
+      <point x="146" y="412" type="line"/>
+      <point x="135" y="428" type="line"/>
+      <point x="122" y="450" type="line"/>
+      <point x="112" y="477" type="line"/>
+      <point x="108" y="493" type="line"/>
+      <point x="107" y="507" type="line"/>
+      <point x="107" y="543" type="line"/>
+      <point x="112" y="573" type="line"/>
+      <point x="125" y="605" type="line"/>
+      <point x="135" y="622" type="line"/>
+      <point x="146" y="638" type="line"/>
+      <point x="168" y="660" type="line"/>
+      <point x="190" y="675" type="line"/>
+      <point x="220" y="690" type="line"/>
+      <point x="254" y="699" type="line"/>
+      <point x="273" y="700" type="line"/>
+      <point x="290" y="700" type="line"/>
+      <point x="309" y="699" type="line"/>
+      <point x="330" y="694" type="line"/>
+      <point x="350" y="687" type="line"/>
+      <point x="369" y="677" type="line"/>
+      <point x="398" y="657" type="line"/>
+      <point x="418" y="635" type="line"/>
+      <point x="437" y="606" type="line"/>
+      <point x="450" y="575" type="line"/>
+      <point x="456" y="547" type="line"/>
+      <point x="456" y="503" type="line"/>
+      <point x="453" y="486" type="line"/>
+      <point x="447" y="466" type="line"/>
+      <point x="434" y="438" type="line"/>
+      <point x="263" y="11" type="line"/>
+    </contour>
+    <contour>
+      <point x="295" y="395" type="line"/>
+      <point x="319" y="399" type="line"/>
+      <point x="332" y="404" type="line"/>
+      <point x="346" y="411" type="line"/>
+      <point x="365" y="425" type="line"/>
+      <point x="382" y="442" type="line"/>
+      <point x="394" y="458" type="line"/>
+      <point x="406" y="484" type="line"/>
+      <point x="412" y="510" type="line"/>
+      <point x="412" y="540" type="line"/>
+      <point x="406" y="566" type="line"/>
+      <point x="394" y="592" type="line"/>
+      <point x="382" y="608" type="line"/>
+      <point x="364" y="626" type="line"/>
+      <point x="348" y="638" type="line"/>
+      <point x="332" y="646" type="line"/>
+      <point x="316" y="652" type="line"/>
+      <point x="294" y="656" type="line"/>
+      <point x="268" y="656" type="line"/>
+      <point x="243" y="651" type="line"/>
+      <point x="218" y="640" type="line"/>
+      <point x="196" y="624" type="line"/>
+      <point x="183" y="611" type="line"/>
+      <point x="169" y="593" type="line"/>
+      <point x="159" y="573" type="line"/>
+      <point x="154" y="559" type="line"/>
+      <point x="151" y="544" type="line"/>
+      <point x="150" y="515" type="line"/>
+      <point x="155" y="488" type="line"/>
+      <point x="164" y="466" type="line"/>
+      <point x="178" y="445" type="line"/>
+      <point x="201" y="422" type="line"/>
+      <point x="218" y="410" type="line"/>
+      <point x="228" y="405" type="line"/>
+      <point x="247" y="398" type="line"/>
+      <point x="269" y="394" type="line"/>
+    </contour>
+  </outline>
+  <lib>
+    <dict>
+      <key>public.truetype.instructions</key>
+      <dict>
+        <key>assembly</key>
+        <string>
+
+</string>
+        <key>formatVersion</key>
+        <string>1</string>
+        <key>id</key>
+        <string>c06dcf1282ee2e03dcd6d9f1edc63f02f7f3cff30fa26e70dc22620c577be037c423d3fb3b9f9dd9a9515b9d084ac749869813533bec385ba1faaa0647caeed7</string>
+      </dict>
+    </dict>
+  </lib>
+</glyph>

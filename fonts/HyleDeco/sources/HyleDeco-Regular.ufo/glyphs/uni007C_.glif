@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<glyph name="uni007C" format="2">
+  <advance width="164"/>
+  <unicode hex="007C"/>
+  <outline>
+    <contour>
+      <point x="60" y="760" type="line"/>
+      <point x="104" y="760" type="line"/>
+      <point x="104" y="-80" type="line"/>
+      <point x="60" y="-80" type="line"/>
+    </contour>
+  </outline>
+  <lib>
+    <dict>
+      <key>public.truetype.instructions</key>
+      <dict>
+        <key>assembly</key>
+        <string>
+
+</string>
+        <key>formatVersion</key>
+        <string>1</string>
+        <key>id</key>
+        <string>w164l60+760l104+760l104-80l60-80|</string>
+      </dict>
+    </dict>
+  </lib>
+</glyph>
