@@ -98,6 +98,28 @@ data class CrashReport(
                 Decoded(headline = persisted.lines().firstOrNull().orEmpty(), fullReport = persisted)
             }
         }
+
+        /**
+         * Sample content for previewing the recovery screen without a real crash (see
+         * [dev.aarso.crashrecovery.CrashRecovery.previewIntent]). "PREVIEW" appears in both
+         * [Decoded.headline] and the full text so a screenshot, or an accidentally-shared
+         * preview report, can never be mistaken for a real crash.
+         */
+        fun samplePreview(appLabel: String): Decoded {
+            val headline = "IllegalStateException: this is a PREVIEW — no real crash occurred"
+            val fullReport = buildString {
+                append(appLabel).append(" crash — PREVIEW, not a real crash\n")
+                append("when: (preview — no timestamp)\n")
+                append("thread: main\n")
+                append("app version: (preview)\n")
+                append("device: (preview)\n\n")
+                append(headline).append("\n\n")
+                append("java.lang.IllegalStateException: this is a PREVIEW — no real crash occurred\n")
+                append("\tat dev.aarso.crashrecovery.CrashRecovery.previewIntent(CrashRecovery.kt)\n")
+                append("\tat ").append(appLabel).append(" (preview trigger — not an actual stack trace)\n")
+            }
+            return Decoded(headline = headline, fullReport = fullReport)
+        }
     }
 
     /** What the recovery UI needs to render — a quick headline plus the full shareable text. */

@@ -45,7 +45,8 @@ class CrashRecoveryActivity : Activity() {
 
         val appLabel = intent.getStringExtra(EXTRA_APP_LABEL) ?: "App"
         val style = readStyle()
-        val decoded = CrashRecovery.pending(this)
+        val preview = intent.getBooleanExtra(EXTRA_PREVIEW, false)
+        val decoded = if (preview) CrashReport.samplePreview(appLabel) else CrashRecovery.pending(this)
 
         // Nothing to recover from (e.g. launched directly for testing, or cleared between
         // the check in maybeShowRecovery and here) — don't strand the user on a blank screen.
@@ -54,10 +55,10 @@ class CrashRecoveryActivity : Activity() {
             return
         }
 
-        setContentView(buildRoot(appLabel, style, decoded))
+        setContentView(buildRoot(appLabel, style, decoded, preview))
     }
 
-    private fun buildRoot(appLabel: String, style: CrashRecoveryStyle, decoded: CrashReport.Decoded): View {
+    private fun buildRoot(appLabel: String, style: CrashRecoveryStyle, decoded: CrashReport.Decoded, preview: Boolean): View {
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setBackgroundColor(style.background)
@@ -65,6 +66,10 @@ class CrashRecoveryActivity : Activity() {
             layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         }
 
+        if (preview) {
+            root.addView(previewBanner(style))
+            root.addView(spacer(10))
+        }
         root.addView(text("$appLabel hit a snag", size = 22f, color = style.foreground, bold = true))
         root.addView(spacer(6))
         root.addView(
@@ -83,7 +88,7 @@ class CrashRecoveryActivity : Activity() {
         root.addView(spacer(16))
         root.addView(actionsRow(style, decoded))
         root.addView(spacer(10))
-        root.addView(secondaryRow(appLabel, style))
+        root.addView(secondaryRow(appLabel, style, preview))
         root.addView(spacer(16))
 
         val (toggle, detailsContainer) = technicalDetails(decoded.fullReport, style)
@@ -95,6 +100,14 @@ class CrashRecoveryActivity : Activity() {
             addView(root)
         }
     }
+
+    private fun previewBanner(style: CrashRecoveryStyle): View =
+        text(
+            "PREVIEW — no real crash occurred. Share/Copy work for real; Reset is disabled.",
+            size = 11f,
+            color = style.accent,
+            bold = true,
+        )
 
     private fun localOnlyBadge(style: CrashRecoveryStyle): View =
         LinearLayout(this).apply {
@@ -134,12 +147,22 @@ class CrashRecoveryActivity : Activity() {
             )
         }
 
-    private fun secondaryRow(appLabel: String, style: CrashRecoveryStyle): View =
+    private fun secondaryRow(appLabel: String, style: CrashRecoveryStyle, preview: Boolean): View =
         LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
-            addView(outlinedButton("Continue", style) { continueToApp() })
+            addView(
+                outlinedButton("Continue", style) { if (preview) finish() else continueToApp() },
+            )
             addView(spacerHorizontal(10))
-            addView(outlinedButton("Reset app data", style, textColor = style.danger) { confirmReset(appLabel) })
+            addView(
+                outlinedButton("Reset app data", style, textColor = style.danger) {
+                    if (preview) {
+                        Toast.makeText(this@CrashRecoveryActivity, "Preview only — no data was reset", Toast.LENGTH_SHORT).show()
+                    } else {
+                        confirmReset(appLabel)
+                    }
+                },
+            )
         }
 
     private fun technicalDetails(fullReport: String, style: CrashRecoveryStyle): Pair<View, View> {
@@ -276,11 +299,18 @@ class CrashRecoveryActivity : Activity() {
     companion object {
         private const val EXTRA_APP_LABEL = "dev.aarso.crashrecovery.APP_LABEL"
         private const val EXTRA_STYLE = "dev.aarso.crashrecovery.STYLE"
+        private const val EXTRA_PREVIEW = "dev.aarso.crashrecovery.PREVIEW"
 
-        fun intent(context: Context, appLabel: String, style: CrashRecoveryStyle = CrashRecoveryStyle.Default): Intent =
+        fun intent(
+            context: Context,
+            appLabel: String,
+            style: CrashRecoveryStyle = CrashRecoveryStyle.Default,
+            preview: Boolean = false,
+        ): Intent =
             Intent(context, CrashRecoveryActivity::class.java).apply {
                 putExtra(EXTRA_APP_LABEL, appLabel)
                 putExtra(EXTRA_STYLE, style)
+                putExtra(EXTRA_PREVIEW, preview)
                 if (context !is Activity) addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
     }
