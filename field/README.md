@@ -26,7 +26,7 @@ Always validate after building. The build environment has no GPU and cannot run 
 
 The panel is grouped. Defaults below are the current shipping values.
 
-**Scene** (mutually exclusive): Bowl, Helix, Towers, Arch, Ruins, Planet. Default Bowl. Each scene has its own camera framing and its own slow autonomous motion.
+**Scene** (mutually exclusive): Bowl, Helix, Towers, Arch, Ruins, Planet, Spiral, Strands, Terraces, Pillars, Ridge, Rows, Coil, Aperture. Default Bowl. Each scene has its own camera framing and its own slow autonomous motion. The eight scenes from Spiral on are the *surrealist nightscapes* — near-black furred forms against saturated smog, sparse frost-flecks riding the key light, motion so slow it reads as something colossal labouring to move.
 
 **Mode**: Passive / Active (global animation intensity — Passive ≈ 0.15×, Active = 1.0×) and Once / Recursive (bounded vs infinite version of the scene). Defaults Passive, Once.
 
