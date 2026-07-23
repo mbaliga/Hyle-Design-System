@@ -51,8 +51,8 @@ input[type=color]::-webkit-color-swatch{border:0;border-radius:5px;}
 <div id="panel">
   <div class="head"><span class="ttl">Form&nbsp;&middot;&nbsp;World</span><div class="hb"><button class="ib" id="reseed">&#10227;</button><button class="ib" id="hide">&#9662;</button></div></div>
   <div class="group"><span class="lbl">Scene</span><div class="chips" id="scene">
-    <button class="chip" data-scn="0" aria-pressed="true">Bowl</button>
-    <button class="chip" data-scn="1" aria-pressed="false">Helix</button>
+    <button class="chip" data-scn="0" aria-pressed="false">Bowl</button>
+    <button class="chip" data-scn="1" aria-pressed="true">Helix</button>
     <button class="chip" data-scn="2" aria-pressed="false">Towers</button>
     <button class="chip" data-scn="3" aria-pressed="false">Arch</button>
     <button class="chip" data-scn="4" aria-pressed="false">Ruins</button>
@@ -232,7 +232,7 @@ function updateSprites(dt,st){
 }
 
 var state={
-  scene:0,speed:.28,grain:.5,glow:1.2,aim:2.2,void:.5,pattern:0,texType:0,inner:.3,grit:1.0,coarse:.5,grainSc:.5,zoom:.5,count:5,yaw:0,tilt:0,
+  scene:1,speed:.28,grain:.5,glow:1.2,aim:2.2,void:.5,pattern:0,texType:0,inner:.3,grit:1.0,coarse:.5,grainSc:.5,zoom:.5,count:5,yaw:0,tilt:0,
   active:0,recursive:0,sprCount:4,sprMode:0,
   seed:Math.random()*100, mat:hex2rgb('#9b958c'), fog:hex2rgb('#cc1a0a'), light:hex2rgb('#ffd2b0'),
   lite:{breathe:1,flicker:0,drift:1,pulse:0}

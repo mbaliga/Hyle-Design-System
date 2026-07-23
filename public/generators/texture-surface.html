@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Texture Surface</title>
+<style>
+  html,body{margin:0;height:100%;background:#0e0e12;overflow:hidden}
+  canvas{display:block;width:100vw;height:100vh}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<script>
+/* ===== verbatim render core, extracted from texture.html (lines 415-514) ===== */
+let noiseCache=null, noiseCacheKey='';
+function buildNoise(w,h){
+  const key=`${w}x${h}`;
+  if(noiseCache && noiseCacheKey===key) return noiseCache;
+  const nc=document.createElement('canvas'); nc.width=w; nc.height=h;
+  const nx=nc.getContext('2d');
+  const img=nx.createImageData(w,h), d=img.data;
+  for(let i=0;i<d.length;i+=4){
+    const v=Math.random()*255;
+    d[i]=d[i+1]=d[i+2]=v; d[i+3]=255;
+  }
+  nx.putImageData(img,0,0);
+  noiseCache=nc; noiseCacheKey=key; return nc;
+}
+
+function render(w,h,target,t){
+  t = t||0;
+  const c=target||cv; c.width=w; c.height=h;
+  const g=c.getContext('2d');
+  const cols=state.colors;
+  const spd=state.speed/50; // ~1.0 at default
+  const m=state.motion;
+
+  // motion-derived offsets
+  let angleOffset=0, driftX=0, driftY=0, pulsePhase=1, noiseOffX=0, noiseOffY=0;
+  if(m==='rotate') angleOffset = t*10*spd; // deg/sec
+  if(m==='drift'){ driftX=Math.sin(t*0.5*spd)*0.08*w; driftY=Math.cos(t*0.4*spd)*0.08*h; }
+  if(m==='pulse'){ pulsePhase = 0.85 + 0.15*Math.sin(t*1.2*spd); }
+  if(m==='shimmer'){ noiseOffX=(t*40*spd)%1000; noiseOffY=(t*27*spd)%1000; }
+
+  // base fill
+  if(state.fill==='solid'){
+    g.fillStyle=cols[0]; g.fillRect(0,0,w,h);
+  } else if(state.fill==='linear'){
+    const a=(state.angle+angleOffset)*Math.PI/180;
+    const x=Math.cos(a), y=Math.sin(a);
+    const cx=w/2+driftX, cy=h/2+driftY, len=(Math.abs(x)*w+Math.abs(y)*h)/2;
+    const grad=g.createLinearGradient(cx-x*len,cy-y*len,cx+x*len,cy+y*len);
+    cols.forEach((col,i)=>grad.addColorStop(cols.length>1?i/(cols.length-1):0,col));
+    g.fillStyle=grad; g.fillRect(0,0,w,h);
+  } else if(state.fill==='radial'){
+    const cx=w/2+driftX, cy=h/2+driftY;
+    const grad=g.createRadialGradient(cx,cy,0,cx,cy,Math.max(w,h)/1.4*pulsePhase);
+    cols.forEach((col,i)=>grad.addColorStop(cols.length>1?i/(cols.length-1):0,col));
+    g.fillStyle=grad; g.fillRect(0,0,w,h);
+  } else if(state.fill==='mesh'){
+    g.fillStyle=cols[cols.length-1]; g.fillRect(0,0,w,h);
+    const spots=[[0.25,0.3],[0.75,0.35],[0.5,0.8],[0.15,0.75],[0.85,0.75]];
+    g.globalCompositeOperation='lighter';
+    cols.forEach((col,i)=>{
+      let [sx,sy]=spots[i%spots.length];
+      if(m==='wave'){
+        sx += Math.sin(t*0.6*spd + i*1.7)*0.09;
+        sy += Math.cos(t*0.5*spd + i*2.1)*0.09;
+      } else if(m==='drift'){
+        sx += driftX/w*0.6; sy += driftY/h*0.6;
+      } else if(m==='rotate'){
+        const cx0=sx-0.5, cy0=sy-0.5, ang=angleOffset*Math.PI/180*0.3;
+        sx = 0.5 + cx0*Math.cos(ang) - cy0*Math.sin(ang);
+        sy = 0.5 + cx0*Math.sin(ang) + cy0*Math.cos(ang);
+      }
+      const r=Math.max(w,h)*0.55*(m==='pulse'?pulsePhase:1);
+      const rg=g.createRadialGradient(w*sx,h*sy,0,w*sx,h*sy,r);
+      rg.addColorStop(0,col); rg.addColorStop(1,'rgba(0,0,0,0)');
+      g.fillStyle=rg; g.fillRect(0,0,w,h);
+    });
+    g.globalCompositeOperation='source-over';
+  }
+
+  // texture
+  if(state.texType!=='none' && state.grain>0){
+    const scale=state.scale/10;
+    const nw=Math.max(2,Math.round(w/scale)), nh=Math.max(2,Math.round(h/scale));
+    const noise=buildNoise(nw,nh);
+    g.save();
+    g.globalAlpha=state.grain/100 * (state.texType==='fine'?0.5:state.texType==='noise'?0.85:0.65);
+    g.globalCompositeOperation= state.texType==='noise' ? 'overlay':'soft-light';
+    g.imageSmoothingEnabled = state.texType!=='grain';
+    if(m==='shimmer'){
+      // tile the noise with a shifting offset for a sparkling grain effect
+      const ox=noiseOffX%nw, oy=noiseOffY%nh;
+      g.drawImage(noise, -ox/nw*w, -oy/nh*h, w, h);
+      g.drawImage(noise, w-ox/nw*w, -oy/nh*h, w, h);
+      g.drawImage(noise, -ox/nw*w, h-oy/nh*h, w, h);
+      g.drawImage(noise, w-ox/nw*w, h-oy/nh*h, w, h);
+    } else {
+      g.drawImage(noise,0,0,w,h);
+    }
+    g.restore();
+  }
+
+  // vignette
+  if(state.vig>0){
+    const vg=g.createRadialGradient(w/2,h/2,Math.min(w,h)*0.3,w/2,h/2,Math.max(w,h)*0.72);
+    vg.addColorStop(0,'rgba(0,0,0,0)');
+    vg.addColorStop(1,`rgba(0,0,0,${state.vig/100*0.85})`);
+    g.fillStyle=vg; g.fillRect(0,0,w,h);
+  }
+  return c;
+}
+/* ===== end verbatim core ===== */
+
+/* Minimal driver (additive): a living, chrome-less surface. Motion defaults to
+   'shimmer' so the grain drifts; the palette matches the generator's default. */
+const cv = document.getElementById('cv');
+const state = {
+  fill: 'mesh', angle: 135,
+  colors: ['#7b6cf6', '#3a2f8f', '#141428'],
+  texType: 'grain', grain: 42, scale: 12, vig: 26,
+  motion: 'shimmer', speed: 42,
+  w: 0, h: 0,
+};
+const CAP = 1400; // render-resolution cap; CSS stretches to the viewport
+function fit() {
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const s = Math.min(1, CAP / Math.max(vw, vh));
+  state.w = Math.max(2, Math.round(vw * s));
+  state.h = Math.max(2, Math.round(vh * s));
+}
+fit();
+window.addEventListener('resize', fit);
+const t0 = performance.now();
+(function loop() {
+  const t = (performance.now() - t0) / 1000;
+  render(state.w, state.h, cv, t);
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
