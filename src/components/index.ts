@@ -41,7 +41,9 @@ export { HyGrille, HyJack } from './surface/hy-surface.js';
 // — Controls —
 export { HyChip } from './chip/hy-chip.js';
 export { HyButton } from './button/hy-button.js';
-export type { HyButtonVariant, HyButtonIcon } from './button/hy-button.js';
+export type { HyButtonVariant, HyButtonSize } from './button/hy-button.js';
+export { HyCrater } from './crater/hy-crater.js';
+export type { HyCraterVariant, HyCraterIcon } from './crater/hy-crater.js';
 export { HyInput } from './input/hy-input.js';
 export type { HyInputSize } from './input/hy-input.js';
 
