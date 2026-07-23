@@ -31,14 +31,12 @@ const preview: Preview = {
       storySort: {
         order: [
           'Introduction',
-          'Signature',
-          'Material',
-          'Mock Apps',
           'Foundations',
-          'Tactile',
-          'Displays',
           'Controls',
+          'Displays',
           'Surfaces',
+          'Material',
+          'Showcase',
         ],
       },
     },

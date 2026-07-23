@@ -4,11 +4,11 @@ import '../src/components/index.js';
 
 /**
  * The signature artifacts — the real, living pieces Hyle is built from, shown in
- * full rather than described. Leads the sidebar so the ethos is met before any
- * token or component.
+ * full rather than described. The individual controls each have their own entry
+ * under `Controls/`; this section is the full assembled demos.
  */
 const meta: Meta = {
-  title: 'Signature',
+  title: 'Showcase',
   parameters: { layout: 'fullscreen', backgrounds: { default: 'field' }, options: { showPanel: false } },
 };
 export default meta;
@@ -28,28 +28,8 @@ export const FormWorldEngine: Story = {
   render: () => frame('field/form-world.html', 'Form-World engine'),
 };
 
-/** The Tactile Kit in full, with its native orange default + user-selectable accent. */
+/** The tactile controls in full assembly, with the native orange default + user-selectable accent. */
 export const TactileKit: Story = {
-  name: 'The Tactile Kit',
-  render: () => frame('kit/tactile-kit.html', 'Tactile Kit'),
-};
-
-/** The haptic scroll wheel. Drag / scroll / arrow keys — a click per detent. */
-export const ScrollWheel: Story = {
-  name: 'The Scroll Wheel',
-  render: () => html`
-    <div style="height:100vh; display:flex; align-items:center; justify-content:center; background:#ececea;">
-      <hy-scroll-wheel style="height:62vh;"></hy-scroll-wheel>
-    </div>
-  `,
-};
-
-/** The colour picker as the accent chooser. */
-export const ColourPicker: Story = {
-  name: 'The Colour Picker',
-  render: () => html`
-    <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; background:#0a0809; padding:32px;">
-      <hy-color-picker value="#8e7bff"></hy-color-picker>
-    </div>
-  `,
+  name: 'The Kit — Full Assembly',
+  render: () => frame('kit/tactile-kit.html', 'The Kit'),
 };

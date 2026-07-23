@@ -4,7 +4,7 @@ import './hy-pane.js';
 import '../chip/hy-chip.js';
 
 const meta: Meta = {
-  title: 'Material/Pane',
+  title: 'Surfaces/Pane',
   component: 'hy-pane',
   tags: ['autodocs'],
   parameters: { backgrounds: { default: 'near' } },

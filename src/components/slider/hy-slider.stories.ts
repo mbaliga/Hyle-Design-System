@@ -7,7 +7,7 @@ const capStyle =
   'font:600 9px sans-serif;letter-spacing:.1em;color:#6b6760;text-transform:uppercase';
 
 const meta: Meta = {
-  title: 'Tactile/Slider',
+  title: 'Controls/Slider',
   component: 'hy-slider',
   tags: ['autodocs'],
   parameters: { backgrounds: { default: 'near' } },

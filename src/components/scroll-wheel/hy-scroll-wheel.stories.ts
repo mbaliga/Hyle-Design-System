@@ -3,7 +3,7 @@ import { html } from 'lit';
 import './hy-scroll-wheel.js';
 
 const meta: Meta = {
-  title: 'Tactile/Scroll Wheel',
+  title: 'Controls/Scroll Wheel',
   component: 'hy-scroll-wheel',
   tags: ['autodocs'],
   parameters: {
