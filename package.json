@@ -16,7 +16,8 @@
   "scripts": {
     "tokens:build": "node scripts/build-tokens.js",
     "picker:build": "node scripts/build-color-picker.js",
-    "assets:build": "npm run tokens:build && npm run picker:build",
+    "surface:build": "node scripts/build-texture-surface.js",
+    "assets:build": "npm run tokens:build && npm run picker:build && npm run surface:build",
     "prestorybook": "npm run assets:build",
     "storybook": "storybook dev -p 6006 --no-open",
     "prebuild-storybook": "npm run assets:build",

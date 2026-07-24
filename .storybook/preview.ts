@@ -36,6 +36,7 @@ const preview: Preview = {
           'Displays',
           'Surfaces',
           'Material',
+          'Generators',
           'Showcase',
         ],
       },
