@@ -69,11 +69,16 @@ Global/Toggle (the active cell's slant edge *is* the divider).
 
 `Segments.kt` carries the grammar:
 
-- **`HyleSegmentShape(slantStart, slantEnd)`** — the generalised segment. Every
-  seam leans the same `/` way at the same slope (0.25, identical to
-  `HyleFieldShape`), so any segment's slanted END tessellates against the next
-  segment's slanted START. Group ends keep square-rounded outer corners:
-  `▐███/` · `/███/` · `/███▌`. Seam gap: 3dp of ground.
+- **`HyleSegmentShape(slantStart, slantEnd)`** — the generalised segment. EVERY
+  seam edge leans the same `/` way at the field's slope (0.25): a slanted END
+  has its **bottom** inset (top runs to full width), a slanted START has its
+  **top** inset — so the two edges of any seam are **parallel** and the strip of
+  ground between them is constant. Group ends keep square-rounded outer corners:
+  `▐███/` · `/███/` · `/███▌`. Seam gap: 3dp of ground; because each box carries
+  its own slant inset, rows pack with `spacedBy(gap − slant)` overlap.
+  (Deliberately NOT the nav chips' mirrored pair, which point at opposite screen
+  edges — seams pack, mirrors face. An earlier cut of this shape mirrored the
+  end slant and produced V-shaped gaps; corrected 2026-07-24.)
 - **`HyleSplitButton`** — one action as two packed cells: label + trailing
   affordance ("+" by default, optionally its own action). Fill states identical
   to `HyleButton`.
@@ -82,18 +87,16 @@ Global/Toggle (the active cell's slant edge *is* the divider).
   slants only its end, middle both, last only its start). Selection carried by
   fill AND label colour, never hue alone.
 
-The existing `HyleNavChip` (one slant, either direction) is this grammar's
-single-cell degenerate case — `HyleFieldShape`'s left slant and
-`HyleRightSlantShape`'s right slant were already parallel and tessellate as-is.
-**The owner's own designs are the canonical reference for the seam** (the
-carved tab bar and Mobius breadcrumb foremost); Cohere's nav is corroboration,
-not the source, and its palette is NOT adopted — cells stay on the Fonebrew
-field/violet axis.
+**The owner's own designs are the canonical reference for the seam** (their
+tab bar, Mobius breadcrumb, Global/Button, and Global/Toggle); Cohere's nav is
+corroboration, not the source, and its palette is NOT adopted — cells stay on
+the Fonebrew field/violet axis.
 
-Applied so far: the app's shared `HyleTabBar` now renders the carved-tab-bar
-reference (solid strip; active tab = a cell filled with the room's own ground,
-slant edges packing against the strip; `/` slashes between inactive
-neighbours; the composer's mode picker inherits it). Still to apply:
+Applied so far: the app's shared `HyleTabBar` renders every tab as its own
+cell, packed along parallel `/` seams with 3dp of ground between — no slash
+dividers, no strip; the cells are the structure (owner refinement over an
+earlier slash-divider cut). The selected cell uses the violet-on-dim-violet
+selection register; the composer's mode picker inherits it. Still to apply:
 breadcrumb trails (the Mobius reference — cells + `/` + count badges).
 
 ## What the cells consume (port contract)
