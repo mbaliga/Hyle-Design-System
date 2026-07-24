@@ -51,11 +51,43 @@ provenance-preserving pattern the kit's `<hy-*>` extractions follow:
 | `HyleButton` | Action — 6dp corners, 40dp; primary (violet fill, pressed steps the ramp) and secondary (raised + hairline) |
 | `HyleChip` | Selection cell — violet-on-dim-violet when selected, hairline otherwise |
 | `HyleNavChip` | Compact slant-edged navigation cell (both slant directions) |
+| `Segments.kt` → `HyleSegmentShape` / `HyleSplitButton` / `HyleSegmentedToggle` | The seam grammar — cells packed along shared slant seams (next section) |
 
 Geometry was measured off the owner's Figma selector-state SVGs and Buttons
 sheet (slant slope 0.25, 32dp field box, bar inset 12.5% of height, the `!`
 mark's stem at 21.9%–59.4%) — that measurement history lives in the code
 comments and is part of what "verbatim" preserves.
+
+## The seam — how cells pack (owner direction 2026-07-24)
+
+The slant edge is not a decoration on one control; it is a **seam** — the shared
+wall adjacent cells pack along, with a thin strip of ground between them. This is
+the compositional half of the Voronoi identity (cells tessellate), validated by
+the same language in Cohere's brand (their segmented nav pills) and the owner's
+own Global/Button (a split action: label cell `/` affordance cell) and
+Global/Toggle (the active cell's slant edge *is* the divider).
+
+`Segments.kt` carries the grammar:
+
+- **`HyleSegmentShape(slantStart, slantEnd)`** — the generalised segment. Every
+  seam leans the same `/` way at the same slope (0.25, identical to
+  `HyleFieldShape`), so any segment's slanted END tessellates against the next
+  segment's slanted START. Group ends keep square-rounded outer corners:
+  `▐███/` · `/███/` · `/███▌`. Seam gap: 3dp of ground.
+- **`HyleSplitButton`** — one action as two packed cells: label + trailing
+  affordance ("+" by default, optionally its own action). Fill states identical
+  to `HyleButton`.
+- **`HyleSegmentedToggle`** — one rounded container; the selected option is a
+  filled cell whose slant edges are themselves the dividers (first selection
+  slants only its end, middle both, last only its start). Selection carried by
+  fill AND label colour, never hue alone.
+
+The existing `HyleNavChip` (one slant, either direction) is this grammar's
+single-cell degenerate case — `HyleFieldShape`'s left slant and
+`HyleRightSlantShape`'s right slant were already parallel and tessellate as-is.
+Next applications of the seam: the tab bar (active tab as a carved cell, `/`
+seams as dividers — the owner's Summary/Graph View and Mobius breadcrumb
+references), breadcrumb trails, and the composer's mode picker.
 
 ## What the cells consume (port contract)
 
