@@ -85,9 +85,16 @@ Global/Toggle (the active cell's slant edge *is* the divider).
 The existing `HyleNavChip` (one slant, either direction) is this grammar's
 single-cell degenerate case — `HyleFieldShape`'s left slant and
 `HyleRightSlantShape`'s right slant were already parallel and tessellate as-is.
-Next applications of the seam: the tab bar (active tab as a carved cell, `/`
-seams as dividers — the owner's Summary/Graph View and Mobius breadcrumb
-references), breadcrumb trails, and the composer's mode picker.
+**The owner's own designs are the canonical reference for the seam** (the
+carved tab bar and Mobius breadcrumb foremost); Cohere's nav is corroboration,
+not the source, and its palette is NOT adopted — cells stay on the Fonebrew
+field/violet axis.
+
+Applied so far: the app's shared `HyleTabBar` now renders the carved-tab-bar
+reference (solid strip; active tab = a cell filled with the room's own ground,
+slant edges packing against the strip; `/` slashes between inactive
+neighbours; the composer's mode picker inherits it). Still to apply:
+breadcrumb trails (the Mobius reference — cells + `/` + count badges).
 
 ## What the cells consume (port contract)
 
