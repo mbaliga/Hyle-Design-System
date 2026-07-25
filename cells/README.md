@@ -36,11 +36,23 @@ register the kit deliberately doesn't. (The existing `<hy-input>` in
 `src/components/` is a generic token-styled rectangle with no cell identity —
 superseding it with a cell-styled port is part of the integration step below.)
 
-## What's here
+## Where the code lives
 
-`Cells.kt` — the components, **extracted verbatim** from Fonebrew
-(`Android-IDE-core`, `app/src/main/java/dev/aarso/ui/aeon/Aeon.kt`), the same
-provenance-preserving pattern the kit's `<hy-*>` extractions follow:
+**In `:hyle`, not here.** This folder is the design record; the components are a
+real, compiled, published part of the library:
+
+```
+hyle/src/main/java/dev/aarso/hyle/cells/   <- the components
+hyle/src/main/java/dev/aarso/hyle/theme/   <- the colour system they read
+```
+
+This folder briefly held `.kt` copies. That was a mistake and they have been
+deleted: loose source files that nothing compiles and nothing tests are exactly
+how `0.1.0` ended up shipping from three divergent copies. If you want to change
+a component, change it in `:hyle` — there is no other copy, and Fonebrew now
+consumes it as a dependency rather than keeping its own.
+
+## What's in the cells register
 
 | Component | What it is |
 |---|---|

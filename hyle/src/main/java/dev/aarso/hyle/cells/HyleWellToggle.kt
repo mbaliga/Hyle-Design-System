@@ -25,9 +25,7 @@ import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.unit.dp
-// PORT NOTE: resolves against the app today; becomes library-local on the
-// Compose port, when Hyle ships its own colour CompositionLocal.
-import dev.aarso.ui.theme.LocalHyleColors
+import dev.aarso.hyle.theme.LocalHyleColors
 
 /** Authored toggle height; the control keeps the export's 644:320 aspect. */
 private val TOGGLE_HEIGHT = 44.dp

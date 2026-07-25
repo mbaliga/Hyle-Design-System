@@ -29,8 +29,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import dev.aarso.ui.theme.LocalHyleColors // PORT NOTE: becomes the library's cell colour scheme
-import dev.aarso.ui.hyle.rememberHyleHaptics // PORT NOTE: becomes the library's haptics
+import dev.aarso.hyle.theme.LocalHyleColors
 import kotlin.math.sqrt
 
 /**
