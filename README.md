@@ -95,7 +95,39 @@ npm run storybook      # browse the Field, Pane, tokens, components at :6006
 | Controls  | `hy-chip` · `hy-button` · `hy-input` · `hy-slider`                        |
 | Tactile   | `hy-knob` · `hy-fader` · `hy-toggle` · `hy-key` · `hy-joystick` · `hy-dial` · `hy-transport` |
 | Displays  | `hy-meter` · `hy-vu` · `hy-waveform` · `hy-screen`                        |
-| Surfaces  | `hy-card` · `hy-grille` · `hy-jack`                                       |
+| Surfaces  | `hy-card` · `hy-grille` · `hy-jack` · `hy-terminal`                       |
+
+#### Surface finishes
+
+The house assigns materials by meaning, so each finish answers a different
+question about the layer you are looking at:
+
+| Finish       | What that layer is                                                    |
+| ------------ | --------------------------------------------------------------------- |
+| **glass**    | the layer you read *through* — `hy-pane`, frosted over a living Field  |
+| **grille**   | the panel you *touch* — perforated, acoustically honest               |
+| **jack**     | the panel you *connect to* — a machined socket                         |
+| **terminal** | the layer a machine *writes to while you watch* — `hy-terminal`        |
+
+`terminal` is cut **into** the surface rather than laid on it, which is why its
+ground sits below `field.raised` and it carries an inner shadow rather than a
+drop shadow, and why it is square: a terminal has no corner radius.
+
+Two things it deliberately is *not*: there is no phosphor green and there are no
+scanlines by default. A terminal that cosplays a VT100 is *saying* "this is
+technical" in language, which is the exact move the core law forbids. What makes
+it read as a terminal is the fixed advance, the well, and the cursor, each of
+which does work. Scanlines are opt-in, for the one case where a CRT is literally
+the subject.
+
+State is carried entirely by the cursor: `idle` holds and blinks, `working`
+breathes, `failed` stops and takes the danger hue. No status word, no spinner.
+Because the cursor's *motion* changes as well as its colour, the state survives
+greyscale and colour-vision deficiency (WCAG 1.4.1); under
+`prefers-reduced-motion` every state holds solid and the cursor stays the state
+channel without moving. The prompt glyph takes the provenance hue, so whether
+the work is happening on this device or elsewhere is legible from the prompt
+alone.
 
 Two larger, app-specific pieces from the Tactile Kit are intentionally **left
 living in [`kit/`](kit/)** rather than reimplemented as components: the full HSL

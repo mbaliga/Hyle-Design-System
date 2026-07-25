@@ -38,6 +38,10 @@
         "stone": { "$value": "#9b958c", "$type": "color", "$description": "Form-World stone/smog/light, kept separate. Surface albedo of the forms behind the pane." },
         "smog":  { "$value": "#cc1a0a", "$type": "color", "$description": "Atmosphere / fog colour." },
         "light": { "$value": "#ffd2b0", "$type": "color", "$description": "Key light, specular, sun disc." }
+      },
+      "terminal": {
+        "well":      { "$value": "#08080a", "$type": "color", "$description": "The recessed well a terminal is read out of. Sits below field.raised, because a terminal reads as cut INTO the surface rather than laid on it." },
+        "selection": { "$value": "rgba(199, 239, 158, 0.18)", "$type": "color", "$description": "Selection wash: the native hue at low alpha, never a system blue. Selection is this machine acting on its own text." }
       }
     },
 
@@ -73,6 +77,16 @@
       "danger":  { "$value": "{color.palette.signal.danger}", "$type": "color" },
       "warning": { "$value": "{color.palette.signal.warning}", "$type": "color" },
       "success": { "$value": "{color.palette.signal.success}", "$type": "color" }
+    },
+    "terminal": {
+      "ground":    { "$value": "{color.palette.terminal.well}", "$type": "color" },
+      "ink":       { "$value": "{color.palette.ink.full}", "$type": "color", "$description": "Live output. The house ink, deliberately NOT phosphor green: this is a finish, not a costume." },
+      "dim":       { "$value": "{color.palette.ink.dim}", "$type": "color", "$description": "Settled output, one step back from live." },
+      "faint":     { "$value": "{color.palette.ink.faint}", "$type": "color", "$description": "Timestamps, gutters, anything a reader scans past." },
+      "prompt":    { "$value": "{color.palette.provenance.native}", "$type": "color", "$description": "The prompt glyph, deliberately the native-provenance hue: a prompt means THIS machine is the one about to act. Always paired with the glyph itself, never colour alone (WCAG 1.4.1)." },
+      "cursor":    { "$value": "{color.palette.provenance.native}", "$type": "color" },
+      "hairline":  { "$value": "{color.palette.hairline.default}", "$type": "color" },
+      "selection": { "$value": "{color.palette.terminal.selection}", "$type": "color" }
     }
   }
 }
