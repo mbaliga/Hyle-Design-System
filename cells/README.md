@@ -16,7 +16,7 @@ not metaphorical:
 |---|---|
 | **Membrane** — the organic, unevenly-rounded cell outline | The field silhouette: rounded rect with a slanted left edge, bottom-left corner rounder than the other three (`HyleFieldShape`) |
 | **Cytoplasm** — the cell's fill against the ground | The inset/raised fill on the dark field, no border — the cell reads as a lighter body on the ground |
-| **Nucleus** — the one marked point inside each cell | The 2dp accent bar, the 5-point mandatory asterisk riding the slant, the dropdown caret, a chip's violet label |
+| **Nucleus** — the one marked point inside each cell | The marker riding the slant, the right-anchored 5-point mandatory asterisk, the dropdown caret, a chip's violet label |
 | **Cell gap** — the ground showing between cells | Spacing between controls; the ground is always visible around each cell |
 
 So the form layer isn't a bolt-on "professional widgets" set that fights the
@@ -53,10 +53,56 @@ provenance-preserving pattern the kit's `<hy-*>` extractions follow:
 | `HyleNavChip` | Compact slant-edged navigation cell (both slant directions) |
 | `Segments.kt` → `HyleSegmentShape` / `HyleSplitButton` / `HyleSegmentedToggle` | The seam grammar — cells packed along shared slant seams (next section) |
 
-Geometry was measured off the owner's Figma selector-state SVGs and Buttons
-sheet (slant slope 0.25, 32dp field box, bar inset 12.5% of height, the `!`
-mark's stem at 21.9%–59.4%) — that measurement history lives in the code
-comments and is part of what "verbatim" preserves.
+`CellGeometry.kt` — the **exact** authored geometry, and `HyleWellToggle.kt` —
+the two-state toggle. See below.
+
+## Transcribed, not re-derived
+
+The field silhouette was originally *measured* off the Figma exports and rebuilt
+from a radius/slant formula (slope 0.25, 32dp box, bar inset 12.5%). That
+approximation drifted visibly from the source and was rejected on review. It is
+now a **control-point transcription** of the export — `CellGeometry.kt` carries
+the authored path data verbatim, and nothing re-derives it.
+
+The field canvas (`3040 × 320`) stretches horizontally, so it cannot be
+uniformly scaled. The rule:
+
+- left-edge features stay **left-anchored**, scaled by `h/320`
+- right-edge features stay **right-anchored**, same factor
+- only the straight top/bottom runs between them stretch
+
+At the authored aspect the right-anchor mapping collapses to a plain uniform
+scale, so the export is reproduced exactly. The toggle canvas (`644 × 320`) is
+fixed-aspect, so one uniform scale applies.
+
+Four things about the field are load-bearing and were each corrected during
+review — don't "simplify" them back:
+
+1. The ring is a **gradient**, not a flat stroke; the ramp is what makes the
+   edge read as lit, and the colour encodes state.
+2. The slant marker is present in **every** state — the default mutes it rather
+   than dropping it. Error is the only state that splits the same silhouette
+   into a literal exclamation (stem + dot).
+3. The mandatory asterisk is **five-point** and **right-anchored** — not six-arm,
+   not riding the slant. It is not repeated in the label row.
+4. The text baseline sits low in the box; label and error caption sit tight to it.
+
+## The well toggle
+
+`HyleWellToggle.kt` — a recessed **well** holding a raised **chip**, the
+two-state control in the cells register. Three details are load-bearing:
+
+1. Depth comes from a **violet-tinted** inner shadow — not black, and not a
+   stroke. That tint bouncing inside the recess is what reads as reflectivity.
+   Alpha is owner-set at 35% below the export's value.
+2. The chip's lit edge is a **gradient** stroke, dark at bottom-left running to
+   violet at top-right. Flat kills it.
+3. Selecting the other side rotates the chip a full **180°**, not a horizontal
+   mirror — that keeps the slant leaning the same way on both sides. The glint
+   deliberately does *not* rotate: the light source is fixed.
+
+The chip sits **flush** to the well's edges (no padding) — the owner's chosen
+variant of the two that were compared.
 
 ## The seam — how cells pack (owner direction 2026-07-24)
 
