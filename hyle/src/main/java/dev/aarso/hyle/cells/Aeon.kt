@@ -101,12 +101,16 @@ internal object HyleRightSlantShape : Shape {
         val dy = r * size.height / len
         val w = size.width
         val h = size.height
+        // The slanted edge leans the SAME "/" way as HyleFieldShape's. It used to be a
+        // true mirror, which put the two chips' slants at opposing angles — the same
+        // fault that produced V-shaped gaps in the seam grammar before HyleSegmentShape
+        // was corrected. Every slant in Hyle is parallel; nothing mirrors.
         val path = Path().apply {
             moveTo(r, 0f)
-            lineTo(w - slant - r, 0f)
-            quadraticBezierTo(w - slant, 0f, w - slant + dx, dy)
-            lineTo(w - dx, h - dy)
-            quadraticBezierTo(w, h, w - r, h)
+            lineTo(w - r, 0f)
+            quadraticBezierTo(w, 0f, w - dx, dy)
+            lineTo(w - slant + dx, h - dy)
+            quadraticBezierTo(w - slant, h, w - slant - r, h)
             lineTo(r, h)
             quadraticBezierTo(0f, h, 0f, h - r)
             lineTo(0f, r)
