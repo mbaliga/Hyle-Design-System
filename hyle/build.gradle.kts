@@ -13,6 +13,7 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
     `maven-publish`
 }
 
@@ -42,6 +43,13 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    // Hyle now ships the *components*, not just the tokens. Before this, consumers
+    // got a token sheet and re-implemented the render layer themselves, which is how
+    // 0.1.0 ended up shipping from three divergent copies.
+    buildFeatures {
+        compose = true
+    }
+
     // Required so maven-publish has a single, named variant to publish.
     publishing {
         singleVariant("release") {
@@ -68,5 +76,12 @@ afterEvaluate {
 }
 
 dependencies {
+    // `api` rather than `implementation`: these types appear in Hyle's public surface
+    // (Modifier, Color, Composable), so consumers must see them transitively.
+    api(platform(libs.androidx.compose.bom))
+    api(libs.androidx.compose.ui)
+    api(libs.androidx.compose.ui.graphics)
+    api(libs.androidx.compose.material3)
+
     testImplementation(libs.junit)
 }
