@@ -122,8 +122,12 @@ internal object CellPaths {
  * right-edge features stay right-anchored, and only the straight top/bottom runs
  * between them stretch — so the corners and the slant hold their authored shape
  * at any width.
+ *
+ * Public (not `internal`): this is the app's one genuine "file tab" silhouette —
+ * consuming screens (e.g. a chats list styled as file tabs, not boxed cards) clip
+ * a full-width row to this shape directly rather than re-deriving a slant.
  */
-internal object HyleFieldShape : Shape {
+object HyleFieldShape : Shape {
     override fun createOutline(
         size: Size,
         layoutDirection: LayoutDirection,
