@@ -103,5 +103,17 @@ object CrashRecovery {
         return true
     }
 
+    /**
+     * Launches the recovery screen with sample content — no real crash, no disk read/write —
+     * so the UX (tone, layout, Share/Copy) can be reviewed without needing to actually crash
+     * the app. Wire this to a debug-only affordance (e.g. a long-press on the version number
+     * in an About/Settings screen); it should never be reachable from a release build's
+     * normal UI. Share/Copy work for real in preview; Reset and Continue are no-ops (see
+     * [CrashRecoveryActivity]) so previewing the screen can never wipe app data or restart
+     * anything.
+     */
+    fun previewIntent(context: Context, appLabel: String, style: CrashRecoveryStyle = CrashRecoveryStyle.Default): Intent =
+        CrashRecoveryActivity.intent(context, appLabel, style, preview = true)
+
     private fun file(context: Context): File = File(context.applicationContext.filesDir, FILE_NAME)
 }

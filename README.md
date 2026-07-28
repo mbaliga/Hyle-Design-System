@@ -64,6 +64,15 @@ CrashRecovery.install(this, appLabel = "Runout")
 if (CrashRecovery.maybeShowRecovery(this, appLabel = "Runout")) return
 ```
 
+**Previewing the screen without a real crash:** `CrashRecovery.previewIntent(context, appLabel)`
+launches the recovery screen with sample content — no disk read/write, no real crash needed.
+Share/Copy work for real (so the one-tap flow can actually be checked); Reset and Continue are
+no-ops in preview so it can never wipe app data or restart anything. **Wire this to a debug-only
+affordance** (e.g. a long-press on the version number in an About/Settings screen, guarded by
+`BuildConfig.DEBUG` or an equivalent debuggable-build check) — it must never be reachable from a
+release build's normal UI. Every consumer of this module should have exactly one such entry
+point; see each consumer repo's own docs for where it lives.
+
 ```bash
 ./gradlew :crash-recovery:test                 # JVM tests (formatting/persistence, no Android SDK needed to run)
 ./gradlew :crash-recovery:publishToMavenLocal   # prove it stands alone as dev.aarso:crash-recovery:1.0.0
