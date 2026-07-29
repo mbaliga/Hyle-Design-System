@@ -1,6 +1,7 @@
 package dev.aarso.crashrecovery
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -12,6 +13,10 @@ class CrashReportTest {
         osSdkInt = 34,
         deviceManufacturer = "Nubia",
         deviceModel = "RedMagic 11 Pro",
+        packageName = "com.asystemofcells.app",
+        installSource = "Play Store",
+        freeMemMb = 212L,
+        totalMemMb = 12288L,
     )
 
     @Test
@@ -27,7 +32,18 @@ class CrashReportTest {
     }
 
     @Test
-    fun `render includes app label, device metadata, headline, and trace`() {
+    fun `plain-language maps known failure kinds and falls back generically`() {
+        assertTrue(CrashReport.plainLanguageFor(OutOfMemoryError()).contains("memory"))
+        assertTrue(CrashReport.plainLanguageFor(StackOverflowError()).contains("repeating"))
+        assertTrue(CrashReport.plainLanguageFor(NullPointerException()).contains("wasn't"))
+        assertEquals(
+            "The app ran into an unexpected error and had to close.",
+            CrashReport.plainLanguageFor(IllegalStateException("boom")),
+        )
+    }
+
+    @Test
+    fun `render includes summary, structured fields, headline, and trace`() {
         val report = CrashReport.of(
             appLabel = "Runout",
             whenMillis = 0L,
@@ -37,21 +53,37 @@ class CrashReportTest {
         )
         val rendered = report.render()
 
-        assertTrue(rendered.startsWith("Runout crash\n"))
-        assertTrue(rendered.contains("thread: main"))
-        assertTrue(rendered.contains("app version: 1.2.3 (42)"))
-        assertTrue(rendered.contains("Nubia RedMagic 11 Pro"))
-        assertTrue(rendered.contains("Android SDK 34"))
-        assertTrue(rendered.contains("IllegalStateException: boom"))
+        assertTrue(rendered.startsWith("=== Crash report — Runout ==="))
+        assertTrue(rendered.contains("What happened: "))
+        assertTrue(rendered.contains("Error:   IllegalStateException"))
+        assertTrue(rendered.contains("Message: boom"))
+        assertTrue(rendered.contains("Thread:  main"))
+        assertTrue(rendered.contains("App:     Runout 1.2.3 (42)"))
+        assertTrue(rendered.contains("Package: com.asystemofcells.app"))
+        assertTrue(rendered.contains("Source:  Play Store"))
+        assertTrue(rendered.contains("Nubia RedMagic 11 Pro, Android SDK 34"))
+        assertTrue(rendered.contains("Memory:  212 MB free of 12288 MB at crash"))
         assertTrue(rendered.contains("at dev.aarso.crashrecovery.CrashReportTest"))
     }
 
     @Test
-    fun `encode then decode round-trips the headline and full report`() {
+    fun `render shows (none) when the exception has no message`() {
+        val report = CrashReport.of(
+            appLabel = "Runout",
+            whenMillis = 0L,
+            threadName = "main",
+            throwable = RuntimeException(),
+            device = device,
+        )
+        assertTrue(report.render().contains("Message: (none)"))
+    }
+
+    @Test
+    fun `encode then decode round-trips every structured field`() {
         val report = CrashReport.of(
             appLabel = "Clackpad",
             whenMillis = 1_700_000_000_000L,
-            threadName = "main",
+            threadName = "GLThread 482",
             throwable = NullPointerException("keymap missing"),
             device = device,
         )
@@ -59,15 +91,31 @@ class CrashReportTest {
         val decoded = CrashReport.decode(report.encode())
 
         assertEquals("NullPointerException: keymap missing", decoded.headline)
+        assertEquals("Clackpad", decoded.appLabel)
+        assertEquals("NullPointerException", decoded.excType)
+        assertEquals("keymap missing", decoded.excMessage)
+        assertEquals("GLThread 482", decoded.threadName)
+        assertEquals(1_700_000_000_000L, decoded.whenMillis)
+        assertEquals("1.2.3", decoded.versionName)
+        assertEquals(42L, decoded.versionCode)
+        assertEquals("com.asystemofcells.app", decoded.packageName)
+        assertEquals("Play Store", decoded.installSource)
+        assertEquals(34, decoded.osSdkInt)
+        assertEquals("RedMagic 11 Pro", decoded.deviceModel)
+        assertEquals(212L, decoded.freeMemMb)
+        assertEquals(12288L, decoded.totalMemMb)
+        assertTrue(decoded.trace.contains("at dev.aarso.crashrecovery.CrashReportTest"))
+        // The shareable text the UI shows equals what render() produces.
         assertEquals(report.render(), decoded.fullReport)
     }
 
     @Test
     fun `decode is best-effort on a foreign or malformed string`() {
-        val decoded = CrashReport.decode("just some text with no blank-line separator")
+        val decoded = CrashReport.decode("just some text with no separator")
 
-        assertEquals("just some text with no blank-line separator", decoded.headline)
-        assertEquals("just some text with no blank-line separator", decoded.fullReport)
+        assertEquals("just some text with no separator", decoded.headline)
+        assertEquals("just some text with no separator", decoded.fullReport)
+        assertNull(decoded.whenMillis)
     }
 
     @Test
@@ -76,5 +124,13 @@ class CrashReportTest {
 
         assertEquals("", decoded.headline)
         assertEquals("", decoded.fullReport)
+    }
+
+    @Test
+    fun `decode reads a legacy headline-blankline-body file`() {
+        val legacy = "IllegalStateException: old\n\nIllegalStateException: old\nsome older body text"
+        val decoded = CrashReport.decode(legacy)
+        assertEquals("IllegalStateException: old", decoded.headline)
+        assertTrue(decoded.fullReport.contains("some older body text"))
     }
 }

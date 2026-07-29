@@ -65,18 +65,52 @@ object CrashRecovery {
     private fun legacyVersionCode(info: android.content.pm.PackageInfo): Long = info.versionCode.toLong()
 
     private fun deviceInfo(context: Context): CrashReport.DeviceInfo = runCatching {
-        val pm = context.applicationContext.packageManager
-        val pkg = context.applicationContext.packageName
+        val app = context.applicationContext
+        val pm = app.packageManager
+        val pkg = app.packageName
         val info = pm.getPackageInfo(pkg, 0)
         val versionCode = if (Build.VERSION.SDK_INT >= 28) info.longVersionCode else legacyVersionCode(info)
+        val (freeMb, totalMb) = memoryMb(app)
         CrashReport.DeviceInfo(
             appVersionName = info.versionName,
             appVersionCode = versionCode,
             osSdkInt = Build.VERSION.SDK_INT,
             deviceManufacturer = Build.MANUFACTURER ?: "?",
             deviceModel = Build.MODEL ?: "?",
+            packageName = pkg,
+            installSource = installSource(app, pkg),
+            freeMemMb = freeMb,
+            totalMemMb = totalMb,
         )
     }.getOrDefault(CrashReport.DeviceInfo(null, null, Build.VERSION.SDK_INT, "?", "?"))
+
+    /** Free / total device RAM in MB at capture time — the metadata an OOM report lives or dies by. */
+    private fun memoryMb(context: Context): Pair<Long?, Long?> = runCatching {
+        val am = context.getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
+        val mi = android.app.ActivityManager.MemoryInfo()
+        am.getMemoryInfo(mi)
+        (mi.availMem / (1024 * 1024)) to (mi.totalMem / (1024 * 1024))
+    }.getOrDefault(null to null)
+
+    /** A human-readable install origin ("Play Store", "Sideloaded", …), never an identifier. */
+    @Suppress("DEPRECATION")
+    private fun installSource(context: Context, pkg: String): String? = runCatching {
+        val installer = if (Build.VERSION.SDK_INT >= 30) {
+            context.packageManager.getInstallSourceInfo(pkg).installingPackageName
+        } else {
+            context.packageManager.getInstallerPackageName(pkg)
+        }
+        when (installer) {
+            null -> "Sideloaded"
+            "com.android.vending" -> "Play Store"
+            "com.amazon.venezia" -> "Amazon Appstore"
+            "com.sec.android.app.samsungapps" -> "Galaxy Store"
+            "org.fdroid.fdroid" -> "F-Droid"
+            "com.google.android.packageinstaller",
+            "com.android.packageinstaller" -> "Sideloaded"
+            else -> installer
+        }
+    }.getOrNull()
 
     /** Non-null if a crash was captured and not yet cleared. */
     fun pending(context: Context): CrashReport.Decoded? = runCatching {
@@ -96,9 +130,14 @@ object CrashRecovery {
      * Returns `true` when recovery was shown (the caller should `return` immediately without
      * building its real UI), `false` when there's nothing to recover from.
      */
-    fun maybeShowRecovery(activity: Activity, appLabel: String, style: CrashRecoveryStyle = CrashRecoveryStyle.Default): Boolean {
+    fun maybeShowRecovery(
+        activity: Activity,
+        appLabel: String,
+        style: CrashRecoveryStyle = CrashRecoveryStyle.Default,
+        contactEmail: String? = null,
+    ): Boolean {
         if (pending(activity) == null) return false
-        activity.startActivity(CrashRecoveryActivity.intent(activity, appLabel, style))
+        activity.startActivity(CrashRecoveryActivity.intent(activity, appLabel, style, contactEmail))
         activity.finish()
         return true
     }
