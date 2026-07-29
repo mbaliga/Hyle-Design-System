@@ -52,6 +52,9 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    // Hyle now ships the *components*, not just the tokens. Before this, consumers
+    // got a token sheet and re-implemented the render layer themselves, which is how
+    // 0.1.0 ended up shipping from three divergent copies.
     buildFeatures {
         compose = true
     }

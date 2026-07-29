@@ -77,4 +77,13 @@ class CrashReportTest {
         assertEquals("", decoded.headline)
         assertEquals("", decoded.fullReport)
     }
+
+    @Test
+    fun `samplePreview is clearly labelled and never claims a real crash`() {
+        val decoded = CrashReport.samplePreview("Runout")
+
+        assertTrue(decoded.headline.contains("PREVIEW"))
+        assertTrue(decoded.fullReport.contains("PREVIEW"))
+        assertTrue(decoded.fullReport.contains("Runout"))
+    }
 }
