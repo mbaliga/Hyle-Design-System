@@ -36,12 +36,19 @@ export { HyDial } from './dial/hy-dial.js';
 // — Displays & surfaces —
 export { HyWaveform } from './waveform/hy-waveform.js';
 export { HyScreen } from './screen/hy-screen.js';
+export { HyDisplay } from './display/hy-display.js';
+export { HyDigitalDisplay } from './digital-display/hy-digital-display.js';
+export type { HyDigitalDisplayVariant } from './digital-display/hy-digital-display.js';
+export { HyMiniDisplay } from './mini-display/hy-mini-display.js';
+export type { HyMiniDisplayKind } from './mini-display/hy-mini-display.js';
 export { HyGrille, HyJack } from './surface/hy-surface.js';
 
 // — Controls —
 export { HyChip } from './chip/hy-chip.js';
 export { HyButton } from './button/hy-button.js';
-export type { HyButtonVariant, HyButtonIcon } from './button/hy-button.js';
+export type { HyButtonVariant, HyButtonSize } from './button/hy-button.js';
+export { HyCrater } from './crater/hy-crater.js';
+export type { HyCraterVariant, HyCraterIcon } from './crater/hy-crater.js';
 export { HyInput } from './input/hy-input.js';
 export type { HyInputSize } from './input/hy-input.js';
 

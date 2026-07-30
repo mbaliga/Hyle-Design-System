@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<glyph name="slash" format="2">
+  <advance width="400"/>
+  <unicode hex="002F"/>
+  <outline>
+    <contour>
+      <point x="83" y="0" type="line"/>
+      <point x="50" y="1" type="line"/>
+      <point x="50" y="32" type="line"/>
+      <point x="50" y="35" type="line"/>
+      <point x="319" y="699" type="line"/>
+      <point x="320" y="700" type="line"/>
+      <point x="349" y="700" type="line"/>
+      <point x="350" y="658" type="line"/>
+      <point x="119" y="86" type="line"/>
+      <point x="116" y="81" type="line"/>
+      <point x="98" y="35" type="line"/>
+    </contour>
+  </outline>
+  <lib>
+    <dict>
+      <key>public.truetype.instructions</key>
+      <dict>
+        <key>assembly</key>
+        <string>
+
+</string>
+        <key>formatVersion</key>
+        <string>1</string>
+        <key>id</key>
+        <string>w400l83+0l50+1l50+32l50+35l319+699l320+700l349+700l350+658l119+86l116+81l98+35|</string>
+      </dict>
+    </dict>
+  </lib>
+</glyph>

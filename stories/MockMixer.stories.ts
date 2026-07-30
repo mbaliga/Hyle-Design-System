@@ -8,7 +8,7 @@ import '../src/components/index.js';
  * This is the harness for testing ported controls in a real layout.
  */
 const meta: Meta = {
-  title: 'Mock Apps/Mixer',
+  title: 'Showcase/Mixer',
   parameters: { layout: 'fullscreen', backgrounds: { default: 'field' }, options: { showPanel: false } },
 };
 export default meta;

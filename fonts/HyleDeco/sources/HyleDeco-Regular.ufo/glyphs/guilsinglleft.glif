@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<glyph name="guilsinglleft" format="2">
+  <advance width="170"/>
+  <unicode hex="2039"/>
+  <outline>
+    <contour>
+      <point x="114" y="401" type="line"/>
+      <point x="106" y="382" type="line"/>
+      <point x="99" y="364" type="line"/>
+      <point x="95" y="345" type="line"/>
+      <point x="92" y="327" type="line"/>
+      <point x="90" y="309" type="line"/>
+      <point x="90" y="291" type="line"/>
+      <point x="92" y="273" type="line"/>
+      <point x="95" y="255" type="line"/>
+      <point x="99" y="236" type="line"/>
+      <point x="106" y="218" type="line"/>
+      <point x="114" y="199" type="line"/>
+      <point x="123" y="180" type="line"/>
+      <point x="84" y="160" type="line"/>
+      <point x="73" y="181" type="line"/>
+      <point x="64" y="203" type="line"/>
+      <point x="57" y="225" type="line"/>
+      <point x="51" y="246" type="line"/>
+      <point x="48" y="266" type="line"/>
+      <point x="46" y="288" type="line"/>
+      <point x="46" y="310" type="line"/>
+      <point x="48" y="332" type="line"/>
+      <point x="51" y="354" type="line"/>
+      <point x="57" y="377" type="line"/>
+      <point x="65" y="399" type="line"/>
+      <point x="74" y="420" type="line"/>
+      <point x="84" y="440" type="line"/>
+      <point x="123" y="420" type="line"/>
+    </contour>
+  </outline>
+  <lib>
+    <dict>
+      <key>public.truetype.instructions</key>
+      <dict>
+        <key>assembly</key>
+        <string>
+
+</string>
+        <key>formatVersion</key>
+        <string>1</string>
+        <key>id</key>
+        <string>7fd691cd0d6d4785f698ad9b8da11106790524a794e76a5ccba9d1efc7d011df8a24aafafe31a1d63b292a1c8c766f058268fe7baea9f3fc78eac5d9cb26434f</string>
+      </dict>
+    </dict>
+  </lib>
+</glyph>

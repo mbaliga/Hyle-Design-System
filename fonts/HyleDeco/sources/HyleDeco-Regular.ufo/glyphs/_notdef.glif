@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<glyph name=".notdef" format="2">
+  <advance width="500"/>
+  <outline>
+    <contour>
+      <point x="0" y="0" type="line"/>
+      <point x="400" y="0" type="line"/>
+      <point x="400" y="700" type="line"/>
+      <point x="0" y="700" type="line"/>
+    </contour>
+    <contour>
+      <point x="60" y="60" type="line"/>
+      <point x="60" y="640" type="line"/>
+      <point x="340" y="640" type="line"/>
+      <point x="340" y="60" type="line"/>
+    </contour>
+  </outline>
+  <lib>
+    <dict>
+      <key>public.truetype.instructions</key>
+      <dict>
+        <key>assembly</key>
+        <string>
+
+</string>
+        <key>formatVersion</key>
+        <string>1</string>
+        <key>id</key>
+        <string>w500l0+0l400+0l400+700l0+700|l60+60l60+640l340+640l340+60|</string>
+      </dict>
+    </dict>
+  </lib>
+</glyph>

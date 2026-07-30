@@ -1,0 +1,5 @@
+name: Hyle Deco
+repository_url: https://github.com/CONFIRM/hyle-deco   # [CONFIRM] replace with real URL before filing
+branch: main
+files:
+  - HyleDeco[wght].ttf   # [CONFIRM] update if shipping variable; currently static Regular only

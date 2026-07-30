@@ -1,97 +1,130 @@
-import { html } from 'lit';
+import { LitElement, css, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { KitElement } from '../../kit/kit-element.js';
-import { SFX, HX } from '../../kit/kit-runtime.js';
 
-/** Button variants, lifted verbatim from the kit's Buttons section (lines 765-771). */
-export type HyButtonVariant = 'crater' | 'power';
-
-/** Crater glyphs, lifted verbatim from the kit (lines 766-768). */
-export type HyButtonIcon = 'record' | 'mix' | 'save';
+export type HyButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
+export type HyButtonSize = 'sm' | 'md' | 'lg';
 
 /**
- * A physical button — extracted verbatim from the Tactile Kit's Buttons section.
- *
- * Two faithful variants:
- *  - `crater` — the sunken `.crater-cell` key with a record / mix / save glyph
- *    (kit lines 765-768). Record latches an `on` state.
- *  - `power`  — the raised `.mound` power key; click toggles the mound's `off`
- *    class (kit line 999).
+ * A token-driven button.
  *
  * @element hy-button
- * @slot - Custom crater glyph (overrides `icon`).
- * @fires hy-change - `detail.value` (the `on` state) on click.
+ * @slot - Button label content.
+ * @fires hy-click - Dispatched on activation (unless disabled).
  */
 @customElement('hy-button')
-export class HyButton extends KitElement {
-  @property() variant: HyButtonVariant = 'crater';
-  @property() icon: HyButtonIcon = 'record';
-  @property({ type: Boolean, reflect: true }) on = false;
+export class HyButton extends LitElement {
+  /** Visual style of the button. */
+  @property({ reflect: true }) variant: HyButtonVariant = 'primary';
 
-  static styles = KitElement.kitStyles;
+  /** Control height / padding scale. */
+  @property({ reflect: true }) size: HyButtonSize = 'md';
 
-  /** `.crater-cell` (lines 765-768): click sound + haptic; record latches `on`. */
-  private _clickCrater = () => {
-    if (this.icon === 'record') this.on = !this.on;
-    SFX.click();
-    HX.click();
-    this._emit();
-  };
+  /** Disables interaction. */
+  @property({ type: Boolean, reflect: true }) disabled = false;
 
-  /** `.mound` (kit line 999): toggle the mound's `off` class, thunk + toggle haptic. */
-  private _clickPower = () => {
-    this.on = !this.on;
-    SFX.thunk();
-    HX.toggle();
-    this._emit();
-  };
+  /** Stretch to fill the container width. */
+  @property({ type: Boolean, reflect: true, attribute: 'full-width' }) fullWidth = false;
 
-  private _emit() {
-    this.dispatchEvent(
-      new CustomEvent('hy-change', { detail: { value: this.on }, bubbles: true, composed: true })
-    );
-  }
-
-  /** The crater glyph, copied character-for-character from the kit. */
-  private _glyph() {
-    switch (this.icon) {
-      case 'mix':
-        return html`<svg viewBox="0 0 24 24">
-          <path d="M4 8h7" />
-          <path d="M16 8h4" />
-          <circle cx="13.5" cy="8" r="2.3" />
-          <path d="M4 16h4" />
-          <path d="M13 16h7" />
-          <circle cx="10.5" cy="16" r="2.3" />
-        </svg>`;
-      case 'save':
-        return html`<svg viewBox="0 0 24 24">
-          <path d="M5 5h11l3 3v11H5z" />
-          <path d="M8 5v5h7V5" />
-          <rect x="8" y="13" width="8" height="5" />
-        </svg>`;
-      case 'record':
-      default:
-        return html`<span class="g-rec"></span>`;
+  static styles = css`
+    :host {
+      display: inline-block;
     }
+    :host([full-width]) {
+      display: block;
+    }
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-2, 8px);
+      width: 100%;
+      border: var(--size-border-thin, 1px) solid transparent;
+      border-radius: var(--radius-md, 8px);
+      font-family: var(--font-family-sans);
+      font-weight: var(--font-weight-semibold, 600);
+      line-height: 1;
+      cursor: pointer;
+      transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+    }
+    button:focus-visible {
+      outline: var(--size-border-thick, 2px) solid var(--color-border-focus, #8e7bff);
+      outline-offset: 2px;
+    }
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    /* Sizes */
+    :host([size='sm']) button {
+      height: var(--size-control-sm, 32px);
+      padding: 0 var(--spacing-3, 12px);
+      font-size: var(--font-size-sm, 14px);
+    }
+    :host([size='md']) button {
+      height: var(--size-control-md, 40px);
+      padding: 0 var(--spacing-4, 16px);
+      font-size: var(--font-size-md, 16px);
+    }
+    :host([size='lg']) button {
+      height: var(--size-control-lg, 48px);
+      padding: 0 var(--spacing-6, 24px);
+      font-size: var(--font-size-lg, 18px);
+    }
+
+    /* Variants */
+    :host([variant='primary']) button {
+      background: var(--color-action-primary, #3a51e8);
+      color: var(--color-action-on-primary, #fff);
+    }
+    :host([variant='primary']) button:hover:not(:disabled) {
+      background: var(--color-action-primary-hover, #2c3ccb);
+    }
+    :host([variant='primary']) button:active:not(:disabled) {
+      background: var(--color-action-primary-active, #2531a3);
+    }
+
+    :host([variant='secondary']) button {
+      background: transparent;
+      color: var(--color-text-primary, rgba(236, 232, 228, 0.92));
+      border-color: var(--color-border-strong, rgba(255, 255, 255, 0.14));
+    }
+    :host([variant='secondary']) button:hover:not(:disabled) {
+      background: var(--color-border-hairline, rgba(255, 255, 255, 0.08));
+    }
+
+    :host([variant='ghost']) button {
+      background: transparent;
+      color: var(--color-text-accent, #8e7bff);
+    }
+    :host([variant='ghost']) button:hover:not(:disabled) {
+      background: var(--color-border-hairline, rgba(255, 255, 255, 0.08));
+    }
+
+    :host([variant='danger']) button {
+      background: var(--color-feedback-danger, #e5564b);
+      color: var(--color-text-primary, rgba(236, 232, 228, 0.92));
+    }
+    :host([variant='danger']) button:hover:not(:disabled) {
+      filter: brightness(0.93);
+    }
+  `;
+
+  private _onClick(event: Event) {
+    if (this.disabled) {
+      event.stopImmediatePropagation();
+      event.preventDefault();
+      return;
+    }
+    this.dispatchEvent(new CustomEvent('hy-click', { bubbles: true, composed: true }));
   }
 
   render() {
-    if (this.variant === 'power') {
-      // The mound's `off` class is the "powered down" state; `on` = powered.
-      return html`<div class="mound${this.on ? '' : ' off'}">
-        <div class="hill"></div>
-        <button class="pbtn" aria-label="Power" @click=${this._clickPower}>
-          <svg viewBox="0 0 24 24">
-            <path d="M12 3v9" />
-            <path d="M7.5 6.5a7 7 0 1 0 9 0" />
-          </svg>
-        </button>
-      </div>`;
-    }
-    return html`<button class="crater-cell${this.on ? ' on' : ''}" @click=${this._clickCrater}>
-      <span class="crater"><slot>${this._glyph()}</slot></span>
-    </button>`;
+    return html`
+      <button ?disabled=${this.disabled} part="button" @click=${this._onClick}>
+        <slot></slot>
+      </button>
+    `;
   }
 }
 

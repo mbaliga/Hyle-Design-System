@@ -9,7 +9,7 @@ import '../src/components/index.js';
  * whole tactile library in one app.
  */
 const meta: Meta = {
-  title: 'Mock Apps/Console',
+  title: 'Showcase/Console',
   parameters: { layout: 'fullscreen', backgrounds: { default: 'field' }, options: { showPanel: false } },
 };
 export default meta;

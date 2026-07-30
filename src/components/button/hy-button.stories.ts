@@ -2,11 +2,16 @@ import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import './hy-button.js';
 
-const VARIANTS = ['crater', 'power'] as const;
-const ICONS = ['record', 'mix', 'save'] as const;
+const VARIANTS = ['primary', 'secondary', 'ghost', 'danger'] as const;
+const SIZES = ['sm', 'md', 'lg'] as const;
 const capStyle =
   'font:600 9px sans-serif;letter-spacing:.1em;color:#6b6760;text-transform:uppercase';
 
+/**
+ * The general-purpose labelled button used across app UIs, panes, and mock apps.
+ * Accent-driven (`primary`), with `secondary` / `ghost` / `danger` variants and
+ * three sizes. For the kit's physical push-buttons, see `hy-crater`.
+ */
 const meta: Meta = {
   title: 'Controls/Button',
   component: 'hy-button',
@@ -14,29 +19,21 @@ const meta: Meta = {
   parameters: { backgrounds: { default: 'near' } },
   argTypes: {
     variant: { control: 'select', options: VARIANTS },
-    icon: { control: 'select', options: ICONS },
-    on: { control: 'boolean' },
+    size: { control: 'inline-radio', options: SIZES },
+    disabled: { control: 'boolean' },
+    fullWidth: { control: 'boolean' },
   },
-  args: { variant: 'crater', icon: 'record', on: false },
-  render: ({ variant, icon, on }) =>
-    variant === 'crater'
-      ? html`
-          <div style="width:96px;height:96px">
-            <hy-button
-              variant="crater"
-              icon=${icon}
-              ?on=${on}
-              @hy-change=${(e: CustomEvent) => console.log('button', e.detail.value)}
-            ></hy-button>
-          </div>
-        `
-      : html`
-          <hy-button
-            variant="power"
-            ?on=${on}
-            @hy-change=${(e: CustomEvent) => console.log('button', e.detail.value)}
-          ></hy-button>
-        `,
+  args: { variant: 'primary', size: 'md', disabled: false, fullWidth: false },
+  render: ({ variant, size, disabled, fullWidth }) => html`
+    <hy-button
+      variant=${variant}
+      size=${size}
+      ?disabled=${disabled}
+      ?full-width=${fullWidth}
+      @hy-click=${() => console.log('button clicked')}
+      >Button</hy-button
+    >
+  `,
 };
 export default meta;
 type Story = StoryObj;
@@ -46,24 +43,15 @@ export const Default: Story = {};
 export const Gallery: Story = {
   parameters: { controls: { disable: true } },
   render: () => html`
-    <div style="display:flex; gap:26px; flex-wrap:wrap; align-items:flex-end">
-      ${ICONS.map(
-        (ic) => html`
-          <div style="display:flex; flex-direction:column; align-items:center; gap:10px">
-            <div style="width:96px;height:96px">
-              <hy-button variant="crater" icon=${ic}></hy-button>
-            </div>
-            <div style=${capStyle}>crater · ${ic}</div>
-          </div>
-        `
-      )}
-      <div style="display:flex; flex-direction:column; align-items:center; gap:10px">
-        <div style="display:flex; gap:16px; align-items:flex-end">
-          <hy-button variant="power"></hy-button>
-          <hy-button variant="power" on></hy-button>
-        </div>
-        <div style=${capStyle}>power</div>
+    <div style="display:flex; flex-direction:column; gap:22px; align-items:flex-start">
+      <div style="display:flex; gap:14px; align-items:center; flex-wrap:wrap">
+        ${VARIANTS.map((v) => html`<hy-button variant=${v}>${v}</hy-button>`)}
+        <hy-button variant="primary" disabled>disabled</hy-button>
       </div>
+      <div style="display:flex; gap:14px; align-items:center">
+        ${SIZES.map((s) => html`<hy-button size=${s}>${s}</hy-button>`)}
+      </div>
+      <div style=${capStyle}>variants · sizes</div>
     </div>
   `,
 };
