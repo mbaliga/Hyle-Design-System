@@ -12,7 +12,7 @@ plugins {
 
 val crashRecoveryGroup = "dev.aarso"
 val crashRecoveryArtifact = "crash-recovery"
-val crashRecoveryVersion = "1.0.0"
+val crashRecoveryVersion = "1.1.0"
 
 // Project coordinate — required for Gradle composite-build (`includeBuild`) dependency
 // substitution, same mechanism as `:hyle` (see that module's build.gradle.kts).

@@ -29,6 +29,11 @@ import java.io.File
  */
 object CrashRecovery {
     private const val FILE_NAME = "crash_recovery_report.txt"
+    // Consecutive-crash streak, kept separate from the report so tapping Continue (which
+    // clears the report) leaves the streak intact — that's what lets a crash-loop be detected
+    // across the Continue -> relaunch -> re-crash cycle. Only a genuinely later crash (outside
+    // the window) or an explicit reset starts it over.
+    private const val STREAK_FILE_NAME = "crash_recovery_streak.txt"
 
     /** Installs the handler. Chains to any previously-installed handler so this composes. */
     fun install(app: Application, appLabel: String) {
@@ -50,33 +55,97 @@ object CrashRecovery {
     }
 
     private fun capture(context: Context, appLabel: String, throwable: Throwable, threadName: String) {
+        val now = System.currentTimeMillis()
         val report = CrashReport.of(
             appLabel = appLabel,
-            whenMillis = System.currentTimeMillis(),
+            whenMillis = now,
             threadName = threadName,
             throwable = throwable,
             device = deviceInfo(context),
         )
         file(context).writeText(report.encode())
+        bumpStreak(context, now)
         android.util.Log.e("CrashRecovery", "captured crash for $appLabel", throwable)
+    }
+
+    // --- consecutive-crash streak (for loop-gated recovery affordances) ---
+
+    private fun bumpStreak(context: Context, nowMillis: Long) {
+        runCatching {
+            val (prevCount, prevMillis) = readStreak(context)
+            val next = CrashReport.nextStreakCount(prevCount, prevMillis, nowMillis)
+            streakFile(context).writeText("$next\t$nowMillis")
+        }
+    }
+
+    private fun readStreak(context: Context): Pair<Int, Long> = runCatching {
+        val parts = streakFile(context).takeIf { it.exists() }?.readText()?.split('\t') ?: return 0 to 0L
+        (parts.getOrNull(0)?.toIntOrNull() ?: 0) to (parts.getOrNull(1)?.toLongOrNull() ?: 0L)
+    }.getOrDefault(0 to 0L)
+
+    /**
+     * How many times the app has crashed in a row (crashes within [CrashReport.STREAK_WINDOW_MS]
+     * of each other). `1` on a first/isolated crash, `>= 2` once a crash has recurred after the
+     * user already tried to Continue — the signal a recovery screen uses to offer a reset only
+     * when it's actually warranted.
+     */
+    fun consecutiveCount(context: Context): Int = readStreak(context).first
+
+    /** Forget the streak — after a reset, or when a host knows the app has recovered cleanly. */
+    fun clearStreak(context: Context) {
+        runCatching { streakFile(context).delete() }
     }
 
     @Suppress("DEPRECATION")
     private fun legacyVersionCode(info: android.content.pm.PackageInfo): Long = info.versionCode.toLong()
 
     private fun deviceInfo(context: Context): CrashReport.DeviceInfo = runCatching {
-        val pm = context.applicationContext.packageManager
-        val pkg = context.applicationContext.packageName
+        val app = context.applicationContext
+        val pm = app.packageManager
+        val pkg = app.packageName
         val info = pm.getPackageInfo(pkg, 0)
         val versionCode = if (Build.VERSION.SDK_INT >= 28) info.longVersionCode else legacyVersionCode(info)
+        val (freeMb, totalMb) = memoryMb(app)
         CrashReport.DeviceInfo(
             appVersionName = info.versionName,
             appVersionCode = versionCode,
             osSdkInt = Build.VERSION.SDK_INT,
             deviceManufacturer = Build.MANUFACTURER ?: "?",
             deviceModel = Build.MODEL ?: "?",
+            packageName = pkg,
+            installSource = installSource(app, pkg),
+            freeMemMb = freeMb,
+            totalMemMb = totalMb,
         )
     }.getOrDefault(CrashReport.DeviceInfo(null, null, Build.VERSION.SDK_INT, "?", "?"))
+
+    /** Free / total device RAM in MB at capture time — the metadata an OOM report lives or dies by. */
+    private fun memoryMb(context: Context): Pair<Long?, Long?> = runCatching {
+        val am = context.getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
+        val mi = android.app.ActivityManager.MemoryInfo()
+        am.getMemoryInfo(mi)
+        (mi.availMem / (1024 * 1024)) to (mi.totalMem / (1024 * 1024))
+    }.getOrDefault(null to null)
+
+    /** A human-readable install origin ("Play Store", "Sideloaded", …), never an identifier. */
+    @Suppress("DEPRECATION")
+    private fun installSource(context: Context, pkg: String): String? = runCatching {
+        val installer = if (Build.VERSION.SDK_INT >= 30) {
+            context.packageManager.getInstallSourceInfo(pkg).installingPackageName
+        } else {
+            context.packageManager.getInstallerPackageName(pkg)
+        }
+        when (installer) {
+            null -> "Sideloaded"
+            "com.android.vending" -> "Play Store"
+            "com.amazon.venezia" -> "Amazon Appstore"
+            "com.sec.android.app.samsungapps" -> "Galaxy Store"
+            "org.fdroid.fdroid" -> "F-Droid"
+            "com.google.android.packageinstaller",
+            "com.android.packageinstaller" -> "Sideloaded"
+            else -> installer
+        }
+    }.getOrNull()
 
     /** Non-null if a crash was captured and not yet cleared. */
     fun pending(context: Context): CrashReport.Decoded? = runCatching {
@@ -96,12 +165,19 @@ object CrashRecovery {
      * Returns `true` when recovery was shown (the caller should `return` immediately without
      * building its real UI), `false` when there's nothing to recover from.
      */
-    fun maybeShowRecovery(activity: Activity, appLabel: String, style: CrashRecoveryStyle = CrashRecoveryStyle.Default): Boolean {
+    fun maybeShowRecovery(
+        activity: Activity,
+        appLabel: String,
+        style: CrashRecoveryStyle = CrashRecoveryStyle.Default,
+        contactEmail: String? = null,
+    ): Boolean {
         if (pending(activity) == null) return false
-        activity.startActivity(CrashRecoveryActivity.intent(activity, appLabel, style))
+        activity.startActivity(CrashRecoveryActivity.intent(activity, appLabel, style, contactEmail))
         activity.finish()
         return true
     }
 
     private fun file(context: Context): File = File(context.applicationContext.filesDir, FILE_NAME)
+
+    private fun streakFile(context: Context): File = File(context.applicationContext.filesDir, STREAK_FILE_NAME)
 }

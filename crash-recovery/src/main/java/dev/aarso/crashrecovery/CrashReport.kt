@@ -13,51 +13,109 @@ import java.util.Locale
  * never depend on Hyle) can still take this one dependency (see Personal-Tracker
  * DECISIONS.md D-O).
  *
- * [headline] is the one line worth reading first (`ExceptionType: message`); [device]
- * is the metadata a maintainer actually needs to reproduce it; [trace] is the full
- * stack, kept separate so a UI can hide it behind a "technical details" toggle instead
- * of opening on a wall of text.
+ * The report is structured so the recovery screen can show it in readable sections
+ * (Error / App / Device / Stack trace) and a one-line [plainLanguage] summary — while the
+ * exact same text a user would read is what gets shared, word for word (see [render]).
+ * [encode]/[decode] persist every field so the next launch can rebuild those sections
+ * without re-parsing prose.
  */
 data class CrashReport(
     val appLabel: String,
     val whenMillis: Long,
     val threadName: String,
-    val headline: String,
+    val excType: String,
+    val excMessage: String?,
+    val plainLanguage: String,
     val device: DeviceInfo,
     val trace: String,
 ) {
+    /** `ExceptionType: message` (message omitted if blank) — the one line worth reading first. */
+    val headline: String
+        get() = if (!excMessage.isNullOrBlank()) "$excType: $excMessage" else excType
+
     data class DeviceInfo(
         val appVersionName: String?,
         val appVersionCode: Long?,
         val osSdkInt: Int,
         val deviceManufacturer: String,
         val deviceModel: String,
+        val packageName: String = "",
+        val installSource: String? = null,
+        val freeMemMb: Long? = null,
+        val totalMemMb: Long? = null,
     )
 
-    /** The full human-readable report — what gets shared or copied. */
-    fun render(): String = buildString {
-        // A fresh SimpleDateFormat per call — it's not thread-safe, and this can run from a
-        // crash handler on whatever thread just crashed, so no shared/static instance.
-        val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US)
-        append(appLabel).append(" crash\n")
-        append("when: ").append(format.format(Date(whenMillis))).append('\n')
-        append("thread: ").append(threadName).append('\n')
-        append("app version: ").append(device.appVersionName ?: "?")
-        append(" (").append(device.appVersionCode?.toString() ?: "?").append(")\n")
-        append("device: ").append(device.deviceManufacturer).append(' ').append(device.deviceModel)
-        append(" · Android SDK ").append(device.osSdkInt).append("\n\n")
-        append(headline).append("\n\n")
+    /** The full human-readable report — what gets shared or copied, word for word. */
+    fun render(): String = renderReport(
+        appLabel = appLabel,
+        whenMillis = whenMillis,
+        threadName = threadName,
+        excType = excType,
+        excMessage = excMessage,
+        plainLanguage = plainLanguage,
+        device = device,
+        trace = trace,
+    )
+
+    /**
+     * Persistence encoding (v2): a machine-parseable header of `key\tvalue` lines, a
+     * `---TRACE---` marker, then the raw (multi-line) stack trace. [decode] rebuilds every
+     * structured field from this; a file that doesn't match is still handled best-effort.
+     */
+    fun encode(): String = buildString {
+        append(MAGIC).append('\n')
+        fun kv(k: String, v: String?) {
+            append(k).append('\t').append((v ?: "").replace("\n", " ")).append('\n')
+        }
+        kv("appLabel", appLabel)
+        kv("whenMillis", whenMillis.toString())
+        kv("threadName", threadName)
+        kv("excType", excType)
+        kv("excMessage", excMessage)
+        kv("plainLanguage", plainLanguage)
+        kv("versionName", device.appVersionName)
+        kv("versionCode", device.appVersionCode?.toString())
+        kv("packageName", device.packageName)
+        kv("installSource", device.installSource)
+        kv("osSdkInt", device.osSdkInt.toString())
+        kv("manufacturer", device.deviceManufacturer)
+        kv("model", device.deviceModel)
+        kv("freeMemMb", device.freeMemMb?.toString())
+        kv("totalMemMb", device.totalMemMb?.toString())
+        append(TRACE_MARKER).append('\n')
         append(trace)
     }
 
-    /**
-     * Persistence encoding: `headline` on its own first line, a blank separator, then
-     * [render]'s full text — so reading a report back never needs to re-derive the
-     * headline by parsing prose (see [decode]).
-     */
-    fun encode(): String = "$headline\n\n${render()}"
-
     companion object {
+        private const val MAGIC = "CRASHv2"
+        private const val TRACE_MARKER = "---TRACE---"
+
+        /**
+         * Two crashes within this window count as consecutive — the same failure recurring,
+         * not two unrelated incidents. A crash-loop (crash → Continue → relaunch → crash) turns
+         * over in seconds, so a minute comfortably catches it while a crash days apart resets.
+         */
+        const val STREAK_WINDOW_MS = 60_000L
+
+        /**
+         * The consecutive-crash count after a new crash at [nowMillis], given the previous
+         * [prevCount] captured at [prevMillis]. Increments only when the new crash lands inside
+         * [windowMs] of the last one; otherwise it's a fresh incident (count 1). A backwards
+         * clock (now before prev) is treated as fresh, never as a continuation.
+         *
+         * Pure and side-effect-free so the loop-detection rule is unit-testable without Android.
+         */
+        fun nextStreakCount(
+            prevCount: Int,
+            prevMillis: Long,
+            nowMillis: Long,
+            windowMs: Long = STREAK_WINDOW_MS,
+        ): Int = if (prevCount > 0 && prevMillis > 0 && (nowMillis - prevMillis) in 0..windowMs) {
+            prevCount + 1
+        } else {
+            1
+        }
+
         /** First line worth reading: `ExceptionType: message` (message omitted if blank). */
         fun headlineOf(throwable: Throwable): String {
             val type = throwable.javaClass.simpleName.ifBlank { throwable.javaClass.name }
@@ -65,8 +123,43 @@ data class CrashReport(
             return if (message != null) "$type: $message" else type
         }
 
+        fun typeOf(throwable: Throwable): String =
+            throwable.javaClass.simpleName.ifBlank { throwable.javaClass.name }
+
         fun stackTraceOf(throwable: Throwable): String =
             StringWriter().also { throwable.printStackTrace(PrintWriter(it)) }.toString()
+
+        /**
+         * A calm, non-technical sentence for the top of the screen — keyed on the failure
+         * kind, with a generic fallback. Deliberately app-agnostic: it never guesses what the
+         * app was doing, only what the platform did about it.
+         */
+        fun plainLanguageFor(throwable: Throwable): String {
+            var t: Throwable? = throwable
+            // Unwrap common wrappers to reach the real cause.
+            while (t?.cause != null && (t is java.lang.RuntimeException && t.javaClass == java.lang.RuntimeException::class.java)) {
+                t = t.cause
+            }
+            val cause = t ?: throwable
+            return when {
+                cause is OutOfMemoryError ->
+                    "The app needed more memory than your device could give it, and Android had to stop it."
+                cause is StackOverflowError ->
+                    "The app got stuck repeating itself until it ran out of room, so Android stopped it."
+                cause is java.lang.NullPointerException ->
+                    "The app expected something to be there that wasn't, and had to close."
+                cause is java.util.concurrent.TimeoutException ->
+                    "Part of the app took too long to respond, so it was stopped."
+                cause is java.io.IOException ->
+                    "The app had trouble reading or writing data and had to close."
+                cause is SecurityException ->
+                    "The app tried to do something it didn't have permission for, and had to close."
+                cause is Error ->
+                    "The app hit a low-level error it couldn't recover from and had to close."
+                else ->
+                    "The app ran into an unexpected error and had to close."
+            }
+        }
 
         fun of(
             appLabel: String,
@@ -78,28 +171,191 @@ data class CrashReport(
             appLabel = appLabel,
             whenMillis = whenMillis,
             threadName = threadName,
-            headline = headlineOf(throwable),
+            excType = typeOf(throwable),
+            excMessage = throwable.message?.takeIf { it.isNotBlank() },
+            plainLanguage = plainLanguageFor(throwable),
             device = device,
             trace = stackTraceOf(throwable),
         )
 
         /**
-         * Decode [encode]'s format into a display-ready pair. Best-effort: any text that
-         * doesn't match the expected shape (e.g. a file from an older/foreign writer) still
-         * yields a usable pair — the whole text as [fullReport] and its first line as
-         * [headline] — so a decode quirk never hides a real crash behind a blank screen.
+         * Decode [encode]'s v2 format into a display-ready [Decoded] with every structured
+         * field. Best-effort: any text that doesn't match (an older/foreign writer) still
+         * yields a usable pair — the whole text as [Decoded.fullReport] and its first line as
+         * [Decoded.headline] — so a decode quirk never hides a real crash behind a blank screen.
          */
         fun decode(persisted: String): Decoded {
+            if (persisted.startsWith(MAGIC)) {
+                runCatching { return decodeV2(persisted) }
+            }
+            // Fallback: legacy "headline\n\nfull" shape, or foreign text.
             val separator = "\n\n"
             val splitAt = persisted.indexOf(separator)
-            return if (splitAt >= 0) {
-                Decoded(headline = persisted.substring(0, splitAt), fullReport = persisted.substring(splitAt + separator.length))
+            val headline: String
+            val full: String
+            if (splitAt >= 0) {
+                headline = persisted.substring(0, splitAt)
+                full = persisted.substring(splitAt + separator.length)
             } else {
-                Decoded(headline = persisted.lines().firstOrNull().orEmpty(), fullReport = persisted)
+                headline = persisted.lines().firstOrNull().orEmpty()
+                full = persisted
             }
+            return Decoded(
+                appLabel = "App",
+                headline = headline,
+                plainLanguage = "The app ran into an unexpected error and had to close.",
+                excType = headline.substringBefore(":").ifBlank { headline },
+                excMessage = headline.substringAfter(":", "").trim().ifBlank { null },
+                threadName = "",
+                whenMillis = null,
+                versionName = null,
+                versionCode = null,
+                packageName = null,
+                installSource = null,
+                osSdkInt = null,
+                deviceManufacturer = null,
+                deviceModel = null,
+                freeMemMb = null,
+                totalMemMb = null,
+                trace = full,
+                fullReport = full,
+            )
+        }
+
+        private fun decodeV2(persisted: String): Decoded {
+            val markerIdx = persisted.indexOf("\n$TRACE_MARKER")
+            val headerPart = if (markerIdx >= 0) persisted.substring(0, markerIdx) else persisted
+            val trace = if (markerIdx >= 0) {
+                persisted.substring(markerIdx + 1).removePrefix(TRACE_MARKER).removePrefix("\n")
+            } else ""
+            val kv = HashMap<String, String>()
+            headerPart.lineSequence().drop(1).forEach { line ->
+                val tab = line.indexOf('\t')
+                if (tab >= 0) kv[line.substring(0, tab)] = line.substring(tab + 1)
+            }
+            fun s(k: String): String? = kv[k]?.takeIf { it.isNotEmpty() }
+            val excType = s("excType") ?: "Error"
+            val excMessage = s("excMessage")
+            val headline = if (!excMessage.isNullOrBlank()) "$excType: $excMessage" else excType
+            val device = DeviceInfo(
+                appVersionName = s("versionName"),
+                appVersionCode = s("versionCode")?.toLongOrNull(),
+                osSdkInt = s("osSdkInt")?.toIntOrNull() ?: 0,
+                deviceManufacturer = s("manufacturer") ?: "?",
+                deviceModel = s("model") ?: "?",
+                packageName = s("packageName") ?: "",
+                installSource = s("installSource"),
+                freeMemMb = s("freeMemMb")?.toLongOrNull(),
+                totalMemMb = s("totalMemMb")?.toLongOrNull(),
+            )
+            val whenMillis = s("whenMillis")?.toLongOrNull()
+            val appLabel = s("appLabel") ?: "App"
+            val plain = s("plainLanguage") ?: "The app ran into an unexpected error and had to close."
+            val fullReport = renderReport(
+                appLabel = appLabel,
+                whenMillis = whenMillis ?: 0L,
+                threadName = s("threadName") ?: "",
+                excType = excType,
+                excMessage = excMessage,
+                plainLanguage = plain,
+                device = device,
+                trace = trace,
+            )
+            return Decoded(
+                appLabel = appLabel,
+                headline = headline,
+                plainLanguage = plain,
+                excType = excType,
+                excMessage = excMessage,
+                threadName = s("threadName") ?: "",
+                whenMillis = whenMillis,
+                versionName = device.appVersionName,
+                versionCode = device.appVersionCode,
+                packageName = device.packageName.ifBlank { null },
+                installSource = device.installSource,
+                osSdkInt = device.osSdkInt.takeIf { it > 0 },
+                deviceManufacturer = device.deviceManufacturer,
+                deviceModel = device.deviceModel,
+                freeMemMb = device.freeMemMb,
+                totalMemMb = device.totalMemMb,
+                trace = trace,
+                fullReport = fullReport,
+            )
+        }
+
+        /** The single source of truth for the shareable text — used by [render] and [decode]. */
+        internal fun renderReport(
+            appLabel: String,
+            whenMillis: Long,
+            threadName: String,
+            excType: String,
+            excMessage: String?,
+            plainLanguage: String,
+            device: DeviceInfo,
+            trace: String,
+        ): String = buildString {
+            // A fresh SimpleDateFormat per call — it's not thread-safe, and this can run from a
+            // crash handler on whatever thread just crashed, so no shared/static instance.
+            val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US)
+            val whenText = if (whenMillis > 0L) format.format(Date(whenMillis)) else "unknown"
+            append("=== Crash report — ").append(appLabel).append(" ===\n")
+            append("Generated on-device. No identifiers included.\n\n")
+            append("What happened: ").append(plainLanguage).append("\n\n")
+            append("Error:   ").append(excType).append('\n')
+            append("Message: ").append(excMessage?.takeIf { it.isNotBlank() } ?: "(none)").append('\n')
+            append("Thread:  ").append(threadName.ifBlank { "?" }).append('\n')
+            append("When:    ").append(whenText).append(" (device time)\n\n")
+            append("App:     ").append(appLabel).append(' ')
+            append(device.appVersionName ?: "?").append(" (").append(device.appVersionCode?.toString() ?: "?").append(")\n")
+            append("Package: ").append(device.packageName.ifBlank { "?" }).append('\n')
+            append("Source:  ").append(device.installSource ?: "Unknown").append("\n\n")
+            append("Device:  ").append(device.deviceManufacturer).append(' ').append(device.deviceModel)
+            append(", Android SDK ").append(device.osSdkInt).append('\n')
+            if (device.freeMemMb != null && device.totalMemMb != null) {
+                append("Memory:  ").append(device.freeMemMb).append(" MB free of ")
+                append(device.totalMemMb).append(" MB at crash\n")
+            }
+            append('\n')
+            append(trace)
         }
     }
 
-    /** What the recovery UI needs to render — a quick headline plus the full shareable text. */
-    data class Decoded(val headline: String, val fullReport: String)
+    /** What the recovery UI needs — a plain-language summary, structured fields, and the shareable text. */
+    data class Decoded(
+        val appLabel: String,
+        val headline: String,
+        val plainLanguage: String,
+        val excType: String,
+        val excMessage: String?,
+        val threadName: String,
+        val whenMillis: Long?,
+        val versionName: String?,
+        val versionCode: Long?,
+        val packageName: String?,
+        val installSource: String?,
+        val osSdkInt: Int?,
+        val deviceManufacturer: String?,
+        val deviceModel: String?,
+        val freeMemMb: Long?,
+        val totalMemMb: Long?,
+        val trace: String,
+        val fullReport: String,
+    ) {
+        /** `Yesterday, 21:42`-style is UI's job; here we expose a stable device-time string. */
+        fun whenText(): String {
+            val ms = whenMillis ?: return "unknown"
+            val format = SimpleDateFormat("d MMM yyyy, HH:mm:ss", Locale.getDefault())
+            return format.format(Date(ms))
+        }
+
+        /** Short `d MMM, HH:mm` for the compact meta line on the main pane. */
+        fun whenShort(): String {
+            val ms = whenMillis ?: return ""
+            val format = SimpleDateFormat("d MMM, HH:mm", Locale.getDefault())
+            return format.format(Date(ms))
+        }
+
+        fun versionLabel(): String? =
+            versionName?.let { v -> "$v" + (versionCode?.let { " ($it)" } ?: "") }
+    }
 }
