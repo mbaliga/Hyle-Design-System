@@ -90,6 +90,32 @@ data class CrashReport(
         private const val MAGIC = "CRASHv2"
         private const val TRACE_MARKER = "---TRACE---"
 
+        /**
+         * Two crashes within this window count as consecutive — the same failure recurring,
+         * not two unrelated incidents. A crash-loop (crash → Continue → relaunch → crash) turns
+         * over in seconds, so a minute comfortably catches it while a crash days apart resets.
+         */
+        const val STREAK_WINDOW_MS = 60_000L
+
+        /**
+         * The consecutive-crash count after a new crash at [nowMillis], given the previous
+         * [prevCount] captured at [prevMillis]. Increments only when the new crash lands inside
+         * [windowMs] of the last one; otherwise it's a fresh incident (count 1). A backwards
+         * clock (now before prev) is treated as fresh, never as a continuation.
+         *
+         * Pure and side-effect-free so the loop-detection rule is unit-testable without Android.
+         */
+        fun nextStreakCount(
+            prevCount: Int,
+            prevMillis: Long,
+            nowMillis: Long,
+            windowMs: Long = STREAK_WINDOW_MS,
+        ): Int = if (prevCount > 0 && prevMillis > 0 && (nowMillis - prevMillis) in 0..windowMs) {
+            prevCount + 1
+        } else {
+            1
+        }
+
         /** First line worth reading: `ExceptionType: message` (message omitted if blank). */
         fun headlineOf(throwable: Throwable): String {
             val type = throwable.javaClass.simpleName.ifBlank { throwable.javaClass.name }

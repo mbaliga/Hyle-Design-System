@@ -29,6 +29,11 @@ import java.io.File
  */
 object CrashRecovery {
     private const val FILE_NAME = "crash_recovery_report.txt"
+    // Consecutive-crash streak, kept separate from the report so tapping Continue (which
+    // clears the report) leaves the streak intact — that's what lets a crash-loop be detected
+    // across the Continue -> relaunch -> re-crash cycle. Only a genuinely later crash (outside
+    // the window) or an explicit reset starts it over.
+    private const val STREAK_FILE_NAME = "crash_recovery_streak.txt"
 
     /** Installs the handler. Chains to any previously-installed handler so this composes. */
     fun install(app: Application, appLabel: String) {
@@ -50,15 +55,45 @@ object CrashRecovery {
     }
 
     private fun capture(context: Context, appLabel: String, throwable: Throwable, threadName: String) {
+        val now = System.currentTimeMillis()
         val report = CrashReport.of(
             appLabel = appLabel,
-            whenMillis = System.currentTimeMillis(),
+            whenMillis = now,
             threadName = threadName,
             throwable = throwable,
             device = deviceInfo(context),
         )
         file(context).writeText(report.encode())
+        bumpStreak(context, now)
         android.util.Log.e("CrashRecovery", "captured crash for $appLabel", throwable)
+    }
+
+    // --- consecutive-crash streak (for loop-gated recovery affordances) ---
+
+    private fun bumpStreak(context: Context, nowMillis: Long) {
+        runCatching {
+            val (prevCount, prevMillis) = readStreak(context)
+            val next = CrashReport.nextStreakCount(prevCount, prevMillis, nowMillis)
+            streakFile(context).writeText("$next\t$nowMillis")
+        }
+    }
+
+    private fun readStreak(context: Context): Pair<Int, Long> = runCatching {
+        val parts = streakFile(context).takeIf { it.exists() }?.readText()?.split('\t') ?: return 0 to 0L
+        (parts.getOrNull(0)?.toIntOrNull() ?: 0) to (parts.getOrNull(1)?.toLongOrNull() ?: 0L)
+    }.getOrDefault(0 to 0L)
+
+    /**
+     * How many times the app has crashed in a row (crashes within [CrashReport.STREAK_WINDOW_MS]
+     * of each other). `1` on a first/isolated crash, `>= 2` once a crash has recurred after the
+     * user already tried to Continue — the signal a recovery screen uses to offer a reset only
+     * when it's actually warranted.
+     */
+    fun consecutiveCount(context: Context): Int = readStreak(context).first
+
+    /** Forget the streak — after a reset, or when a host knows the app has recovered cleanly. */
+    fun clearStreak(context: Context) {
+        runCatching { streakFile(context).delete() }
     }
 
     @Suppress("DEPRECATION")
@@ -143,4 +178,6 @@ object CrashRecovery {
     }
 
     private fun file(context: Context): File = File(context.applicationContext.filesDir, FILE_NAME)
+
+    private fun streakFile(context: Context): File = File(context.applicationContext.filesDir, STREAK_FILE_NAME)
 }

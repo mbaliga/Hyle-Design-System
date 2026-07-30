@@ -50,6 +50,7 @@ class CrashRecoveryActivity : Activity() {
     private lateinit var appLabel: String
     private lateinit var report: CrashReport.Decoded
     private var contactEmail: String? = null
+    private var consecutive = 1
 
     private lateinit var paneMain: View
     private lateinit var paneDetails: View
@@ -76,6 +77,7 @@ class CrashRecoveryActivity : Activity() {
             return
         }
         report = decoded
+        consecutive = CrashRecovery.consecutiveCount(this)
 
         val night = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
             Configuration.UI_MODE_NIGHT_YES
@@ -303,6 +305,11 @@ class CrashRecoveryActivity : Activity() {
             },
         )
 
+        // Loop-gated reset — only once the crash has actually recurred (Continue already
+        // failed). Kept in the full report, never on the calm main screen, and confirm-gated,
+        // so a one-off crash never exposes a data-wiping footgun.
+        if (consecutive >= REPEAT_THRESHOLD) col.addView(resetSection())
+
         val scroll = ScrollView(this).apply {
             isFillViewport = false
             addView(col)
@@ -325,6 +332,59 @@ class CrashRecoveryActivity : Activity() {
         )
 
         return outer
+    }
+
+    /** Shown only after a repeat crash: an explanation and a confirm-gated, data-wiping reset. */
+    private fun resetSection(): View =
+        LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(MATCH, WRAP).apply { topMargin = 22.dp }
+            addView(sectionHeader("Still happening?"))
+            addView(
+                text(
+                    "$appLabel has now crashed more than once in a row, so continuing may just " +
+                        "hit the same problem. As a last resort you can reset its data — this wipes " +
+                        "everything $appLabel has stored on this device and can't be undone.",
+                    12.5f,
+                    pal.inkSoft,
+                ).apply { setLineSpacing(0f, 1.25f) },
+            )
+            addView(
+                pillButton("Reset $appLabel's data", pal.danger, pal.paper, filled = false) { confirmReset() }
+                    .withTopMargin(10).also {
+                        (it as Button).setTextColor(pal.danger)
+                        it.background = GradientDrawable().apply {
+                            setColor(pal.paper); setStroke(2.dp, pal.danger); cornerRadius = 999.dp.toFloat()
+                        }
+                    },
+            )
+        }
+
+    private fun confirmReset() {
+        android.app.AlertDialog.Builder(this)
+            .setTitle("Reset $appLabel's data?")
+            .setMessage(
+                "This wipes everything $appLabel has stored on this device and restarts it. " +
+                    "This cannot be undone.",
+            )
+            .setPositiveButton("Reset") { _, _ -> performReset() }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun performReset() {
+        CrashRecovery.clear(this)
+        CrashRecovery.clearStreak(this)
+        // The zero-arg self-clear is API 29+ only; several consumers have a lower minSdk
+        // (Animalcules 24, Horizkeeb 28), so guiding to Settings is the honest fallback.
+        if (Build.VERSION.SDK_INT >= 29) {
+            runCatching {
+                (getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager)
+                    .clearApplicationUserData()
+            }
+        } else {
+            showToast("Clear $appLabel's storage in Android Settings, then reopen it.")
+        }
     }
 
     private fun section(title: String, rows: List<Pair<String, String>>): View =
@@ -673,6 +733,9 @@ class CrashRecoveryActivity : Activity() {
         private const val MATCH = ViewGroup.LayoutParams.MATCH_PARENT
         private const val WRAP = ViewGroup.LayoutParams.WRAP_CONTENT
         private const val REQ_SAVE = 4471
+
+        /** Offer the data-wiping reset only once a crash has recurred (Continue already failed). */
+        private const val REPEAT_THRESHOLD = 2
 
         private const val EXTRA_APP_LABEL = "dev.aarso.crashrecovery.APP_LABEL"
         private const val EXTRA_STYLE = "dev.aarso.crashrecovery.STYLE"

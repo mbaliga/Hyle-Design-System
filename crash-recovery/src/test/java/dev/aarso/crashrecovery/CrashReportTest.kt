@@ -127,6 +127,21 @@ class CrashReportTest {
     }
 
     @Test
+    fun `consecutive crashes inside the window accumulate but a distant one resets`() {
+        val w = CrashReport.STREAK_WINDOW_MS
+        // first crash ever (no prior)
+        assertEquals(1, CrashReport.nextStreakCount(prevCount = 0, prevMillis = 0, nowMillis = 1_000))
+        // within the window (inclusive boundary) -> continuation
+        assertEquals(2, CrashReport.nextStreakCount(prevCount = 1, prevMillis = 1_000, nowMillis = 1_000 + w))
+        // a rapid third repeat
+        assertEquals(3, CrashReport.nextStreakCount(prevCount = 2, prevMillis = 5_000, nowMillis = 5_010))
+        // just outside the window -> a fresh incident
+        assertEquals(1, CrashReport.nextStreakCount(prevCount = 5, prevMillis = 1_000, nowMillis = 1_000 + w + 1))
+        // clock went backwards -> never treated as a continuation
+        assertEquals(1, CrashReport.nextStreakCount(prevCount = 3, prevMillis = 10_000, nowMillis = 5_000))
+    }
+
+    @Test
     fun `decode reads a legacy headline-blankline-body file`() {
         val legacy = "IllegalStateException: old\n\nIllegalStateException: old\nsome older body text"
         val decoded = CrashReport.decode(legacy)
