@@ -1,0 +1,23 @@
+Hyle-Design-System — Third-Party NOTICE
+========================================================================
+
+This repository's own code (the `hyle`, `hyle-probe`, `crash-recovery`, `kit`, `tokens`, `src`,
+`scripts`, `stories` trees and the token pipeline) is licensed under Apache-2.0 — see `LICENSE`.
+
+**Fonts (`fonts/*`) are NOT covered by the Apache-2.0 grant above.** Each typeface family under
+`fonts/` carries its own SIL Open Font License 1.1 declaration in that family's own
+`LICENSE-NOTE.txt` (e.g. `fonts/HyleGroteskClassic/LICENSE-NOTE.txt`). Several are explicitly
+noted as derivative works of existing open fonts (e.g. Hyle Grotesk Classic, built on Space
+Grotesk with Archivo letterforms substituted) — free to use/modify/redistribute under the OFL,
+same as their source fonts, but distinct from this repo's own Apache-2.0 code.
+
+**Third-party runtime dependencies (Gradle `hyle`/`hyle-probe`/`crash-recovery` modules, and the
+npm packages behind the Storybook/web tooling in `package.json`) are not yet scanned by an
+automated license-report gate in this repository**, unlike `android-ide-core` and
+`Android-IDE-Studio` (which both run `com.github.jk1.dependency-license-report` against
+`config/allowed-licenses.json` in CI). This file is filed honestly without a fabricated dependency
+list — a follow-up should either wire the same license-report plugin into this repo's Gradle
+build (and, separately, an npm-side license checker for `package.json`) and regenerate this file
+from real scan output, or hand-audit the current dependency set. Until then, treat this NOTICE as
+covering only the first-party code/license split above, not a complete third-party attribution
+list.
