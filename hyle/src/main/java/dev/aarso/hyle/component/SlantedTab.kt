@@ -40,6 +40,37 @@ import androidx.compose.ui.unit.sp
 private const val SLANT = 0.2f
 private const val CORNER_DP = 3.5f
 
+/**
+ * The locked slope every slanted Hyle shape leans at, exposed so surfaces that draw their
+ * own slanted seams (the host app's view bar, its header buttons) lean by exactly the same
+ * amount as this module's shapes rather than eyeballing a second constant.
+ *
+ * Convention: the top edge sits FURTHER RIGHT than the bottom edge by `height * slope`, so
+ * a seam or divider reads as "/".
+ */
+const val HyleSlant: Float = SLANT
+
+/**
+ * A leaning slab — the [RoundedParallelogram] geometry from the probe's atom set, promoted
+ * for host surfaces that need the same shape outside a tab row: the header's icon buttons
+ * in the app shell, chips, badges. Both vertical edges lean "/" together (unlike
+ * [HyleBottomTabRow]'s hanging tab, whose edges taper toward each other because its top
+ * edge is a merge seam).
+ */
+class HyleSlantedSlab(private val cornerDp: Float = CORNER_DP) : Shape {
+    override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline {
+        val r = with(density) { cornerDp.dp.toPx() }
+        val s = size.height * SLANT
+        val pts = listOf(
+            Offset(s, 0f),
+            Offset(size.width, 0f),
+            Offset(size.width - s, size.height),
+            Offset(0f, size.height),
+        )
+        return Outline.Generic(Path().apply { roundedPolygon(pts, r) })
+    }
+}
+
 private fun Offset.unit(): Offset {
     val l = getDistance()
     return if (l == 0f) this else this / l
