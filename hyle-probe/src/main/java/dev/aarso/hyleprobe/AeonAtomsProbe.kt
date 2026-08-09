@@ -20,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -39,6 +40,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import dev.aarso.hyle.component.HyleColorPicker
 
 // ── Hyle dark palette (locked — canonical values) ─────────────────────────
 private val Ink = Color(0xFF0E0F12)
@@ -220,6 +222,12 @@ fun HyleAtomsProbe() {
                 selected = tab,
                 onSelect = { tab = it },
             )
+        }
+
+        // ── Colour picker — bottom-anchored slanted tabs ─────────────
+        AtomSection("Colour picker — HyleBottomTabRow (shipped in :hyle)") {
+            var pickerColor by remember { mutableStateOf(Violet) }
+            HyleColorPicker(color = pickerColor, onColorChange = { pickerColor = it })
         }
 
         // ── Log entries ───────────────────────────────────────────────

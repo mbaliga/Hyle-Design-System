@@ -13,6 +13,7 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
     `maven-publish`
 }
 
@@ -42,6 +43,11 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    // First real Compose UI in this module — everything before this was deliberately
+    // pure data (see this file's top comment). component/ holds the render side the
+    // doc comment named as "next": the slanted-tab atoms and the widgets built on them.
+    buildFeatures { compose = true }
+
     // Required so maven-publish has a single, named variant to publish.
     publishing {
         singleVariant("release") {
@@ -68,5 +74,10 @@ afterEvaluate {
 }
 
 dependencies {
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.compose.material3)
+
     testImplementation(libs.junit)
 }
