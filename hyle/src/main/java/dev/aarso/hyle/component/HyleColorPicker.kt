@@ -50,8 +50,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlin.math.min
 import kotlin.math.roundToInt
+import kotlin.math.sqrt
 
 // ── Hyle dark palette — same locked values as the probe's AeonAtomsProbe.kt ────────────
 private val Raised = Color(0xFF16181D)
@@ -77,9 +77,12 @@ enum class ColorPickerMode(val label: String) { RGB("RGB"), HSV("HSV"), HEX("HEX
  * A colour picker in Hyle's own idiom: [HyleBottomTabRow] on the bottom edge (RGB / HSV /
  * HEX), the active tab merging flush into the panel it drives. Each pane holds the colour
  * *space itself as a shape* — the same colour, represented through the geometry of the
- * model chosen: the HSV pane is a hue/saturation wheel, the RGB pane a cube face, the HEX
- * pane plain notation (a hex triplet has no geometry — the caption says so rather than
- * inventing one).
+ * model chosen: the HSV pane is the kit picker's trio ported natively (a **thin** hue
+ * ring, the S×V slice inscribed in it, and a live drag-to-orbit 3D cone via
+ * [SpaceModel]), the RGB pane a cube face with the live 3D cube beneath, the HEX pane
+ * plain notation (a hex triplet has no geometry — the caption says so rather than
+ * inventing one). The 3D port is an owner decision: native Compose rather than a WebView
+ * of `kit/color-picker.html`, whose bytes stay the web side's verbatim reference.
  *
  * **Gamut honesty** (owner-set): a colour-space shape drawn edge-to-edge in colour would
  * claim this screen shows every colour the model describes — it does not. So the coloured
@@ -225,7 +228,12 @@ private fun GamutLegend(display: HyleDisplayContext) {
     )
 }
 
-// ── HSV — the hue/saturation wheel, value on a slider ─────────────────────────────────
+// ── HSV — the kit picker's trio, natively: thin hue ring, inscribed S×V slice, and the
+// live 3D cone model beneath (owner decision: port the 3D space to Compose rather than
+// WebView the kit or fork its bytes). ─────────────────────────────────────────────────
+
+private const val RING_WIDTH_DP = 10f // the ring around the shape — thin, per the owner
+private const val RING_GAP_DP = 8f
 
 @Composable
 private fun HsvPanel(color: Color, display: HyleDisplayContext, onColorChange: (Color) -> Unit) {
@@ -247,103 +255,145 @@ private fun HsvPanel(color: Color, display: HyleDisplayContext, onColorChange: (
     val currentValue by rememberUpdatedState(value)
     val currentAlpha by rememberUpdatedState(color.alpha)
     val currentOnChange by rememberUpdatedState(onColorChange)
-    fun emitHs(h: Float, s: Float) = currentOnChange(hsvToColor(h, s, currentValue, currentAlpha))
+    fun emitHsv(h: Float, s: Float, v: Float) = currentOnChange(hsvToColor(h, s, v, currentAlpha))
 
     val fraction = ColorSpaceGeometry.solidFraction(display.gamut)
 
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Box(Modifier.fillMaxWidth().height(210.dp), contentAlignment = Alignment.Center) {
+        Box(Modifier.fillMaxWidth().height(240.dp), contentAlignment = Alignment.Center) {
             Canvas(
                 Modifier
-                    .size(210.dp)
+                    .size(240.dp)
                     .pointerInput(fraction) {
-                        detectTapGestures { p ->
-                            val c = size.width / 2f
-                            val solid = (c - 2.dp.toPx()) * fraction
-                            val (h, s) = ColorSpaceGeometry.wheelHit(p.x - c, p.y - c, solid)
-                            hue = h; sat = s; emitHs(h, s)
+                        // One gesture surface, classified at the DOWN: the ring band takes
+                        // the drag as a hue orbit, the inscribed slice as an S×V pick, and
+                        // the classification holds for the whole drag so a finger sliding
+                        // off the ring keeps orbiting instead of jumping into the slice.
+                        var onRing = false
+                        fun apply(pos: Offset) {
+                            val cpx = size.width / 2f
+                            val dx = pos.x - cpx
+                            val dy = pos.y - cpx
+                            if (onRing) {
+                                val h = ColorSpaceGeometry.ringAngle(dx, dy)
+                                hue = h
+                                emitHsv(h, sat, currentValue)
+                            } else {
+                                val outer = cpx - 2.dp.toPx()
+                                val inner = outer - RING_WIDTH_DP.dp.toPx()
+                                val half = ((inner - RING_GAP_DP.dp.toPx()) / sqrt(2f)) * fraction
+                                if (half <= 0f) return
+                                val s = ((dx + half) / (2f * half)).coerceIn(0f, 1f)
+                                val v = (1f - (dy + half) / (2f * half)).coerceIn(0f, 1f)
+                                sat = s
+                                emitHsv(hue, s, v)
+                            }
                         }
+                        fun classify(pos: Offset): Boolean {
+                            val cpx = size.width / 2f
+                            val dx = pos.x - cpx
+                            val dy = pos.y - cpx
+                            val inner = cpx - 2.dp.toPx() - RING_WIDTH_DP.dp.toPx()
+                            return sqrt(dx * dx + dy * dy) >= inner - 6.dp.toPx()
+                        }
+                        detectDragGestures(
+                            onDragStart = { pos -> onRing = classify(pos); apply(pos) },
+                            onDrag = { change, _ ->
+                                change.consume()
+                                apply(change.position)
+                            },
+                        )
                     }
                     .pointerInput(fraction) {
-                        detectDragGestures { change, _ ->
-                            val c = size.width / 2f
-                            val solid = (c - 2.dp.toPx()) * fraction
-                            val (h, s) = ColorSpaceGeometry.wheelHit(change.position.x - c, change.position.y - c, solid)
-                            hue = h; sat = s; emitHs(h, s)
+                        detectTapGestures { pos ->
+                            val cpx = size.width / 2f
+                            val dx = pos.x - cpx
+                            val dy = pos.y - cpx
+                            val inner = cpx - 2.dp.toPx() - RING_WIDTH_DP.dp.toPx()
+                            val ring = sqrt(dx * dx + dy * dy) >= inner - 6.dp.toPx()
+                            if (ring) {
+                                val h = ColorSpaceGeometry.ringAngle(dx, dy)
+                                hue = h
+                                emitHsv(h, sat, currentValue)
+                            } else {
+                                val half = ((inner - RING_GAP_DP.dp.toPx()) / sqrt(2f)) * fraction
+                                if (half > 0f) {
+                                    val s = ((dx + half) / (2f * half)).coerceIn(0f, 1f)
+                                    val v = (1f - (dy + half) / (2f * half)).coerceIn(0f, 1f)
+                                    sat = s
+                                    emitHsv(hue, s, v)
+                                }
+                            }
                         }
                     },
             ) {
                 val c = Offset(size.width / 2f, size.height / 2f)
-                val full = min(size.width, size.height) / 2f - 2.dp.toPx()
-                val solid = full * fraction
-
-                // The coloured shape: the wheel at the CURRENT value, so the shape never
-                // shows brighter colours than the slider position actually yields.
+                val outer = size.width / 2f - 2.dp.toPx()
+                val ringW = RING_WIDTH_DP.dp.toPx()
+                val inner = outer - ringW
+                val fullHalf = (inner - RING_GAP_DP.dp.toPx()) / sqrt(2f)
+                val solidHalf = fullHalf * fraction
                 val v = value.coerceIn(0f, 1f)
-                val sweep = (0..6).map { Color.hsv((it * 60f) % 360f, 1f, v) }
-                drawCircle(Brush.sweepGradient(sweep, center = c), radius = solid, center = c)
+                val pureHue = Color.hsv(hue, 1f, 1f)
+
+                // The hue ring — thin, per the owner's correction to the kit's fat one.
+                val sweep = (0..6).map { Color.hsv((it * 60f) % 360f, 1f, 1f) }
                 drawCircle(
-                    Brush.radialGradient(
-                        listOf(Color.hsv(0f, 0f, v), Color.hsv(0f, 0f, v).copy(alpha = 0f)),
-                        center = c,
-                        radius = solid,
-                    ),
-                    radius = solid,
+                    Brush.sweepGradient(sweep, center = c),
+                    radius = (outer + inner) / 2f,
                     center = c,
+                    style = Stroke(ringW),
                 )
-                // The ring around the colour-space shape — a 1dp hairline, nothing more.
-                drawCircle(Hairline, radius = solid, center = c, style = Stroke(1.dp.toPx()))
-                // The model's full space, dotted: what HSV describes beyond this pipeline.
-                drawCircle(
+                val (rx, ry) = ColorSpaceGeometry.wheelPosition(hue, 1f)
+                val ringThumb = Offset(c.x + rx * (outer + inner) / 2f, c.y + ry * (outer + inner) / 2f)
+                drawCircle(pureHue, radius = ringW / 2f + 3.dp.toPx(), center = ringThumb)
+                drawCircle(Color.White, radius = ringW / 2f + 3.dp.toPx(), center = ringThumb, style = Stroke(1.5.dp.toPx()))
+
+                // The S×V slice, gamut-honest: solid at [fraction], the model's full
+                // slice dotted around it.
+                val solidTL = Offset(c.x - solidHalf, c.y - solidHalf)
+                val solidSize = Size(solidHalf * 2f, solidHalf * 2f)
+                drawRect(
+                    Brush.horizontalGradient(listOf(Color.White, pureHue), startX = solidTL.x, endX = solidTL.x + solidSize.width),
+                    topLeft = solidTL,
+                    size = solidSize,
+                )
+                drawRect(
+                    Brush.verticalGradient(listOf(Color.Transparent, Color.Black), startY = solidTL.y, endY = solidTL.y + solidSize.height),
+                    topLeft = solidTL,
+                    size = solidSize,
+                )
+                drawRect(Hairline, topLeft = solidTL, size = solidSize, style = Stroke(1.dp.toPx()))
+                drawRect(
                     TextDisabled,
-                    radius = full,
-                    center = c,
+                    topLeft = Offset(c.x - fullHalf, c.y - fullHalf),
+                    size = Size(fullHalf * 2f, fullHalf * 2f),
                     style = Stroke(
                         1.dp.toPx(),
                         pathEffect = PathEffect.dashPathEffect(floatArrayOf(4.dp.toPx(), 5.dp.toPx())),
                     ),
                 )
-                // Thumb: thin white ring on the current colour, inside the solid disc only.
-                val (ux, uy) = ColorSpaceGeometry.wheelPosition(hue, sat)
-                val thumb = Offset(c.x + ux * solid, c.y + uy * solid)
-                drawCircle(Color.hsv(hue, sat, v), radius = 7.dp.toPx(), center = thumb)
-                drawCircle(Color.White, radius = 7.dp.toPx(), center = thumb, style = Stroke(1.5.dp.toPx()))
+                val sliceThumb = Offset(
+                    solidTL.x + sat.coerceIn(0f, 1f) * solidSize.width,
+                    solidTL.y + (1f - v) * solidSize.height,
+                )
+                drawCircle(Color.hsv(hue, sat, v), radius = 6.dp.toPx(), center = sliceThumb)
+                drawCircle(Color.White, radius = 6.dp.toPx(), center = sliceThumb, style = Stroke(1.5.dp.toPx()))
             }
         }
-        HsvSlider("V", value * 100f, range = 0f..100f, unit = "%", trackColor = TextHigh) { v ->
-            onColorChange(hsvToColor(hue, sat, v / 100f, color.alpha))
-        }
+        // The live 3D model of the space — drag to orbit.
+        SpaceModel(
+            kind = SpaceModelKind.HSV_CONE,
+            color = color,
+            fraction = fraction,
+            modifier = Modifier.fillMaxWidth().height(150.dp),
+        )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             ScreenReadout("${hue.roundToInt()}°", minWidth = 42.dp)
             ScreenReadout("${(sat * 100).roundToInt()}%", minWidth = 42.dp)
+            ScreenReadout("${(value * 100).roundToInt()}%", minWidth = 42.dp)
         }
         GamutLegend(display)
-    }
-}
-
-@Composable
-private fun HsvSlider(
-    label: String,
-    value: Float,
-    range: ClosedFloatingPointRange<Float>,
-    unit: String,
-    trackColor: Color,
-    onChange: (Float) -> Unit,
-) {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        Text(label, color = TextMid, fontSize = 12.sp, modifier = Modifier.size(14.dp))
-        Slider(
-            value = value,
-            onValueChange = onChange,
-            valueRange = range,
-            modifier = Modifier.weight(1f),
-            colors = SliderDefaults.colors(
-                thumbColor = ControlIndicator,
-                activeTrackColor = trackColor,
-                inactiveTrackColor = ControlGroove,
-            ),
-        )
-        ScreenReadout("${value.roundToInt()}$unit", minWidth = 42.dp)
     }
 }
 
@@ -419,6 +469,13 @@ private fun RgbPanel(color: Color, display: HyleDisplayContext, onColorChange: (
             }
         }
         ChannelSlider("B", color.blue, Color(0xFF4B8FE5)) { onColorChange(color.copy(blue = it)) }
+        // The live 3D model of the cube — drag to orbit.
+        SpaceModel(
+            kind = SpaceModelKind.RGB_CUBE,
+            color = color,
+            fraction = fraction,
+            modifier = Modifier.fillMaxWidth().height(150.dp),
+        )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             ScreenReadout((color.red * 255).roundToInt().toString(), minWidth = 34.dp)
             ScreenReadout((color.green * 255).roundToInt().toString(), minWidth = 34.dp)

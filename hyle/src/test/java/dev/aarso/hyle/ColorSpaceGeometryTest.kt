@@ -2,6 +2,8 @@ package dev.aarso.hyle
 
 import dev.aarso.hyle.component.ColorSpaceGeometry
 import dev.aarso.hyle.component.DisplayGamut
+import dev.aarso.hyle.component.SpaceModelGeometry
+import dev.aarso.hyle.component.SpacePoint
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -106,5 +108,62 @@ class ColorSpaceGeometryTest {
         val (h, s) = ColorSpaceGeometry.wheelHit(10f, 10f, 0f)
         assertEquals(0f, s, eps)
         assertTrue(h in 0f..360f)
+    }
+
+    // ── SpaceModelGeometry: the live 3D model's maths ───────────────────────────────
+
+    private fun len(p: SpacePoint) = kotlin.math.sqrt(p.x * p.x + p.y * p.y + p.z * p.z)
+
+    @Test
+    fun `rotation is rigid - zero angles are identity and length is preserved`() {
+        val p = SpacePoint(0.3f, -0.2f, 0.4f)
+        val id = SpaceModelGeometry.rotated(p, 0f, 0f)
+        assertEquals(p.x, id.x, eps); assertEquals(p.y, id.y, eps); assertEquals(p.z, id.z, eps)
+        val r = SpaceModelGeometry.rotated(p, 137f, -55f)
+        assertEquals(len(p), len(r), 1e-3f)
+    }
+
+    @Test
+    fun `yaw 90 swings x onto z, pitch 90 swings y onto z`() {
+        val x = SpaceModelGeometry.rotated(SpacePoint(1f, 0f, 0f), 90f, 0f)
+        assertEquals(0f, x.x, eps); assertEquals(-1f, x.z, eps)
+        val y = SpaceModelGeometry.rotated(SpacePoint(0f, 1f, 0f), 0f, 90f)
+        assertEquals(0f, y.y, eps); assertEquals(1f, y.z, eps)
+    }
+
+    @Test
+    fun `projection keeps x, flips model-up to screen-down, exposes depth`() {
+        val (dx, dy, depth) = SpaceModelGeometry.projected(SpacePoint(0.5f, 0.5f, -0.3f), 100f)
+        assertEquals(50f, dx, eps)
+        assertEquals(-50f, dy, eps)
+        assertEquals(-0.3f, depth, eps)
+    }
+
+    @Test
+    fun `cone collapses to its axis at v zero and rims at half a unit`() {
+        val apex = SpaceModelGeometry.conePoint(123f, 1f, 0f)
+        assertEquals(0f, apex.x, eps); assertEquals(-0.5f, apex.y, eps); assertEquals(0f, apex.z, eps)
+        val rim = SpaceModelGeometry.conePoint(0f, 1f, 1f)
+        assertEquals(0.5f, rim.x, eps); assertEquals(0.5f, rim.y, eps)
+    }
+
+    @Test
+    fun `cone and cube honour the gamut fraction like the slices do`() {
+        val rim = SpaceModelGeometry.conePoint(0f, 1f, 1f, scale = 0.78f)
+        assertEquals(0.39f, rim.x, eps)
+        val corner = SpaceModelGeometry.cubePoint(1f, 1f, 1f, scale = 0.78f)
+        assertEquals(0.39f, corner.x, eps)
+        assertEquals(0.39f, corner.y, eps)
+        assertEquals(0.39f, corner.z, eps)
+    }
+
+    @Test
+    fun `cube has exactly twelve edges, each of full side length`() {
+        val edges = SpaceModelGeometry.cubeEdges()
+        assertEquals(12, edges.size)
+        edges.forEach { (a, b) ->
+            val d = SpacePoint(a.x - b.x, a.y - b.y, a.z - b.z)
+            assertEquals(1f, len(d), eps)
+        }
     }
 }
