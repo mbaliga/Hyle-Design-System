@@ -311,7 +311,7 @@ private fun HsvPanel(color: Color, display: HyleDisplayContext, onColorChange: (
             }
         }
         HsvSlider("V", value * 100f, range = 0f..100f, unit = "%", trackColor = TextHigh) { v ->
-            emit(hue, sat, v / 100f)
+            onColorChange(hsvToColor(hue, sat, v / 100f, color.alpha))
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             ScreenReadout("${hue.roundToInt()}°", minWidth = 42.dp)
