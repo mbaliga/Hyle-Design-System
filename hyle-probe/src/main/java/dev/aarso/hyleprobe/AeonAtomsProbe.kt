@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import dev.aarso.hyle.component.HyleColorPicker
+import dev.aarso.hyle.cells.HyleColorPicker3D
 
 // ── Hyle dark palette (locked — canonical values) ─────────────────────────
 private val Ink = Color(0xFF0E0F12)
@@ -225,15 +225,9 @@ fun HyleAtomsProbe() {
         }
 
         // ── Colour picker — bottom-anchored slanted tabs ─────────────
-        AtomSection("Colour picker — HyleBottomTabRow (shipped in :hyle)") {
+        AtomSection("Colour picker — HyleColorPicker3D (the faithful kit re-port)") {
             var pickerColor by remember { mutableStateOf(Violet) }
-            HyleColorPicker(
-                color = pickerColor,
-                onColorChange = { pickerColor = it },
-                // Real detection on the probe device, so Night Light / vivid modes
-                // actually trip the warning row when the owner verifies by eye.
-                display = dev.aarso.hyle.component.rememberHyleDisplayContext(),
-            )
+            HyleColorPicker3D(color = pickerColor, onColorChange = { pickerColor = it })
         }
 
         // ── Log entries ───────────────────────────────────────────────

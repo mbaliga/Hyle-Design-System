@@ -318,6 +318,59 @@ data class CrashReport(
             append('\n')
             append(trace)
         }
+
+        /**
+         * Sample content for previewing the recovery screen without a real crash (see
+         * [dev.aarso.crashrecovery.CrashRecovery.previewIntent]). "PREVIEW" appears in both
+         * [Decoded.headline] and the full text so a screenshot, or an accidentally-shared
+         * preview report, can never be mistaken for a real crash.
+         */
+        /**
+         * Sample content for [CrashRecovery.previewIntent] — lets the recovery screen be
+         * reviewed without crashing anything. "PREVIEW" appears in the headline *and* the
+         * shareable report, so a screenshot (or a preview report shared by accident) can
+         * never be mistaken for a real crash. Every structured field is filled with an
+         * explicit placeholder rather than plausible fake device data, for the same reason.
+         */
+        fun samplePreview(appLabel: String): Decoded {
+            val excType = "IllegalStateException"
+            val excMessage = "this is a PREVIEW — no real crash occurred"
+            val headline = "$excType: $excMessage"
+            val trace = buildString {
+                append("java.lang.").append(excType).append(": ").append(excMessage).append('\n')
+                append("\tat dev.aarso.crashrecovery.CrashRecovery.previewIntent(CrashRecovery.kt)\n")
+                append("\tat ").append(appLabel).append(" (preview trigger — not an actual stack trace)\n")
+            }
+            val fullReport = buildString {
+                append(appLabel).append(" crash — PREVIEW, not a real crash\n")
+                append("when: (preview — no timestamp)\n")
+                append("thread: main\n")
+                append("app version: (preview)\n")
+                append("device: (preview)\n\n")
+                append(headline).append("\n\n")
+                append(trace)
+            }
+            return Decoded(
+                appLabel = appLabel,
+                headline = headline,
+                plainLanguage = "This is a preview of the recovery screen — $appLabel did not crash.",
+                excType = excType,
+                excMessage = excMessage,
+                threadName = "main",
+                whenMillis = null,
+                versionName = null,
+                versionCode = null,
+                packageName = null,
+                installSource = null,
+                osSdkInt = null,
+                deviceManufacturer = null,
+                deviceModel = null,
+                freeMemMb = null,
+                totalMemMb = null,
+                trace = trace,
+                fullReport = fullReport,
+            )
+        }
     }
 
     /** What the recovery UI needs — a plain-language summary, structured fields, and the shareable text. */

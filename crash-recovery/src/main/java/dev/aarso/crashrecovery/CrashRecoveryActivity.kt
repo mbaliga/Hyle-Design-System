@@ -52,6 +52,10 @@ class CrashRecoveryActivity : Activity() {
     private var contactEmail: String? = null
     private var consecutive = 1
 
+    /** Sample-content mode: the screen renders for review, but nothing it does can touch
+     *  real state — see [performReset], [continueToApp] and [discard]. */
+    private var preview = false
+
     private lateinit var paneMain: View
     private lateinit var paneDetails: View
     private lateinit var toast: TextView
@@ -68,7 +72,9 @@ class CrashRecoveryActivity : Activity() {
 
         appLabel = intent.getStringExtra(EXTRA_APP_LABEL) ?: "App"
         contactEmail = intent.getStringExtra(EXTRA_CONTACT_EMAIL)
-        val decoded = CrashRecovery.pending(this)
+        preview = intent.getBooleanExtra(EXTRA_PREVIEW, false)
+        // In preview the screen is driven by sample content — no disk read, nothing pending.
+        val decoded = if (preview) CrashReport.samplePreview(appLabel) else CrashRecovery.pending(this)
 
         // Nothing to recover from (e.g. launched directly for testing, or cleared between the
         // check in maybeShowRecovery and here) — don't strand the user on a blank screen.
@@ -77,7 +83,8 @@ class CrashRecoveryActivity : Activity() {
             return
         }
         report = decoded
-        consecutive = CrashRecovery.consecutiveCount(this)
+        // A preview never claims a crash streak, so the loop-gated reset stays hidden.
+        consecutive = if (preview) 1 else CrashRecovery.consecutiveCount(this)
 
         val night = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
             Configuration.UI_MODE_NIGHT_YES
@@ -373,6 +380,11 @@ class CrashRecoveryActivity : Activity() {
     }
 
     private fun performReset() {
+        // Previewing the screen must never be able to wipe someone's app data.
+        if (preview) {
+            showToast("Preview only — no data was reset")
+            return
+        }
         CrashRecovery.clear(this)
         CrashRecovery.clearStreak(this)
         // The zero-arg self-clear is API 29+ only; several consumers have a lower minSdk
@@ -462,6 +474,12 @@ class CrashRecoveryActivity : Activity() {
     private fun reportText(): String = report.fullReport
 
     private fun continueToApp() {
+        // Nothing crashed in preview, so there is nothing to clear and nothing to relaunch —
+        // just close the screen and hand the user back where they came from.
+        if (preview) {
+            finish()
+            return
+        }
         CrashRecovery.clear(this)
         runCatching { packageManager.getLaunchIntentForPackage(packageName) }
             .getOrNull()
@@ -470,6 +488,10 @@ class CrashRecoveryActivity : Activity() {
     }
 
     private fun discard() {
+        if (preview) {
+            showToast("Preview only — no report was deleted")
+            return
+        }
         CrashRecovery.clear(this)
         showToast("Report deleted from device")
         paneMain.postDelayed({ continueToApp() }, 650)
@@ -740,17 +762,20 @@ class CrashRecoveryActivity : Activity() {
         private const val EXTRA_APP_LABEL = "dev.aarso.crashrecovery.APP_LABEL"
         private const val EXTRA_STYLE = "dev.aarso.crashrecovery.STYLE"
         private const val EXTRA_CONTACT_EMAIL = "dev.aarso.crashrecovery.CONTACT_EMAIL"
+        private const val EXTRA_PREVIEW = "dev.aarso.crashrecovery.PREVIEW"
 
         fun intent(
             context: Context,
             appLabel: String,
             style: CrashRecoveryStyle = CrashRecoveryStyle.Default,
             contactEmail: String? = null,
+            preview: Boolean = false,
         ): Intent =
             Intent(context, CrashRecoveryActivity::class.java).apply {
                 putExtra(EXTRA_APP_LABEL, appLabel)
                 putExtra(EXTRA_STYLE, style)
                 if (contactEmail != null) putExtra(EXTRA_CONTACT_EMAIL, contactEmail)
+                if (preview) putExtra(EXTRA_PREVIEW, true)
                 if (context !is Activity) addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
     }

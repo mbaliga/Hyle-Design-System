@@ -148,4 +148,32 @@ class CrashReportTest {
         assertEquals("IllegalStateException: old", decoded.headline)
         assertTrue(decoded.fullReport.contains("some older body text"))
     }
+
+    // ── samplePreview: the screen can be reviewed without ever faking a real crash ──────
+
+    @Test
+    fun `samplePreview is labelled PREVIEW in both the headline and the shareable report`() {
+        val decoded = CrashReport.samplePreview("Fonebrew")
+        assertTrue(decoded.headline.contains("PREVIEW"))
+        assertTrue(decoded.fullReport.contains("PREVIEW"))
+        assertTrue(decoded.fullReport.contains("Fonebrew"))
+    }
+
+    @Test
+    fun `samplePreview invents no device or version data`() {
+        val decoded = CrashReport.samplePreview("Fonebrew")
+        // Placeholders, not plausible-looking fakes — a preview must never read as telemetry.
+        assertNull(decoded.whenMillis)
+        assertNull(decoded.versionName)
+        assertNull(decoded.deviceModel)
+        assertNull(decoded.osSdkInt)
+    }
+
+    @Test
+    fun `samplePreview carries a trace that names itself a preview trigger`() {
+        val decoded = CrashReport.samplePreview("Fonebrew")
+        assertTrue(decoded.trace.contains("previewIntent"))
+        assertTrue(decoded.trace.contains("not an actual stack trace"))
+        assertEquals("main", decoded.threadName)
+    }
 }
