@@ -227,7 +227,13 @@ fun HyleAtomsProbe() {
         // ── Colour picker — bottom-anchored slanted tabs ─────────────
         AtomSection("Colour picker — HyleBottomTabRow (shipped in :hyle)") {
             var pickerColor by remember { mutableStateOf(Violet) }
-            HyleColorPicker(color = pickerColor, onColorChange = { pickerColor = it })
+            HyleColorPicker(
+                color = pickerColor,
+                onColorChange = { pickerColor = it },
+                // Real detection on the probe device, so Night Light / vivid modes
+                // actually trip the warning row when the owner verifies by eye.
+                display = dev.aarso.hyle.component.rememberHyleDisplayContext(),
+            )
         }
 
         // ── Log entries ───────────────────────────────────────────────
