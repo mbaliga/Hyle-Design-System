@@ -1,0 +1,24 @@
+assets/primitives/ — Third-Party Reference Pack
+========================================================================
+
+This folder is a raw reference pack of third-party icons and logos (~2,570
+files across Actions flex, Famous Brands, 100 Most Valuable Companies Logos
+2026, 3D Chip Logos, Monochrome Logos, and File Types), sourced from a free
+Figma Community file. The source lists the pack as free to use, with no
+attribution required.
+
+These are static reference files only:
+
+- Not part of any published build — excluded from `package.json`'s `files`.
+- Not wired into the `<hy-icon>` component or `src/components/icon/icons.ts`.
+- Not shown in Storybook.
+
+Hyle's own icon system is a small, hand-authored, brutalist set (see
+`src/components/icon/icons.ts`). An icon from this pack should be redrawn to
+match that style before it becomes a real Hyle component — nothing here is
+used as-is.
+
+The brand/product logos under `Famous Brands/`, `100 most valuable companies
+logos 2026/`, and `Monochrome Logos/` remain the trademarks of their
+respective owners. They're kept here for reference only, not as Hyle's own
+branding — see `TRADEMARKS.md` for this repo's own trademark policy.

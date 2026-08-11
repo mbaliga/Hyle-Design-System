@@ -119,6 +119,7 @@ Mock apps that compose the components live under **Storybook → Mock Apps**.
 | `docs/PHILOSOPHY.md`      | Hyle — Ethos & Lineage (the theory behind the law).              |
 | `stories/`                | Storybook Introduction + Foundations (token) docs.               |
 | `build/`                  | **Generated** web/iOS token artifacts (git-ignored).             |
+| `assets/primitives/`      | Raw third-party icon/logo reference pack — not wired into components or Storybook. See `assets/primitives/LICENSE-NOTE.txt`. |
 
 ## Shared tokens, one source
 
