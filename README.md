@@ -120,6 +120,7 @@ Mock apps that compose the components live under **Storybook → Mock Apps**.
 | `stories/`                | Storybook Introduction + Foundations (token) docs.               |
 | `build/`                  | **Generated** web/iOS token artifacts (git-ignored).             |
 | `assets/primitives/`      | Raw third-party icon/logo reference pack — not wired into components or Storybook. See `assets/primitives/LICENSE-NOTE.txt`. |
+| `assets/baliga-portfolio-assets/` | Scaffold for your own logos — mdhv.xyz, the asystemofcells brand, and per-product folders. Empty until real assets are added; see its own `README.md`. |
 
 ## Shared tokens, one source
 
