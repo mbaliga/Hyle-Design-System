@@ -11,6 +11,11 @@ noted as derivative works of existing open fonts (e.g. Hyle Grotesk Classic, bui
 Grotesk with Archivo letterforms substituted) — free to use/modify/redistribute under the OFL,
 same as their source fonts, but distinct from this repo's own Apache-2.0 code.
 
+**`assets/primitives/` is also NOT covered by the Apache-2.0 grant above.** It is a raw
+third-party icon/logo reference pack from a free Figma Community file (no attribution required
+by the source) — see `assets/primitives/LICENSE-NOTE.txt`. It is reference material only, not
+wired into any component, build, or Storybook output.
+
 **Third-party runtime dependencies (Gradle `hyle`/`hyle-probe`/`crash-recovery` modules, and the
 npm packages behind the Storybook/web tooling in `package.json`) are not yet scanned by an
 automated license-report gate in this repository**, unlike `android-ide-core` and
