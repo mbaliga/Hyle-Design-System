@@ -1,0 +1,207 @@
+{
+  "collection": "hyle-design-system-illustrations",
+  "version": "1.0.0",
+  "art_direction": "Original hand-inked watercolor/gouache natural-history comic illustration; playful situations, accurate readable anatomy, no baked-in text.",
+  "layout": {
+    "still_size": "384x384",
+    "loop_size": "300x300",
+    "loop_frame_rate": "12 fps",
+    "safe_area": "Centered circular safe area with generous margin",
+    "backgrounds": ["plain warm white", "plain black"]
+  },
+  "assets": [
+    {
+      "id": "aquatic-stack",
+      "media": "still",
+      "file": "stills/aquatic-stack.webp",
+      "subject": "Three squat glossy brown-purple aquatic animals stacked together",
+      "scientific_name": null,
+      "situation": "A bewildered little stack of aquatic neighbors",
+      "tone": "funny",
+      "suggested_use_cases": ["404", "no-results", "empty-state"],
+      "source_references": ["01-147624.jpg"]
+    },
+    {
+      "id": "tiny-orange-arachnid",
+      "media": "still",
+      "file": "stills/tiny-orange-arachnid.webp",
+      "subject": "Tiny orange-red large-eyed spider-like arachnid",
+      "scientific_name": null,
+      "situation": "A curious explorer perched on a pebble",
+      "tone": "funny",
+      "suggested_use_cases": ["easter-egg", "no-results", "decorative-filler"],
+      "source_references": ["02-147622.jpg"]
+    },
+    {
+      "id": "rooster-kittens",
+      "media": "still",
+      "file": "stills/rooster-kittens.webp",
+      "subject": "Adult rooster sheltering two kittens",
+      "scientific_name": null,
+      "situation": "A rooster keeping kittens warm beneath his body and wings",
+      "tone": "funny, tender",
+      "suggested_use_cases": ["no-results", "empty-state", "decorative-filler"],
+      "source_references": ["03-147462.jpg"]
+    },
+    {
+      "id": "jaguar-fish",
+      "media": "still",
+      "file": "stills/jaguar-fish.webp",
+      "subject": "Spotted jaguar underwater holding a fish",
+      "scientific_name": null,
+      "situation": "An improbable underwater embrace with dinner",
+      "tone": "surreal, funny",
+      "suggested_use_cases": ["500", "501", "maintenance"],
+      "source_references": ["04-147180.jpg"]
+    },
+    {
+      "id": "long-legged-water-walker",
+      "media": "still",
+      "file": "stills/long-legged-water-walker.webp",
+      "subject": "Dark long-legged winged water-walking creature",
+      "scientific_name": null,
+      "situation": "A delicate creature attempting an impossible balancing act",
+      "tone": "uncanny, funny",
+      "suggested_use_cases": ["404", "loading", "easter-egg"],
+      "source_references": ["RDT_20260501_1357354004737974284357737.jpg"]
+    },
+    {
+      "id": "rabbit-hay",
+      "media": "still",
+      "file": "stills/rabbit-hay.webp",
+      "subject": "Fluffy white rabbit with a mouthful of hay",
+      "scientific_name": null,
+      "situation": "Caught mid-chew while pretending everything is normal",
+      "tone": "funny",
+      "suggested_use_cases": ["no-results", "empty-state", "decorative-filler"],
+      "source_references": ["RDT_20260612_1703556870342945586500597.jpg"]
+    },
+    {
+      "id": "orange-ciliated-organism",
+      "media": "still",
+      "file": "stills/orange-ciliated-organism.webp",
+      "subject": "Elongated orange soft-bodied organism with bead-like bumps and trailing filaments",
+      "scientific_name": null,
+      "situation": "A mysterious microscopic visitor drifting through the void",
+      "tone": "mystical",
+      "suggested_use_cases": ["404", "no-results", "easter-egg"],
+      "source_references": ["RDT_20260618_1034122040216376267382603.jpg"]
+    },
+    {
+      "id": "blue-glass-mushrooms",
+      "media": "still",
+      "file": "stills/blue-glass-mushrooms.webp",
+      "subject": "Two translucent blue mushrooms on ochre-gold stems",
+      "scientific_name": null,
+      "situation": "A tiny moonlit mushroom pair glowing in the dark",
+      "tone": "mystical",
+      "suggested_use_cases": ["easter-egg", "decorative-filler", "maintenance"],
+      "source_references": ["RDT_20260714_2129476923223731180477936.jpg"]
+    },
+    {
+      "id": "yellow-black-sphere-fungi",
+      "media": "still",
+      "file": "stills/yellow-black-sphere-fungi.webp",
+      "subject": "Three yellow-black spherical fungi on delicate stalks",
+      "scientific_name": null,
+      "situation": "A miniature alien grove growing from the forest floor",
+      "tone": "mystical, whimsical",
+      "suggested_use_cases": ["no-results", "easter-egg", "decorative-filler"],
+      "source_references": ["RDT_20260714_2129444950726678600010196.jpg"]
+    },
+    {
+      "id": "bubble-organism-and-larva",
+      "media": "still",
+      "file": "stills/bubble-organism-and-larva.webp",
+      "subject": "Translucent bubble-covered white organism beside a purple segmented larva",
+      "scientific_name": null,
+      "situation": "Two strange neighbors sharing a damp piece of wood",
+      "tone": "mystical, uncanny",
+      "suggested_use_cases": ["503", "easter-egg", "decorative-filler"],
+      "source_references": ["RDT_20260714_212952163633928955459968.jpg"]
+    },
+    {
+      "id": "jaguar-in-thicket",
+      "media": "still",
+      "file": "stills/jaguar-in-thicket.webp",
+      "subject": "Black jaguar (Panthera onca) peeking through leaves and pink flowers",
+      "scientific_name": "Panthera onca",
+      "situation": "A jaguar hiding in a flowering thicket",
+      "tone": "mystical, watchful",
+      "suggested_use_cases": ["404", "503", "easter-egg"],
+      "source_references": ["RDT_20260812_2054385248598989222136890.jpg"]
+    },
+    {
+      "id": "angular-armored-insect",
+      "media": "still",
+      "file": "stills/angular-armored-insect.webp",
+      "subject": "Unusual black-orange-yellow angular armored insect",
+      "scientific_name": null,
+      "situation": "A tiny armored visitor perched on a coral-pink petal",
+      "tone": "funny, curious",
+      "suggested_use_cases": ["501", "no-results", "easter-egg"],
+      "source_references": ["05-146891.jpg", "RDT_20260815_095037367286065152633303.jpg"]
+    },
+    {
+      "id": "hunched-fly-open",
+      "media": "still",
+      "file": "stills/hunched-fly-open.webp",
+      "subject": "Fuzzy yellow-green hunched fly standing in the open",
+      "scientific_name": null,
+      "situation": "A strange fuzzy fly exposed in open space, looking oddly self-important",
+      "tone": "funny, uncanny",
+      "suggested_use_cases": ["500", "501", "no-results"],
+      "source_references": ["06-146134.jpg", "RDT_20260813_0943474912920771137589653.jpg"]
+    },
+    {
+      "id": "harvestman-leaf",
+      "media": "still",
+      "file": "stills/harvestman-leaf.webp",
+      "subject": "Harvestman (order Opiliones) with a small black body and eight long golden legs",
+      "scientific_name": "Opiliones",
+      "situation": "A tiny eight-legged leaf stroll with more confidence than balance",
+      "tone": "funny, curious",
+      "suggested_use_cases": ["404", "loading", "decorative-filler"],
+      "source_references": ["RDT_20260817_0042075510947110914917232.jpg", "RDT_20260817_0042036625630230908531261.jpg"]
+    },
+    {
+      "id": "sea-otter-sleep",
+      "media": "loop",
+      "file": "loops/sea-otter-sleep-loop.mp4",
+      "poster": "posters/sea-otter-sleep.webp",
+      "subject": "Sea otter floating with paws over its eyes",
+      "scientific_name": null,
+      "situation": "Trying to sleep while floating",
+      "tone": "funny, gentle",
+      "suggested_use_cases": ["loading", "no-results", "interstitial"],
+      "duration_seconds": 4,
+      "source_references": ["RDT_20260612_171219.mp4"]
+    },
+    {
+      "id": "long-eared-bat-wake",
+      "media": "loop",
+      "file": "loops/long-eared-bat-wake-loop.mp4",
+      "poster": "posters/long-eared-bat-wake.webp",
+      "subject": "Small brown long-eared bat waking on folded cloth",
+      "scientific_name": null,
+      "situation": "A sleepy bat opening its mouth at the worst possible moment",
+      "tone": "funny, uncanny",
+      "suggested_use_cases": ["503", "loading", "maintenance"],
+      "duration_seconds": 5,
+      "source_references": ["RDT_20260724_130718.mp4"]
+    },
+    {
+      "id": "green-gecko-climb",
+      "media": "loop",
+      "file": "loops/green-gecko-climb-loop.mp4",
+      "poster": "posters/green-gecko-climb.webp",
+      "subject": "Neon-green gecko with orange facial stripes and broad toe pads",
+      "scientific_name": null,
+      "situation": "A tiny gecko climbing into an expedition",
+      "tone": "curious, funny",
+      "suggested_use_cases": ["loading", "interstitial", "easter-egg"],
+      "duration_seconds": 4,
+      "source_references": ["146233.mp4"]
+    }
+  ]
+}
