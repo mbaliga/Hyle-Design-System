@@ -70,15 +70,25 @@ fun HyleSlashTabBar(
     }
 }
 
-/** The literal "/" thread between tabs — the same slant every seam in this app leans. */
+/**
+ * The literal "/" thread between tabs — the same slant every seam in this app leans.
+ *
+ * The endpoints used to be `0.8w → 0.2w` over an 8x22dp canvas, which is 4.8 of run
+ * over 22 of rise = slope 0.218: a third hand-typed near-miss of [HyleSeam.SLOPE]
+ * (0.271428), alongside Segments.kt's and Aeon.kt's two 0.25s. Derive the run from
+ * the slope and centre it, so this thread stays parallel to the field silhouette and
+ * to the tab-bar seams it sits beside no matter what the canvas is sized to.
+ */
 @Composable
 private fun SlashSeparator() {
     val c = LocalHyleColors.current
     Canvas(Modifier.size(width = 8.dp, height = 22.dp)) {
+        val run = size.height * HyleSeam.SLOPE
+        val cx = size.width / 2f
         drawLine(
             color = c.hairline,
-            start = Offset(size.width * 0.8f, 0f),
-            end = Offset(size.width * 0.2f, size.height),
+            start = Offset(cx + run / 2f, 0f),
+            end = Offset(cx - run / 2f, size.height),
             strokeWidth = size.width * 0.22f,
         )
     }

@@ -81,7 +81,11 @@ import kotlin.math.sin
  * tokens, so the whole layer re-themes with the user's choice.
  */
 
-private const val FIELD_SLANT_RATIO = 0.25f // measured: 6px run over the 24px straight edge → slope 0.25
+// The slant ratio is NOT restated here any more. This file used to carry its own
+// `FIELD_SLANT_RATIO = 0.25f // measured: 6px run over the 24px straight edge`, and
+// Segments.kt a second `0.25f // same slope as HyleFieldShape`; both were ~8% shallow
+// against HyleFieldShape's actual Figma transcription (65.1428 run / 240 rise =
+// 0.271428, CellGeometry.kt:152-153). One slope, one place: [HyleSeam.SLOPE].
 
 /** Shared height for every field-like Aeon control (inputs AND dropdowns), so they
  *  line up. Matches the 32px design box. */
@@ -94,8 +98,19 @@ private val FIELD_MIN_HEIGHT = 32.dp
 internal object HyleRightSlantShape : Shape {
     override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline {
         if (size.width <= 0f || size.height <= 0f) return Outline.Generic(Path())
+        // 4dp, NOT [HyleSeam.CORNER]'s 8dp: this is the field/nav-chip silhouette's
+        // sibling, and HyleFieldShape's authored radius is 40 of the 320-unit canvas
+        // (= h/8), which lands at ~4dp for a 32dp chip. A packed seam cell is the
+        // softer register; a file-tab chip is not.
         val r = with(density) { 4.dp.toPx() }.coerceAtMost(size.height / 4f)
-        val slant = (size.height * FIELD_SLANT_RATIO).coerceAtMost(with(density) { 12.dp.toPx() })
+        // Same slope as every other seam, and — as in [HyleSegmentShape] — no 12dp
+        // height cap: a cap makes the LEAN change with height, a second way for two
+        // slants to stop being parallel alongside the mirroring fault recorded below.
+        // Clamp against the WIDTH instead, which is the real degeneracy (a cell too
+        // narrow to hold its own diagonal). At the 36dp both callers use — HyleNavChip
+        // and HyleHeaderButton — the old cap never bound anyway, so this is purely the
+        // 0.25 → 0.271428 correction: 9.00dp of run becomes 9.77dp.
+        val slant = (size.height * HyleSeam.SLOPE).coerceAtMost((size.width - 2f * r).coerceAtLeast(0f))
         val len = kotlin.math.sqrt(slant * slant + size.height * size.height).coerceAtLeast(1f)
         val dx = r * slant / len
         val dy = r * size.height / len
@@ -495,27 +510,35 @@ fun HyleTabBar(
                 .padding(horizontal = 8.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(
-                Modifier.weight(1f).fillMaxHeight(),
-                // Boxes overlap by (slant − seam gap) so the parallel `/` seams read as a
-                // constant 3dp of ground; at tab-bar height the slant run caps at 12dp.
-                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy((-9).dp),
+            // Boxes overlap by (slant − seam gap) so the parallel `/` seams read as a
+            // constant 3dp of ground. This used to be a Row with a hard-coded
+            // `Arrangement.spacedBy((-9).dp)`, which only balanced because the slant was
+            // capped at 12dp and every tab happened to be tall enough to hit the cap —
+            // i.e. it was right for the wrong reason, and any change to the slope or the
+            // cap opened a gap in every tab bar in the app. [HyleSeamRow] derives the
+            // overlap from the MEASURED cell height instead, so a font-scale-grown bar
+            // stays packed too.
+            HyleSeamRow(
+                modifier = Modifier.weight(1f).fillMaxHeight(),
             ) {
                 tabs.forEachIndexed { i, tab ->
                     val on = i == selected
                     val tint = if (on) c.violet else c.textMid
                     // Every tab is a cell; outer edges of the group stay square-rounded,
                     // every seam toward a neighbour (or the trailing slot) is slanted.
-                    val cellShape = HyleSegmentShape(
-                        slantStart = i > 0,
-                        slantEnd = i < tabs.lastIndex || trailing != null,
-                    )
+                    val slantStart = i > 0
+                    val slantEnd = i < tabs.lastIndex || trailing != null
+                    val cellShape = HyleSegmentShape(slantStart = slantStart, slantEnd = slantEnd)
                     Column(
-                        modifier = Modifier.weight(1f)
-                            .fillMaxHeight()
+                        modifier = Modifier
+                            .seamCell(slantStart = slantStart, slantEnd = slantEnd, weight = 1f)
                             .clip(cellShape)
                             .background(if (on) c.violetDim else c.raised, cellShape)
                             .clickable { haptics.tap(); onSelect(i) }
+                            // Horizontal seam padding keeps the glyph+label centred in the
+                            // PARALLELOGRAM, not in the box — a cell slanted on one side
+                            // only (the first and last tabs) is not symmetric about its box.
+                            .seamPadding(slantStart = slantStart, slantEnd = slantEnd)
                             .padding(vertical = 9.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center,

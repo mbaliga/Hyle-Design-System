@@ -20,13 +20,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import dev.aarso.hyle.cells.HyleFieldShape
+import dev.aarso.hyle.cells.HyleTabBar
+import dev.aarso.hyle.cells.HyleSegmentedToggle
+import dev.aarso.hyle.cells.HyleSlashTabBar
+import dev.aarso.hyle.cells.HyleTabSpec
 import dev.aarso.hyle.theme.HyleColors
 import dev.aarso.hyle.theme.LocalHyleColors
 import dev.aarso.hyle.theme.darkHyleColors
@@ -268,40 +278,115 @@ class HyleKitRenderTest {
     // ── Split action (the Cohere "Get Started ⟋ +" register) ──────────────────────────────
     // Owner reference 2026-08-21 (Cohere dashboard shots). HyleSplitButton already implements
     // this treatment but ships with ONE caller in the whole codebase (HyleColorPicker3D's
-    // "Roll"), so it has never been looked at on a screen. The last three rows exist to make
-    // a specific bug visible rather than argued: Segments.kt hard-codes the cells' overlap as
-    // `spacedBy(SEAM_GAP - 10.dp)` for "the 40dp button height", while HyleSegmentShape derives
-    // its slant as (h * SEAM_SLANT_RATIO) capped at 12dp. Above 40dp the two disagree, so the
-    // strip of ground in the seam widens away from SEAM_GAP and the two slanted edges stop
-    // reading as one wall. Rendering 40/48/64dp side by side shows the drift directly.
-    private data class SplitSpec(val caption: String, val height: Int, val secondary: Boolean = false, val enabled: Boolean = true)
-
-    private val splitSpecs = listOf(
-        SplitSpec("PRIMARY · 40dp (the height the seam was tuned for)", 40),
-        SplitSpec("SECONDARY · 40dp", 40, secondary = true),
-        SplitSpec("DISABLED · 40dp", 40, enabled = false),
-        SplitSpec("PRIMARY · 48dp — seam drift", 48),
-        SplitSpec("PRIMARY · 64dp — seam drift", 64),
+    // "Roll"), so it had never been looked at on a screen — and it was wrong. The height
+    // ladder below was added to make the bug visible rather than argued, and now stands as the
+    // regression proof for the fix:
+    //
+    //   BEFORE: Segments.kt hard-coded the cells' overlap as `spacedBy(SEAM_GAP - 10.dp)`
+    //   "at the 40dp button height", while HyleSegmentShape derived the slant as
+    //   (h * 0.25f) capped at 12dp. Correct at exactly h == 40dp. At 48dp the slant hit the
+    //   cap while the overlap stayed -7dp, so the seam opened to 5dp; at 64dp the cap also
+    //   shallowed the lean to 12/64 = 0.1875 against 0.25 at 40dp.
+    //
+    //   AFTER: HyleSeamRow derives the overlap from the MEASURED height, and the slant is
+    //   h * HyleSeam.SLOPE with no height cap — so 40/48/64dp must now show the SAME strip of
+    //   ground and the SAME lean. Any future change that reintroduces a literal overlap or a
+    //   height cap shows up here as a widening or a rotating seam.
+    //
+    // The 200%-font-scale row is the "any height including large accessibility font scales"
+    // case: nobody types that height, the text does.
+    private data class SplitSpec(
+        val caption: String,
+        val height: Int?,
+        val secondary: Boolean = false,
+        val enabled: Boolean = true,
+        val fontScale: Float = 1f,
     )
 
+    private val splitSpecs = listOf(
+        SplitSpec("PRIMARY · 40dp (the default floor)", 40),
+        SplitSpec("SECONDARY · 40dp", 40, secondary = true),
+        SplitSpec("DISABLED · 40dp", 40, enabled = false),
+        SplitSpec("PRIMARY · 48dp — gap + angle must match 40dp", 48),
+        SplitSpec("PRIMARY · 64dp — gap + angle must match 40dp", 64),
+        SplitSpec("PRIMARY · intrinsic height @ 200% font scale", null, fontScale = 2f),
+    )
+
+    // The seam wall, rendered as the LAST board of the same stack (one ComposeTestRule may
+    // only have its content set once, so every board of a scene is one indexed composition).
+    // The whole point of the grammar is that unrelated controls stacked in one column read as
+    // ONE leaning wall. Three surfaces, three different code paths to the same slope:
+    // HyleSplitButton (HyleSegmentShape, packed by HyleSeamRow), HyleTabBar (the same shape at
+    // a much taller, content-derived cell height), and HyleFieldShape (the literal Figma
+    // transcription that HyleSeam.SLOPE is derived FROM — 65.1428 run / 240 rise). If any of
+    // the three leans differently it is visible at a glance in this one board; before the fix
+    // all three disagreed (0.25-capped, 0.25-capped, 0.271428).
     private fun renderSplit(c: HyleColors, out: String) {
         var idx by mutableStateOf(0)
+        val dot: DrawScope.(Color) -> Unit = { tint -> drawCircle(tint, radius = size.minDimension / 3f) }
+        val tabs = listOf(
+            HyleTabSpec("Global", dot), HyleTabSpec("Image", dot),
+            HyleTabSpec("Text", dot), HyleTabSpec("Video", dot),
+        )
         compose.setContent {
-            val spec = splitSpecs[idx]
-            Ground(c) {
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Caption(spec.caption, c)
-                    dev.aarso.hyle.cells.HyleSplitButton(
-                        text = "Get Started",
-                        onClick = {},
-                        modifier = Modifier.height(spec.height.dp),
-                        enabled = spec.enabled,
-                        secondary = spec.secondary,
-                    )
+            val spec = splitSpecs.getOrNull(idx)
+            val density = LocalDensity.current
+            CompositionLocalProvider(
+                LocalDensity provides Density(density.density, spec?.fontScale ?: 1f),
+            ) {
+                Ground(c) {
+                    if (spec != null) {
+                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Caption(spec.caption, c)
+                            dev.aarso.hyle.cells.HyleSplitButton(
+                                text = "Get Started",
+                                onClick = {},
+                                modifier = spec.height?.let { Modifier.height(it.dp) } ?: Modifier,
+                                enabled = spec.enabled,
+                                secondary = spec.secondary,
+                            )
+                        }
+                    } else {
+                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            Caption("PARALLEL? field / split action / tab bar / slash bar", c)
+                            // First, the REFERENCE: a slab clipped to HyleFieldShape, the Figma
+                            // transcription HyleSeam.SLOPE is derived from. Everything below it
+                            // must lean at the same angle as this one's left edge.
+                            Box(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .height(44.dp)
+                                    .clip(HyleFieldShape)
+                                    .background(c.raised),
+                            )
+                            dev.aarso.hyle.cells.HyleSplitButton(
+                                text = "Get Started",
+                                onClick = {},
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                            HyleTabBar(tabs = tabs, selected = 0, onSelect = {})
+                            // The fourth surface: HyleSlashTabBar's literal "/" thread, whose
+                            // endpoints used to imply their own slope (0.8w→0.2w over 8x22dp
+                            // = 0.218).
+                            HyleSlashTabBar(tabs = tabs.take(3), selected = 0, onSelect = {})
+                            // HyleSegmentedToggle rides the same HyleSegmentShape, so the
+                            // slope + 8dp-corner change lands here too. The real call site
+                            // (the app's Personas/Models toggle) is fillMaxWidth with long
+                            // maxLines=1 labels, so this row is also the "did the seam
+                            // padding push the second label off the end?" check.
+                            HyleSegmentedToggle(
+                                options = listOf("Personas — named experts", "Models — one prompt, diversity"),
+                                selected = 1,
+                                onSelect = {},
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                            HyleSegmentedToggle(options = listOf("All", "Text", "Image"), selected = 1, onSelect = {})
+                        }
+                    }
                 }
             }
         }
-        val shots = splitSpecs.indices.map { i ->
+        val shots = (0..splitSpecs.size).map { i ->
             compose.runOnIdle { idx = i }
             compose.waitForIdle()
             capture("board")
