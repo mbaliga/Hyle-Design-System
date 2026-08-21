@@ -59,6 +59,14 @@ android {
         compose = true
     }
 
+    // JVM-side render tests (Robolectric native graphics): real Skia rasterization of
+    // the shipped composables with no device — the only way this repo can see pixels.
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
+
     // Required so maven-publish has a single, named variant to publish.
     publishing {
         singleVariant("release") {
@@ -69,6 +77,15 @@ android {
 
 kotlin {
     jvmToolchain(17)
+}
+
+// Forward the render-test opt-in from the Gradle CLI into the forked test JVM —
+// `-Dhyle.renders=true` otherwise only reaches the daemon, silently skipping the renders.
+tasks.withType<Test>().configureEach {
+    systemProperty("hyle.renders", System.getProperty("hyle.renders") ?: "false")
+    // Required for Compose captureToImage under Robolectric native graphics — without it,
+    // forceRedraw's draw listener never fires and every capture times out.
+    systemProperty("robolectric.pixelCopyRenderMode", "hardware")
 }
 
 afterEvaluate {
@@ -93,4 +110,10 @@ dependencies {
     api(libs.androidx.compose.material3)
 
     testImplementation(libs.junit)
+    // Render tests: Robolectric native graphics + Compose test rule — real rasterized
+    // pixels of the shipped components on the JVM (see HyleKitRenderTest).
+    testImplementation("org.robolectric:robolectric:4.14.1")
+    testImplementation("androidx.compose.ui:ui-test-junit4")
+    testImplementation("androidx.compose.ui:ui-test-manifest")
+    testImplementation(libs.androidx.activity.compose)
 }

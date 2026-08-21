@@ -102,25 +102,44 @@ fun HyleContextMenu(
         onDismissRequest = onDismissRequest,
         properties = PopupProperties(focusable = true, dismissOnBackPress = true, dismissOnClickOutside = true),
     ) {
-        val rows = remember(items) { planHyleContextMenu(items) }
-        Column(
-            modifier
-                .widthIn(min = 200.dp, max = 300.dp)
-                .shadow(10.dp, MENU_SHAPE, clip = false)
-                .clip(MENU_SHAPE)
-                .background(c.raised, MENU_SHAPE)
-                .border(1.dp, c.hairline, MENU_SHAPE)
-                .padding(vertical = 6.dp),
-        ) {
-            rows.forEach { row ->
-                if (row.separatorBefore) {
-                    HorizontalDivider(
-                        color = c.hairline,
-                        modifier = Modifier.padding(vertical = 6.dp, horizontal = 8.dp),
-                    )
-                }
-                HyleContextMenuRowView(row.item, onClick = { onDismissRequest(); onItemClick(row.item.id) })
+        HyleContextMenuCard(
+            items = items,
+            onItemClick = { id -> onDismissRequest(); onItemClick(id) },
+            modifier = modifier,
+        )
+    }
+}
+
+/**
+ * The menu card itself, without the [Popup] host — the exact surface [HyleContextMenu]
+ * shows, exposed so hosts can embed it in their own anchoring (bottom sheets, side panes on
+ * wide screens) and so device-less render tests can rasterize the real card.
+ */
+@Composable
+fun HyleContextMenuCard(
+    items: List<HyleContextMenuItem>,
+    onItemClick: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val c = LocalHyleColors.current
+    val rows = remember(items) { planHyleContextMenu(items) }
+    Column(
+        modifier
+            .widthIn(min = 200.dp, max = 300.dp)
+            .shadow(10.dp, MENU_SHAPE, clip = false)
+            .clip(MENU_SHAPE)
+            .background(c.raised, MENU_SHAPE)
+            .border(1.dp, c.hairline, MENU_SHAPE)
+            .padding(vertical = 6.dp),
+    ) {
+        rows.forEach { row ->
+            if (row.separatorBefore) {
+                HorizontalDivider(
+                    color = c.hairline,
+                    modifier = Modifier.padding(vertical = 6.dp, horizontal = 8.dp),
+                )
             }
+            HyleContextMenuRowView(row.item, onClick = { onItemClick(row.item.id) })
         }
     }
 }
