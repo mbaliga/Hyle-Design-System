@@ -179,6 +179,32 @@ class HyleKitRenderTest {
     @Test fun controlsDark() = renderControls(darkHyleColors(), "controls-dark.png")
     @Test fun controlsLight() = renderControls(lightHyleColors(), "controls-light.png")
 
+    // ── Cap toggle: the owner's slant-cap A/B switch, both states + disabled ──
+    private fun renderCapToggle(c: HyleColors, out: String) {
+        compose.setContent {
+            Ground(c) {
+                Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                    Caption("HyleCapToggle — cap on A · cap on B · disabled", c)
+                    Row(horizontalArrangement = Arrangement.spacedBy(18.dp)) {
+                        HyleCapToggle("#", "*", selected = 0, onSelect = {})
+                        HyleCapToggle("#", "*", selected = 1, onSelect = {})
+                        HyleCapToggle("#", "*", selected = 0, onSelect = {}, enabled = false)
+                    }
+                    Caption("with text labels (terminal use)", c)
+                    Row(horizontalArrangement = Arrangement.spacedBy(18.dp)) {
+                        HyleCapToggle("Phone", "Remote", selected = 0, onSelect = {}, modifier = Modifier)
+                        HyleCapToggle("Phone", "Remote", selected = 1, onSelect = {}, modifier = Modifier)
+                    }
+                }
+            }
+        }
+        compose.waitForIdle()
+        save(capture("board"), out)
+    }
+
+    @Test fun capToggleDark() = renderCapToggle(darkHyleColors(), "captoggle-dark.png")
+    @Test fun capToggleLight() = renderCapToggle(lightHyleColors(), "captoggle-light.png")
+
     // ── Tree: the repo-browser shape — expanded run, guides, one selected row ──
     private fun renderTree(c: HyleColors, out: String) {
         val roots = listOf(
