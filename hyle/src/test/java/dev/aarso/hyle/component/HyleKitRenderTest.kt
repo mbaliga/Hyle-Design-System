@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
@@ -263,6 +264,53 @@ class HyleKitRenderTest {
 
     @Test fun menuDark() = renderMenu(darkHyleColors(), "menu-dark.png")
     @Test fun menuLight() = renderMenu(lightHyleColors(), "menu-light.png")
+
+    // ── Split action (the Cohere "Get Started ⟋ +" register) ──────────────────────────────
+    // Owner reference 2026-08-21 (Cohere dashboard shots). HyleSplitButton already implements
+    // this treatment but ships with ONE caller in the whole codebase (HyleColorPicker3D's
+    // "Roll"), so it has never been looked at on a screen. The last three rows exist to make
+    // a specific bug visible rather than argued: Segments.kt hard-codes the cells' overlap as
+    // `spacedBy(SEAM_GAP - 10.dp)` for "the 40dp button height", while HyleSegmentShape derives
+    // its slant as (h * SEAM_SLANT_RATIO) capped at 12dp. Above 40dp the two disagree, so the
+    // strip of ground in the seam widens away from SEAM_GAP and the two slanted edges stop
+    // reading as one wall. Rendering 40/48/64dp side by side shows the drift directly.
+    private data class SplitSpec(val caption: String, val height: Int, val secondary: Boolean = false, val enabled: Boolean = true)
+
+    private val splitSpecs = listOf(
+        SplitSpec("PRIMARY · 40dp (the height the seam was tuned for)", 40),
+        SplitSpec("SECONDARY · 40dp", 40, secondary = true),
+        SplitSpec("DISABLED · 40dp", 40, enabled = false),
+        SplitSpec("PRIMARY · 48dp — seam drift", 48),
+        SplitSpec("PRIMARY · 64dp — seam drift", 64),
+    )
+
+    private fun renderSplit(c: HyleColors, out: String) {
+        var idx by mutableStateOf(0)
+        compose.setContent {
+            val spec = splitSpecs[idx]
+            Ground(c) {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Caption(spec.caption, c)
+                    dev.aarso.hyle.cells.HyleSplitButton(
+                        text = "Get Started",
+                        onClick = {},
+                        modifier = Modifier.height(spec.height.dp),
+                        enabled = spec.enabled,
+                        secondary = spec.secondary,
+                    )
+                }
+            }
+        }
+        val shots = splitSpecs.indices.map { i ->
+            compose.runOnIdle { idx = i }
+            compose.waitForIdle()
+            capture("board")
+        }
+        save(concatVertically(shots, c), out)
+    }
+
+    @Test fun splitDark() = renderSplit(darkHyleColors(), "split-dark.png")
+    @Test fun splitLight() = renderSplit(lightHyleColors(), "split-light.png")
 
     // Vertical concatenation on the theme ground — captures are already labeled Compose pixels.
     private fun concatVertically(shots: List<Bitmap>, c: HyleColors, gap: Int = 24): Bitmap {
