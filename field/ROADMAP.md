@@ -18,7 +18,7 @@
 
 ## Pending / requested, not yet built
 
-A dedicated twist/swirl scene (the ferrofluid-spiral reference) and a parallel-rows-receding scene were both registered and not built. True polygonal faceting is the big open visual item (above). Smaller items: per-scene sprite bounds and a sprite count that scales with the scene; a sun-elevation control and an optional second light; and a two-colour smog gradient for richer aerial perspective.
+The twist/swirl scene and the parallel-rows-receding scene have since been built (Spiral and Rows, along with Strands/Terraces/Pillars/Ridge/Coil/Aperture — the surrealist-nightscape set). True polygonal faceting is the big open visual item (above). Smaller items: per-scene sprite bounds and a sprite count that scales with the scene; a sun-elevation control and an optional second light; and a two-colour smog gradient for richer aerial perspective.
 
 ## Ideas worth considering
 

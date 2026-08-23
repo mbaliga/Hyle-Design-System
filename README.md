@@ -24,19 +24,23 @@ tokens/*.json   ──►  scripts/build-tokens.js (Style Dictionary)  ──►
 
 ### Android side — `:hyle` (the native render contract)
 
-The publishable Kotlin library (`dev.aarso:hyle:0.1.0`): the hand-authored
+The publishable Kotlin library (`dev.aarso:hyle:0.2.0`): the hand-authored
 contract — `Finish` (Reflective / Radiant), `Pulse` ("heartbeat, not weather"),
 `RadiantHues` — **plus** the generated `HyleTokens` object compiled from the
-shared token source. `:hyle-probe` is the on-device render harness, and
-`:wallpaper` ([Hyle Worlds](wallpaper/)) is a Brutalist **live wallpaper** that
-runs the Form-World raymarcher (the procedural worlds) as an OpenGL ES 2.0
-`WallpaperService`, themed from the same tokens.
+shared token source. `:hyle-probe` is the on-device render harness.
 
 ```bash
 ./gradlew :hyle:test                 # JVM token tests
-./gradlew :hyle:publishToMavenLocal  # prove it stands alone as dev.aarso:hyle:0.1.0
+./gradlew :hyle:publishToMavenLocal  # prove it stands alone as dev.aarso:hyle:0.2.0
 ```
 Requires an Android SDK (`local.properties` → `sdk.dir`), JDK 17.
+
+> **Hyle Worlds**, the Brutalist live wallpaper that runs the Form-World
+> raymarcher (below) as an Android `WallpaperService` themed from these same
+> tokens, is an *app built on* Hyle rather than part of the design system
+> itself — its source now lives in the `mbaliga/portfolio` repo, which depends
+> on `:hyle` via a Gradle composite build against this repo. `field/` (below)
+> stays here: it's the shared rendering engine, not the app.
 
 ### `:crash-recovery` — a shared reliability utility, NOT part of Hyle
 
@@ -111,7 +115,6 @@ Mock apps that compose the components live under **Storybook → Mock Apps**.
 | `scripts/build-tokens.js` | Style Dictionary pipeline → Kotlin / Android res / web / iOS.     |
 | `hyle/`                   | Android library: `Finish`/`Pulse`/`RadiantHues` + generated tokens. |
 | `hyle-probe/`             | Android on-device render harness.                                |
-| `wallpaper/`              | **Hyle Worlds** — Brutalist live wallpaper (Form-World via GLES2).|
 | `src/components/`         | Lit web components, one folder per component, with stories.      |
 | `field/`                  | The Form-World engine + its README / ARCHITECTURE / ROADMAP.     |
 | `kit/`                    | The Tactile Kit (physical-control language) + its README.        |
