@@ -397,6 +397,43 @@ class HyleKitRenderTest {
     @Test fun splitDark() = renderSplit(darkHyleColors(), "split-dark.png")
     @Test fun splitLight() = renderSplit(lightHyleColors(), "split-light.png")
 
+    // ── HyleBottomTabBar: the owner's reference mockup (2026-08-27) is a fixed-dark dock —
+    // it must read black-on-Ink in BOTH the dark and the light render, corners rounding toward
+    // whichever edge [position] docks against. One board per position, each showing all three
+    // selection states stacked so the accent-vs-muted tint contrast is checkable at a glance.
+    private fun renderBottomTabBar(c: HyleColors, out: String) {
+        val dot: DrawScope.(Color) -> Unit = { tint -> drawCircle(tint, radius = size.minDimension / 3f) }
+        val tabs = listOf(HyleTabSpec("Chat", dot), HyleTabSpec("Terminal", dot), HyleTabSpec("Background Tasks", dot))
+        compose.setContent {
+            Ground(c) {
+                Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                    Caption("HyleBottomTabBar — BOTTOM (rounded top corners)", c)
+                    for (sel in 0..2) {
+                        dev.aarso.hyle.cells.HyleBottomTabBar(
+                            tabs = tabs,
+                            selected = sel,
+                            onSelect = {},
+                            position = "BOTTOM",
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                    Caption("HyleBottomTabBar — TOP (rounded bottom corners)", c)
+                    dev.aarso.hyle.cells.HyleBottomTabBar(
+                        tabs = tabs,
+                        selected = 0,
+                        onSelect = {},
+                        position = "TOP",
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            }
+        }
+        save(capture("board"), out)
+    }
+
+    @Test fun bottomTabBarDark() = renderBottomTabBar(darkHyleColors(), "bottom-tab-bar-dark.png")
+    @Test fun bottomTabBarLight() = renderBottomTabBar(lightHyleColors(), "bottom-tab-bar-light.png")
+
     // Vertical concatenation on the theme ground — captures are already labeled Compose pixels.
     private fun concatVertically(shots: List<Bitmap>, c: HyleColors, gap: Int = 24): Bitmap {
         val width = shots.maxOf { it.width }
