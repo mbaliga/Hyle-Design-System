@@ -113,7 +113,7 @@ fun HyleBottomTabBar(
                         }
                         .semantics {
                             role = Role.Tab
-                            selected = active
+                            this.selected = active
                             contentDescription = tab.label
                         }
                         .padding(horizontal = if (showLabel) 13.dp else 11.dp),
