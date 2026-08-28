@@ -4,45 +4,74 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.aarso.hyle.theme.Ink
 import dev.aarso.hyle.theme.LocalHyleColors
 import dev.aarso.hyle.theme.TextHigh
 
+/** Responsive label policy for the centre-room file tabs. */
+enum class HyleFileTabStage { FULL, SELECTED_LABEL, ICONS_ONLY }
+
+object HyleFileTabLayout {
+    fun stage(width: Dp): HyleFileTabStage = when {
+        width >= 380.dp -> HyleFileTabStage.FULL
+        width >= 210.dp -> HyleFileTabStage.SELECTED_LABEL
+        else -> HyleFileTabStage.ICONS_ONLY
+    }
+}
+
+private val BottomFileTabShape: Shape = GenericShape { size, _ ->
+    val slant = size.height * HyleSeam.SLOPE
+    moveTo(0f, 0f)
+    lineTo(size.width, 0f)
+    lineTo(size.width - slant, size.height)
+    lineTo(slant, size.height)
+    close()
+}
+
+private val TopFileTabShape: Shape = GenericShape { size, _ ->
+    val slant = size.height * HyleSeam.SLOPE
+    moveTo(slant, 0f)
+    lineTo(size.width - slant, 0f)
+    lineTo(size.width, size.height)
+    lineTo(0f, size.height)
+    close()
+}
+
 /**
- * The centre room's Chat/Terminal/Background-Tasks switcher, per the owner's reference mockup
- * (2026-08-27): a floating dark dock, not a themed surface — it's built on [Ink]/[TextHigh], the
- * fixed dark-palette constants, rather than [LocalHyleColors.current]. The reference stays a
- * near-black bar even against its own light-theme content, so a theme-following background would
- * go near-white in light mode and lose the dock's identity as an anchored, always-legible strip.
+ * The centre room's file-tab switcher.
  *
- * Selection is colour only — the current accent ([dev.aarso.hyle.theme.HyleColors.violet], so a
- * re-tinted accent still reads correctly) against a muted on-dark white — with no per-tab fill,
- * so the three tabs read as ONE continuous dock rather than [HyleTabBar]'s discrete seam-grammar
- * cells. That continuity, plus corners rounded only on the edge facing open space, is what gives
- * this switcher its own unambiguous "tab bar" identity (the owner's ask) instead of
- * [HyleSlashTabBar]'s quiet inline register — the two stay distinct components because they
- * answer different questions (compare each one's own doc comment).
- *
- * [position] is `"TOP"` or `"BOTTOM"` (matching [HyleTabBar]'s convention): it rounds the corners
- * on the pair of edges facing AWAY from the screen edge this dock is placed against — flush where
- * it meets the room's own content, rounded where it meets open space — so the dock always reads
- * as anchored to that edge no matter which one the caller docks it to.
+ * The active tab is cut from the same material as the room and shares a full-width merge edge
+ * with it. Inactive tabs remain on the black application ground, separated by Hyle's canonical
+ * slash seam. TOP mirrors the visual order so the active Chat tab anchors the upper-right corner;
+ * BOTTOM anchors it at the lower-left, matching the centre-room reference set. Labels degrade from
+ * all -> selected only -> icons only as horizontal space contracts (including IME layouts).
  */
 @Composable
 fun HyleBottomTabBar(
@@ -54,43 +83,72 @@ fun HyleBottomTabBar(
 ) {
     val c = LocalHyleColors.current
     val haptics = rememberHyleHaptics()
-    // 20dp: Material's own bottom-sheet corner convention — this dock reads as a floating
-    // sheet-like anchor, not a seam-grammar cell (those use HyleSeam.CORNER's tighter 8dp).
-    val corner = 20.dp
-    val shape = if (position == "BOTTOM") {
-        RoundedCornerShape(topStart = corner, topEnd = corner)
-    } else {
-        RoundedCornerShape(bottomStart = corner, bottomEnd = corner)
-    }
-    val onDarkMuted = TextHigh.copy(alpha = 0.55f)
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(shape)
-            .background(Ink, shape)
-            .padding(vertical = 10.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-    ) {
-        tabs.forEachIndexed { i, tab ->
-            val on = i == selected
-            val tint = if (on) c.violet else onDarkMuted
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .clickable { haptics.tap(); onSelect(i) }
-                    .padding(vertical = 4.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Canvas(Modifier.size(22.dp)) { tab.glyph(this, tint) }
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    tab.label,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = tint,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+    val top = position.equals("TOP", ignoreCase = true)
+    val ordered = if (top) tabs.indices.reversed() else tabs.indices
+
+    BoxWithConstraints(modifier.background(Ink)) {
+        val stage = HyleFileTabLayout.stage(maxWidth)
+        Row(
+            modifier = Modifier.fillMaxWidth().height(40.dp),
+            verticalAlignment = if (top) Alignment.Bottom else Alignment.Top,
+            horizontalArrangement = if (top) Arrangement.End else Arrangement.Start,
+        ) {
+            ordered.forEachIndexed { visualIndex, sourceIndex ->
+                if (visualIndex > 0) FileTabSlash(tint = TextHigh.copy(alpha = 0.42f))
+                val tab = tabs[sourceIndex]
+                val active = sourceIndex == selected
+                val showLabel = stage == HyleFileTabStage.FULL ||
+                    (stage == HyleFileTabStage.SELECTED_LABEL && active)
+                val shape = if (top) TopFileTabShape else BottomFileTabShape
+                val background = if (active) c.raised else Ink
+                val tint = if (active) c.violet else TextHigh
+                Row(
+                    modifier = Modifier
+                        .height(if (active) 40.dp else 36.dp)
+                        .clip(shape)
+                        .background(background, shape)
+                        .clickable {
+                            haptics.tap()
+                            onSelect(sourceIndex)
+                        }
+                        .semantics {
+                            role = Role.Tab
+                            selected = active
+                            contentDescription = tab.label
+                        }
+                        .padding(horizontal = if (showLabel) 13.dp else 11.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    Canvas(Modifier.size(17.dp)) { tab.glyph(this, tint) }
+                    if (showLabel) {
+                        Spacer(Modifier.width(7.dp))
+                        Text(
+                            tab.label,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = tint,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                }
             }
+        }
+    }
+}
+
+@Composable
+private fun FileTabSlash(tint: Color) {
+    Box(Modifier.width(9.dp).height(36.dp), contentAlignment = Alignment.Center) {
+        Canvas(Modifier.size(width = 8.dp, height = 24.dp)) {
+            val run = size.height * HyleSeam.SLOPE
+            val cx = size.width / 2f
+            drawLine(
+                color = tint,
+                start = Offset(cx + run / 2f, 0f),
+                end = Offset(cx - run / 2f, size.height),
+                strokeWidth = 1.4f,
+            )
         }
     }
 }
