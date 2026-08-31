@@ -25,7 +25,10 @@ class HyleProbeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val tabs = listOf("Radiant glow", "Glass + sand", "Ferrofluid bead", "Lens", "Atoms")
+            val tabs = listOf(
+                "Radiant glow", "Glass + sand", "Ferrofluid bead", "Lens", "Atoms",
+                "Field", "Toggle", "Keycap", "Tree", "Context menu",
+            )
             val pagerState = rememberPagerState { tabs.size }
             val scope = rememberCoroutineScope()
 
@@ -49,6 +52,11 @@ class HyleProbeActivity : ComponentActivity() {
                         2 -> FerrofluidProbe()
                         3 -> LensProbe()
                         4 -> HyleAtomsProbe()
+                        5 -> HyleFieldProbe()
+                        6 -> HyleToggleProbe()
+                        7 -> HyleKeycapProbe()
+                        8 -> HyleTreeProbe()
+                        9 -> HyleContextMenuProbe()
                     }
                 }
 

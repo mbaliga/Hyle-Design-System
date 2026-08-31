@@ -1,18 +1,28 @@
 // Hyle — the material design system (docs/design/material-language.md). The *semantic*
 // (local vs from-elsewhere) lives in each consuming app; this module owns the *render
-// side* — tokens + the contract the renderer obeys. The Compose Modifiers and AGSL
-// shaders land next and are owner-verified on device, so this first cut is deliberately
-// pure data (JVM-tested).
+// side* — tokens + the contract the renderer obeys.
 //
 // This IS Hyle's own repo (mbaliga/Hyle-Design-System) — the single source of truth for
 // `dev.aarso:hyle`. Consumers (Android-IDE-core, …) depend on it via git submodule +
 // Gradle `includeBuild`, so the project-level `group`/`version` below are what composite
 // builds substitute against. The `0.1.0` coordinate is permanently retired (it shipped
-// from three divergent copies before this single-sourcing); this is the first
-// single-sourced release, `0.2.0`.
+// from three divergent copies before this single-sourcing); `0.2.0` was the first
+// single-sourced release.
+//
+// Compose enabled (`cells/`, `theme/`): Hyle ships the render-side *components* (starting
+// with the colour picker), not just token data — the whole point of single-sourcing is
+// that a consumer never has to re-implement the render layer itself.
+//
+// `0.2.1`: a faithful-fidelity pass on `HyleColorPicker3D` against the real
+// `kit/tactile-kit.html` source — no public API change (still `HyleColorPicker3D(color,
+// onColorChange, modifier)`), so this is a patch, not a minor: the slice-plane fills now
+// read as gradients instead of one flat averaged swatch, the HCL tab's palette-roll near-
+// gray substitution uses LCH-native hue instead of HSV-native hue, and the hue ring's touch
+// target now matches the source's 70%/15%-inset region instead of the whole stage.
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
     `maven-publish`
 }
 
@@ -21,7 +31,7 @@ plugins {
 // project-level `group`/`version` set below (not the publication block alone).
 val hyleGroup = "dev.aarso"
 val hyleArtifact = "hyle"
-val hyleVersion = "0.2.0"
+val hyleVersion = "0.2.1"
 
 // Project coordinate — REQUIRED for Gradle composite-build (`includeBuild`) dependency
 // substitution: a consumer's `dev.aarso:hyle:<v>` is replaced by this project only when
@@ -42,6 +52,21 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    // Hyle now ships the *components*, not just the tokens. Before this, consumers
+    // got a token sheet and re-implemented the render layer themselves, which is how
+    // 0.1.0 ended up shipping from three divergent copies.
+    buildFeatures {
+        compose = true
+    }
+
+    // JVM-side render tests (Robolectric native graphics): real Skia rasterization of
+    // the shipped composables with no device — the only way this repo can see pixels.
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
+
     // Required so maven-publish has a single, named variant to publish.
     publishing {
         singleVariant("release") {
@@ -52,6 +77,15 @@ android {
 
 kotlin {
     jvmToolchain(17)
+}
+
+// Forward the render-test opt-in from the Gradle CLI into the forked test JVM —
+// `-Dhyle.renders=true` otherwise only reaches the daemon, silently skipping the renders.
+tasks.withType<Test>().configureEach {
+    systemProperty("hyle.renders", System.getProperty("hyle.renders") ?: "false")
+    // Required for Compose captureToImage under Robolectric native graphics — without it,
+    // forceRedraw's draw listener never fires and every capture times out.
+    systemProperty("robolectric.pixelCopyRenderMode", "hardware")
 }
 
 afterEvaluate {
@@ -68,5 +102,18 @@ afterEvaluate {
 }
 
 dependencies {
+    // `api` rather than `implementation`: these types appear in Hyle's public surface
+    // (Modifier, Color, Composable), so consumers must see them transitively.
+    api(platform(libs.androidx.compose.bom))
+    api(libs.androidx.compose.ui)
+    api(libs.androidx.compose.ui.graphics)
+    api(libs.androidx.compose.material3)
+
     testImplementation(libs.junit)
+    // Render tests: Robolectric native graphics + Compose test rule — real rasterized
+    // pixels of the shipped components on the JVM (see HyleKitRenderTest).
+    testImplementation("org.robolectric:robolectric:4.14.1")
+    testImplementation("androidx.compose.ui:ui-test-junit4")
+    testImplementation("androidx.compose.ui:ui-test-manifest")
+    testImplementation(libs.androidx.activity.compose)
 }
