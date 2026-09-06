@@ -32,7 +32,10 @@ jobs:
           sdkmanager "platforms;android-36" "build-tools;36.0.0"
       - name: Token tests (:hyle:test)
         run: ./gradlew --no-daemon :hyle:test
-      - name: Crash-recovery tests (:crash-recovery:test)
-        run: ./gradlew --no-daemon :crash-recovery:test
+      # :crash-recovery is a tombstone (see crash-recovery/MOVED.md) -- no implementation and
+      # no tests remain. It must still ASSEMBLE, because consumers composite this build and a
+      # broken module here would fail their configuration even if they never use it.
+      - name: Crash-recovery tombstone assembles (:crash-recovery:assembleRelease)
+        run: ./gradlew --no-daemon :crash-recovery:assembleRelease
       - name: Build the live wallpaper (:wallpaper)
         run: ./gradlew --no-daemon :wallpaper:assembleDebug
