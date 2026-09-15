@@ -15,8 +15,16 @@ These are static reference files only:
 
 Hyle's own icon system is a small, hand-authored, brutalist set (see
 `src/components/icon/icons.ts`). An icon from this pack should be redrawn to
-match that style before it becomes a real Hyle component — nothing here is
-used as-is.
+match that style before it becomes a real Hyle `<hy-icon>` component.
+
+That rule governs Hyle's own component surface, not every consumer. Fylz
+(the Android file manager in this constellation) ships the `File types/`
+artwork as-is for its per-format file icons: the pack distinguishes roughly
+fifty formats where a redrawn brutalist set would flatten them back into a
+handful of monochrome marks, and telling a DOCX from an XLSX at a glance is
+the entire job of that icon. Those files are copied into the app's own
+assets rather than served from here, so nothing in this folder is on any
+build path.
 
 The brand/product logos under `Famous Brands/`, `100 most valuable companies
 logos 2026/`, and `Monochrome Logos/` remain the trademarks of their
