@@ -38,35 +38,30 @@ runs the Form-World raymarcher (the procedural worlds) as an OpenGL ES 2.0
 ```
 Requires an Android SDK (`local.properties` → `sdk.dir`), JDK 17.
 
-### `:crash-recovery` — a shared reliability utility, NOT part of Hyle
+### `:crash-recovery` — **MOVED** to Shared-Libraries-asoc
 
-Publishable as `dev.aarso:crash-recovery:1.0.0`. It lives in this repo (the
-constellation's one sharing mechanism, D-A) but has **zero dependency on `:hyle`**
-— no Compose, no Material, plain `android.widget` views only — so it is a
-reliability utility, not a design-system dependency. That distinction matters:
-apps with their own visual identity that must never depend on Hyle (Animalcules,
-Horizkeeb — see Personal-Tracker DECISIONS.md D-L) can still take this one
-dependency (see D-O).
+> **This module is now a tombstone.** The real implementation lives in
+> [`mbaliga/Shared-Libraries-asoc`](https://github.com/mbaliga/Shared-Libraries-asoc)
+> as `dev.aarso:crash-recovery:1.5.0`. See [crash-recovery/MOVED.md](crash-recovery/MOVED.md)
+> for the migration steps.
 
-Captures a device-only launch/runtime crash (CI never sees these — CI runs unit
-tests, never launches the app) to the app's private files dir, then shows a
-recovery screen on the next launch instead of the app's real content — headline
-first, Share/Copy, Continue, a confirm-gated Reset, and the full trace collapsed
-behind a "Technical details" toggle. Colours are plain `@ColorInt Int`s
-(`CrashRecoveryStyle`) so each consumer themes it to its own palette without
-taking on Hyle's tokens.
+It was always a reliability utility rather than a design-system dependency — **zero dependency
+on `:hyle`**, no Compose, no Material, plain `android.widget` views only — precisely so that apps
+which must never depend on Hyle (Animalcules, Clackpad — Personal-Tracker DECISIONS.md **D-L**)
+could still use it. D-O put it in this repo because there was nowhere else to put it.
 
-```kotlin
-// Application.onCreate(), before constructing anything that could itself throw:
-CrashRecovery.install(this, appLabel = "Runout")
+That left those apps carrying the **entire Hyle submodule** to reach a module with nothing to do
+with Hyle. Shared-Libraries-asoc is the neutral home that removes the contradiction (**D-V**,
+superseding D-O).
 
-// first thing in the launcher Activity's onCreate():
-if (CrashRecovery.maybeShowRecovery(this, appLabel = "Runout")) return
-```
+What remains here keeps the `dev.aarso:crash-recovery` coordinate resolvable so that composite
+substitution still matches and consumers get an actionable compile error naming the new home,
+rather than an unhelpful `Could not find dev.aarso:crash-recovery`. It deliberately does **not**
+fail at configuration time — Gradle configures every project in an `includeBuild`, so that would
+break consumers who only use `:hyle`.
 
 ```bash
-./gradlew :crash-recovery:test                 # JVM tests (formatting/persistence, no Android SDK needed to run)
-./gradlew :crash-recovery:publishToMavenLocal   # prove it stands alone as dev.aarso:crash-recovery:1.0.0
+./gradlew :crash-recovery:assembleRelease   # the tombstone still has to build for consumers
 ```
 
 ### Web side — tokens, Lit components & Storybook
