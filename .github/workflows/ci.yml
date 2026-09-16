@@ -4,6 +4,7 @@ name: CI
 # so GitHub Actions minutes are free.
 on:
   push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
@@ -24,6 +25,8 @@ jobs:
           java-version: "17"
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
       - name: Install platform + build-tools
