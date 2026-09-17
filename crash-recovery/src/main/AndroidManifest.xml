@@ -1,8 +1,3 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <application>
-        <activity
-            android:name=".CrashRecoveryActivity"
-            android:exported="false"
-            android:theme="@android:style/Theme.NoTitleBar" />
-    </application>
-</manifest>
+<!-- Tombstone. The real module moved to mbaliga/Shared-Libraries-asoc; no components remain
+     here to declare. See crash-recovery/MOVED.md. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" />
