@@ -23,9 +23,10 @@ dependencyResolutionManagement {
 }
 
 // Hyle — the render-side design system (tokens + the contract the renderer obeys).
-// Publishable as dev.aarso:hyle:0.1.0; :hyle-probe is the on-device render harness.
+// Publishable as dev.aarso:hyle:0.2.0; :hyle-probe is the on-device render harness.
+// Hyle Worlds (the live-wallpaper app built on this design system) lives in the
+// mbaliga/portfolio repo, not here — it consumes :hyle via a composite build.
 rootProject.name = "Hyle"
 include(":hyle")
 include(":hyle-probe")
-include(":wallpaper")
 include(":crash-recovery")

@@ -48,6 +48,14 @@ HTML_BODY = """
     <button class="chip" data-scn="3" aria-pressed="false">Arch</button>
     <button class="chip" data-scn="4" aria-pressed="false">Ruins</button>
     <button class="chip" data-scn="5" aria-pressed="false">Planet</button>
+    <button class="chip" data-scn="6" aria-pressed="false">Spiral</button>
+    <button class="chip" data-scn="7" aria-pressed="false">Strands</button>
+    <button class="chip" data-scn="8" aria-pressed="false">Terraces</button>
+    <button class="chip" data-scn="9" aria-pressed="false">Pillars</button>
+    <button class="chip" data-scn="10" aria-pressed="false">Ridge</button>
+    <button class="chip" data-scn="11" aria-pressed="false">Rows</button>
+    <button class="chip" data-scn="12" aria-pressed="false">Coil</button>
+    <button class="chip" data-scn="13" aria-pressed="false">Aperture</button>
   </div></div>
   <div class="group"><span class="lbl">Mode</span>
     <div class="chips" id="motion" style="margin-bottom:7px;">
@@ -269,17 +277,145 @@ FRAG_LINES = [
     '    d+=soil(pos)*smoothstep(.42,0.,abs(d)); return d; }',
 
     # PLANET (5)
-    '  else{',
+    '  else if(uScene<5.5){',
     '    float b=1e9; float rot=uTime*uSpeed*aMult*.08;',
     '    vec3 pa=pos; pa.xz=r2(rot)*pa.xz;',
     '    b=smin(b,sdSphere(pa-vec3(-1.4,-.5,-.5),2.8),.65);',
     '    b=smin(b,sdSphere(pa-vec3(1.6,.9,.2),2.2),.65);',
     '    d=min(d,b);',
     '    d+=soil(pos)*smoothstep(.42,0.,abs(d)); return d; }',
+
+    # SPIRAL (6): top-down maze trench — hedge arms coiling into a glowing pit,
+    # a thin needle rising from the centre; the whole field turns imperceptibly
+    '  else if(uScene<6.5){',
+    '    vec3 q=pos; q.xz=r2(uTime*uSpeed*aMult*.045)*q.xz;',
+    '    float rr=length(q.xz);',
+    '    float an=atan(q.z,q.x+1e-5);',
+    '    float sp=1.15;',
+    '    float tt=rr-sp*(an/PI2);',
+    '    float ring=tt-sp*floor(tt/sp+.5);',
+    '    float bound=(uRecursive>.5)?1e9:(sp*(uCount+2.));',
+    '    float fadeb=clamp((bound-rr)/sp,0.,1.);',
+    '    float lift=1.15*exp(-rr*.16);',
+    '    float tube=(.40+sin(an*3.+uTime*uSpeed*aMult*.4)*.02)*fadeb+.02;',
+    '    float d1=(length(vec2(ring,q.y-lift))-tube)*.8;',
+    '    d1=max(d1,1.0-rr);',
+    '    d=min(d,d1);',
+    '    d=min(d,max(length(q.xz)-.05,abs(q.y-2.5)-2.9));',
+    '    d=min(d,max(abs(q.y+.55)-.07,rr-2.6));',
+    '    d+=soil(pos)*smoothstep(.42,0.,abs(d)); return d; }',
+
+    # STRANDS (7): colossal furred tendrils weaving over a bright field,
+    # writhing so slowly the motion reads as labour, not animation
+    '  else if(uScene<7.5){',
+    '    vec3 q=pos;',
+    '    if(uRecursive>.5) q.z=mod(pos.z+3.75,7.5)-3.75;',
+    '    float sc=1e9;',
+    '    float nStr=(uRecursive>.5)?5.:clamp(uCount,2.,5.);',
+    '    for(int i=0;i<5;i++){ if(float(i)>=nStr) break; float fi=float(i);',
+    '      vec2 hv=h22(vec2(uSeed+fi*5.3,7.));',
+    '      float ph=uTime*uSpeed*aMult*.12+fi*2.1;',
+    '      float y0=-2.3+fi*1.4+(hv.x-.5)*.6;',
+    '      float zc=(uRecursive>.5)?(-3.1+fi*1.45):(1.8-fi*1.9);',
+    '      float amp=1.3+hv.y*1.0;',
+    '      float yy=q.y-(y0+sin(q.x*.42+fi*1.7+ph)*amp);',
+    '      float zz=q.z-(zc+cos(q.x*.31+fi*2.3+ph*.8)*amp*.55);',
+    '      sc=min(sc,length(vec2(yy,zz))-(.55-fi*.04)); }',
+    '    d=min(d,sc*.55);',
+    '    d+=soil(pos)*smoothstep(.42,0.,abs(d)); return d; }',
+
+    # TERRACES (8): sweeping terraced dunes climbing toward a red vortex;
+    # crests heave out of phase — something too large to move, moving
+    '  else if(uScene<8.5){',
+    '    vec3 q=pos-vec3(-13.,0.,-9.);',
+    '    float rr=length(q.xz);',
+    '    float sp=mix(1.05,1.9,clamp((uCount-1.)/6.,0.,1.));',
+    '    float k=floor(rr/sp+.5);',
+    '    float lvl=(26.-k*sp)*.22+sin(uTime*uSpeed*aMult*.16+k*.8)*.05;',
+    '    float ring=rr-k*sp;',
+    '    float bnd=(uRecursive>.5)?1.:smoothstep(30.,27.,rr)*smoothstep(6.,8.5,rr);',
+    '    float tube=.46*bnd+.01;',
+    '    d=min(d,(length(vec2(ring,q.y-lvl))-tube)*.7);',
+    '    d+=soil(pos)*smoothstep(.42,0.,abs(d)); return d; }',
+
+    # PILLARS (9): waisted furred monoliths standing in bright smog, tops
+    # catching the light; they sway less than a breath
+    '  else if(uScene<9.5){',
+    '    if(uRecursive>.5){',
+    '      float cell=4.5;',
+    '      vec2 cid=floor((pos.xz+cell*.5)/cell);',
+    '      vec3 q=vec3(mod(pos.x+cell*.5,cell)-cell*.5,pos.y,mod(pos.z+cell*.5,cell)-cell*.5);',
+    '      float rv=h21(cid);',
+    '      float top=mix(3.6,6.2,rv);',
+    '      float rad=(.8+.3*h21(cid+vec2(2.2,8.8)))*(1.+.16*cos(pos.y*1.15+rv*6.28));',
+    '      float dd=length(q.xz)-rad;',
+    '      dd=max(dd,pos.y-top); dd=max(dd,-3.-pos.y);',
+    '      d=min(d,dd*.85);',
+    '    } else {',
+    '      for(int i=0;i<4;i++){ if(float(i)>=clamp(uCount-1.,1.,4.)) break; float fi=float(i);',
+    '        vec2 hv=h22(vec2(uSeed+fi*3.3,4.2));',
+    '        vec2 o=(i==0)?vec2(1.25,-1.5):vec2(-1.7*fi+(hv.x-.5),-1.5-fi*4.2);',
+    '        float top=5.2-fi*.4;',
+    '        float sway=sin(uTime*uSpeed*aMult*.07+fi*2.4)*.05;',
+    '        float rad=(.95+(hv.y-.5)*.2)*(1.+.16*cos(pos.y*1.15+fi*2.1));',
+    '        float dd=length(pos.xz-o+vec2(sway,0.))-rad;',
+    '        dd=max(dd,pos.y-top); dd=max(dd,-3.-pos.y);',
+    '        d=min(d,dd*.85); }',
+    '    }',
+    '    d+=soil(pos)*smoothstep(.42,0.,abs(d)); return d; }',
+
+    # RIDGE (10): two colossal furred waves and the saddle between them,
+    # breathing against a red horizon
+    '  else if(uScene<10.5){',
+    '    vec3 q=pos; q.y-=q.x*.16;',
+    '    float hump=sin(uTime*uSpeed*aMult*.09)*.04;',
+    '    if(uRecursive>.5){',
+    '      float cell=6.6;',
+    '      float kz=floor((q.z+3.3)/cell);',
+    '      float qz=q.z-cell*kz;qz-=3.3;',
+    '      float hv=h21(vec2(kz,3.7))*1.4;',
+    '      d=min(d,(length(vec2(q.y+5.7+hump-hv,qz))-7.0)*.9);',
+    '    } else {',
+    '      float d1=length(vec2(q.y+5.7+hump,q.z+2.4))-7.0;',
+    '      float d2=length(vec2(q.y+5.6-hump*.7,q.z+9.0))-8.0;',
+    '      d=min(d,smin(d1,d2,1.2)*.9);',
+    '    }',
+    '    d+=soil(pos)*smoothstep(.42,0.,abs(d)); return d; }',
+
+    # COIL (12): one colossal coil climbing out of the smog, seen from its foot
+    # (placed after Rows in the chain — see the final else below)
+    # ROWS (11): parallel forest rows receding diagonally, fire-light burning
+    # in the gaps between them
+    '  else if(uScene<11.5){',
+    '    vec3 q=pos; q.xz=r2(.7)*q.xz;',
+    '    float cell=2.6;',
+    '    float kr=floor((q.z+cell*.5)/cell);',
+    '    float zc=q.z-cell*kr;',
+    '    float hgt=1.1+.25*sin(kr*2.7+uSeed);',
+    '    float bnd=(uRecursive>.5)?1.:smoothstep(uCount+1.5,uCount+.5,abs(kr));',
+    '    float dd=length(vec2(q.y-(hgt-1.75),zc))-.85*bnd-.02;',
+    '    d=min(d,dd*.9);',
+    '    d+=soil(pos)*smoothstep(.42,0.,abs(d)); return d; }',
+    '  else if(uScene<12.5){',
+    '    vec3 ph=pos; ph.xz=r2(uTime*uSpeed*aMult*.05)*ph.xz;',
+    '    float hd=sdHelix(ph,2.6,2.2,.78);',
+    '    float top=uCount*1.3;',
+    '    d=min(d,(uRecursive>.5)?hd:max(hd,ph.y-top));',
+    '    d+=soil(pos)*smoothstep(.42,0.,abs(d)); return d; }',
+    # APERTURE (13): the night mouth — dark rings around a throat lit from deep
+    # inside; the outer rim dissolves into starred black
+    '  else{',
+    '    for(int i=0;i<8;i++){ float fi=float(i);',
+    '      float R=max(2.4-fi*.28,.42); float tu=max(.42-fi*.02,.06);',
+    '      float spi=fi*.55+uTime*uSpeed*aMult*(.2+fi*.04);',
+    '      float wamp=mix(.0,.06,uActive)*fi*.04;',
+    '      vec3 rp=pos-vec3(sin(spi)*wamp,cos(spi*.7)*wamp,-fi*.8);',
+    '      d=min(d,sdTorusZ(rp,vec2(R,tu))); }',
+    '    d+=soil(pos)*smoothstep(.42,0.,abs(d)); return d; }',
     '}',
 
     'vec3 calcN(vec3 p){ vec2 e=vec2(1.,-1.)*.0015; return normalize(e.xyy*map(p+e.xyy)+e.yyx*map(p+e.yyx)+e.yxy*map(p+e.yxy)+e.xxx*map(p+e.xxx)); }',
-    'float calcAO(vec3 p,vec3 n){ float o=0.,s=1.; for(int i=0;i<AOS;i++){ float h=.015+.16*float(i)/4.; o+=(h-map(p+n*h))*s; s*=.80; } return clamp(1.-2.4*o,0.,1.); }',
+    'float calcAO(vec3 p,vec3 n){ float o=0.,s=1.; for(int i=0;i<AOS;i++){ float h=.015+.16*float(i)/float(AOS-1); o+=(h-map(p+n*h))*s; s*=.80; } return clamp(1.-2.4*o,0.,1.); }',
     'float shadow(vec3 p,vec3 L){ float res=1.,t=.05; for(int i=0;i<SHS;i++){ float h=map(p+L*t); if(h<.002) return 0.; res=min(res,9.*h/max(t,.0001)); t+=clamp(h,.06,.55); if(t>12.) break; } return clamp(res,0.,1.); }',
 
     'float colorPat(float val,vec3 p,float thick){',
@@ -306,7 +442,47 @@ FRAG_LINES = [
     '    float hz=clamp(1.-rd.y*1.1,0.,1.4);',
     '    col=uFog*.04+uFog*hz*mix(.18,1.15,uVoid);',
     '    col+=uFog*max(-rd.y,0.)*mix(.1,.5,uVoid); }',
-    '  else{ col=mix(uFog*.04,uMat*.05,clamp(rd.y*.5+.4,0.,1.)); }',
+    '  else if(uScene<5.5){ col=mix(uFog*.04,uMat*.05,clamp(rd.y*.5+.4,0.,1.)); }',
+    # spiral: near-black night, sparse star flecks, red bleed rising from the pit
+    '  else if(uScene<6.5){',
+    '    col=uFog*.015+uFog*max(-rd.y,0.)*.06;',
+    '    vec2 sq=floor(vec2(rd.x*331.+rd.z*97.,rd.y*287.+rd.z*151.));',
+    '    col+=vec3(.8,.85,.9)*step(.9985,h21(sq))*.4; }',
+    # strands / pillars: the smog is the whole world — a bright field the forms silhouette against
+    '  else if(uScene<7.5||(uScene>8.5&&uScene<9.5)||(uScene>11.5&&uScene<12.5)){',
+    '    float h=clamp(gl_FragCoord.y/uRes.y,0.,1.);',
+    '    col=mix(uFog*.5,uFog*mix(.9,1.6,uVoid),h); }',
+    # terraces: dark ground haze, a red vortex burning overhead, star flecks
+    '  else if(uScene<8.5){',
+    '    float hz=clamp(1.-rd.y*1.1,0.,1.4);',
+    '    col=uFog*.03+uFog*hz*mix(.05,.3,uVoid);',
+    '    vec3 vd=normalize(vec3(cos(uAim+1.2),.5,sin(uAim+1.2)));',
+    '    float vdt=max(dot(rd,vd),0.);',
+    '    col+=mix(uFog,uLight,.15)*pow(vdt,6.)*Bright*1.7;',
+    '    col+=mix(uFog,uLight,.5)*pow(vdt,26.)*Bright*.5;',
+    '    vec2 sq=floor(vec2(rd.x*331.+rd.z*97.,rd.y*287.+rd.z*151.));',
+    '    col+=vec3(.8,.82,.85)*step(.999,h21(sq))*.3; }',
+    # aperture: starred black, nothing else — the throat light comes from shading
+    '  else if(uScene>12.5){',
+    '    col=uFog*.012;',
+    '    float throat=pow(max(dot(rd,normalize(ta-ro)),0.),8.);',
+    '    col+=mix(uFog,uLight,.6)*throat*Bright*1.8;',
+    '    col+=uLight*pow(throat,7.)*Bright*1.1;',
+    '    vec2 sq=floor(vec2(rd.x*331.+rd.z*97.,rd.y*287.+rd.z*151.));',
+    '    col+=vec3(.8,.85,.9)*step(.9985,h21(sq))*.4; }',
+    # ridge / rows: black night above a burning horizon band; ridge gets a small pale moon
+    '  else{',
+    '    float band=exp(-abs(rd.y-.05)*9.);',
+    '    col=uFog*.015+uFog*band*mix(.45,1.05,uVoid);',
+    '    vec2 sq=floor(vec2(rd.x*331.+rd.z*97.,rd.y*287.+rd.z*151.));',
+    '    col+=vec3(.8,.82,.85)*step(.9985,h21(sq))*.35;',
+    '    if(uScene<10.5){',
+    '      vec3 md=normalize(vec3(.15,.38,-1.));',
+    '      float mdt=dot(rd,md);',
+    '      col=mix(col,vec3(.98,.97,.92),smoothstep(.99978,.99989,mdt));',
+    '      col+=vec3(.9,.9,.86)*pow(max(mdt,0.),700.)*.35; } }',
+    # the standard low sun disc stays out of the night scenes (ridge has its moon)
+    '  if(uScene<9.5){',
     '  vec3 sdir=normalize(vec3(cos(uAim+1.2),.16,sin(uAim+1.2)));',
     '  float sdt=dot(rd,sdir);',
     '  float disc=smoothstep(.9986,.9992,sdt);',
@@ -314,7 +490,7 @@ FRAG_LINES = [
     '  float ring=smoothstep(.9976,.9981,sdt)-smoothstep(.9981,.9986,sdt);',
     '  col=mix(col,uLight*1.5*Bright,disc);',
     '  col+=uLight*halo*Bright*.45;',
-    '  col+=mix(uLight,vec3(1),.5)*ring*Bright*.6;',
+    '  col+=mix(uLight,vec3(1),.5)*ring*Bright*.6; }',
     '  return col; }',
 
     'void main(){',
@@ -327,7 +503,15 @@ FRAG_LINES = [
     '  else if(uScene<2.5){ ro=vec3(2.6,1.0,7.5);  ta=vec3(.3,9.0,-1.);  focal=1.4;  oAmp=.14; pAmp=.04; dAmp=.05; }',
     '  else if(uScene<3.5){ ro=vec3(.6,.2,6.8);    ta=vec3(0,5.5,-4.);   focal=1.4;  oAmp=.09; pAmp=.05; dAmp=.10; }',
     '  else if(uScene<4.5){ ro=vec3(.8,2.6,12.5); ta=vec3(0,3.8,-2.); focal=1.25; oAmp=.10; pAmp=.03; dAmp=.05; }',
-    '  else{                ro=vec3(0,1.8,6.5);    ta=vec3(0,0,0);       focal=1.55; oAmp=.20; pAmp=.06; dAmp=.04; }',
+    '  else if(uScene<5.5){ ro=vec3(0,1.8,6.5);    ta=vec3(0,0,0);       focal=1.55; oAmp=.20; pAmp=.06; dAmp=.04; }',
+    '  else if(uScene<6.5){ ro=vec3(0.,7.2,7.2);   ta=vec3(0,.2,-.6);    focal=1.42; oAmp=.16; pAmp=.03; dAmp=.05; }',
+    '  else if(uScene<7.5){ ro=vec3(0,.5,9.);      ta=vec3(0,1.3,0);     focal=1.3;  oAmp=.12; pAmp=.05; dAmp=.06; }',
+    '  else if(uScene<8.5){ ro=vec3(3.5,3.0,7.5);  ta=vec3(-7.5,5.2,-6.5); focal=1.3; oAmp=.08; pAmp=.04; dAmp=.06; }',
+    '  else if(uScene<9.5){ ro=vec3(0,2.2,7.5);    ta=vec3(-.4,3.4,-2.); focal=1.35; oAmp=.10; pAmp=.04; dAmp=.05; }',
+    '  else if(uScene<10.5){ro=vec3(0,3.4,6.5);    ta=vec3(-.6,1.6,-4.); focal=1.35; oAmp=.07; pAmp=.03; dAmp=.05; }',
+    '  else if(uScene<11.5){ro=vec3(0,6.,9.);      ta=vec3(0,.4,-3.5);   focal=1.4;  oAmp=.10; pAmp=.03; dAmp=.04; }',
+    '  else if(uScene<12.5){ro=vec3(-2.6,-1.2,8.6); ta=vec3(1.2,2.8,0);   focal=1.3;  oAmp=.14; pAmp=.04; dAmp=.05; }',
+    '  else{                ro=vec3(1.,-.35,4.2);  ta=vec3(-.4,.15,-6.); focal=1.4;  oAmp=.10; pAmp=.04; dAmp=.06; }',
 
     '  float ct=uTime*uSpeed*mix(.25,1.,uActive);',
     '  vec3 rel=ro-ta;',
@@ -349,8 +533,14 @@ FRAG_LINES = [
 
     '  vec3 sky=sceneBg(rd,ro,ta); vec3 col=sky;',
 
-    '  float tiled=((uScene>1.5&&uScene<2.5)||(uScene>3.5&&uScene<4.5))?step(.5,uRecursive):0.;',
-    '  float cellMax=(tiled>.5)?1.1:9e9;',
+    '  float tiled=((uScene>1.5&&uScene<2.5)||(uScene>3.5&&uScene<4.5)||(uScene>6.5&&uScene<7.5)||(uScene>8.5&&uScene<10.5))?step(.5,uRecursive):0.;',
+    '  tiled=max(tiled,step(10.5,uScene)*(1.-step(11.5,uScene)));',
+    '  float cellMax=9e9;',
+    '  if(tiled>.5){ cellMax=1.1;',
+    '    if(uScene>6.5&&uScene<7.5) cellMax=1.8;',
+    '    else if(uScene>8.5&&uScene<9.5) cellMax=1.3;',
+    '    else if(uScene>9.5&&uScene<10.5) cellMax=1.6;',
+    '    else if(uScene>10.5) cellMax=1.0; }',
     '  float t=0.; float tmax=42.; float hit=0.;',
     '  for(int i=0;i<MAXS;i++){',
     '    vec3 p=ro+rd*t; float d=map(p);',
@@ -363,19 +553,27 @@ FRAG_LINES = [
     '  if(hit>.5){',
     '    vec3 p=ro+rd*t; vec3 n=calcN(p);',
     '    float ao=calcAO(p,n); float sh=shadow(p+n*.025,Lvec);',
-    '    float dif=clamp(dot(n,Lvec),0.,1.); float key=dif*sh;',
+    '    float dif=clamp(dot(n,Lvec),0.,1.); float key=pow(dif*sh,1.3);',
     '    float fres=pow(clamp(1.+dot(rd,n),0.,1.),3.2);',
     '    vec3 H=normalize(Lvec-rd); float spec=pow(clamp(dot(n,H),0.,1.),48.);',
     '    float thick=clamp(-map(p-rd*.55)/.55,0.,1.);',
     '    float val=(.06+key*Bright)*ao; val=clamp(val,0.,1.6);',
     '    float pf=clamp(colorPat(val,p,thick),0.,1.);',
     '    vec3 albedo=mix(uMat*mix(.5,1.08,pf),uLight,pf*.08);',
-    '    vec3 c=albedo*.05+ambCol*.10*ao;',                       # ambient (reddish-grey fill)
+    '    vec3 c=albedo*.035+ambCol*.07*ao;',                       # ambient (reddish-grey fill)
     '    c+=albedo*uLight*key*Bright*1.2;',                       # key light (light colour)
     '    c+=spec*uLight*Bright*.55;',                             # specular
-    '    c+=fres*mix(uMat,uLight,.5)*Bright*.15;',                # rim
+    '    c+=fres*mix(uMat,uLight,.5)*Bright*.12;',                # rim
     '    c+=uInner*thick*mix(uMat,uLight,.4)*(.4+.5*Bright);',    # inner glow
     '    if(uScene<.5){ vec3 td=normalize(ta-ro); c+=mix(uFog,uLight,.5)*max(dot(n,-td),0.)*exp(-length(p)*.5)*Bright*.9; }',
+    # spiral: the pit is a light source — red spills up onto the inner hedge walls
+    '    if(uScene>5.5&&uScene<6.5){ float rp=length(p.xz); c+=uFog*exp(-max(rp-1.,0.)*.9)*(.3+.7*max(dot(n,normalize(vec3(-p.x,1.4,-p.z))),0.))*Bright*1.7; }',
+    # ridge: a lantern rests in the saddle — a pocket of warm light on the fur,
+    # deliberately independent of Glow (a small carried light, not the sky)
+    '    if(uScene>9.5&&uScene<10.5){ vec3 lp=vec3(-2.2,.95,-1.2)-p; float dl2=dot(lp,lp); c+=vec3(1.,.96,.88)*exp(-dl2*.55)*max(dot(n,normalize(lp)),0.)*1.15; }',
+    # rows: fire-light burning up from the gaps between the rows
+    '    if(uScene>12.5){ vec3 tp3=vec3(0.,0.,-5.5)-p; float td2=dot(tp3,tp3); c+=uLight*exp(-td2*.08)*max(dot(n,normalize(tp3)),0.)*Bright*2.2; }',
+    '    if(uScene>10.5&&uScene<11.5){ vec3 pr=p; pr.xz=r2(.7)*pr.xz; float cell=2.6; float zg=pr.z-cell*floor((pr.z+cell*.5)/cell); float gz=smoothstep(.35,.95,abs(zg)/(cell*.5)); c+=uFog*gz*exp(-max(p.y+.6,0.))*Bright*2.3; }',
     # ember sprites: warm point light on surface
     '    for(int si=0;si<8;si++){',
     '      if(float(si)>=uSprCount) break;',
@@ -385,10 +583,14 @@ FRAG_LINES = [
     # coarse, distance-faded grain (no per-pixel speckle)
     '    if(uTexType>2.5){ c*=mix(.3,1.0,cellEdge(p)); }',
     '    else { float tv=surfTex(p); c+=(tv-.5)*clamp(uGrain,0.,1.)*.55*(.25+.8*clamp(val,0.,1.)); }',
+    # fleck sparkle: sparse world-anchored glints riding the key light — frost on
+    # dark fur; one hash per hit pixel, faded with distance so it never fizzes
+    '    float fl=h11(dot(floor(p*42.),vec3(1.,57.,113.)));',
+    '    c+=uLight*Bright*clamp(uGrain,0.,1.)*step(.9955,fl)*(.2+key*1.3)*exp(-t*.05);',
     # fog: distance + height (bases dissolve into smog)
     '    float fogK=mix(.02,.085,uVoid);',
     '    float fDist=1.-exp(-max(t-3.0,0.)*fogK);',
-    '    float ground=(uScene>1.5&&uScene<4.5)?1.:0.;',
+    '    float ground=((uScene>1.5&&uScene<4.5)||(uScene>7.5&&uScene<8.5)||(uScene>10.5&&uScene<12.5))?1.:0.;',
     '    float fH=ground*smoothstep(3.0,-5.0,p.y);',
     '    float hStr=clamp(uVoid*1.3,0.,1.);',
     '    float fog=1.-(1.-fDist)*(1.-fH*hStr);',
@@ -401,8 +603,31 @@ FRAG_LINES = [
     '    vec4 spd=uSprD[si];',
     '    col+=sprC*wispGlow(ro,rd,spr.xyz,spd.xyz,spd.w,min(sbr,.92),t,hit); }',
 
+    # spiral: additive glow along the centre needle (a lit vertical line, like the
+    # wisps: two falloffs, a tight core and a soft red corona)
+    '  if(uScene>5.5&&uScene<6.5){',
+    '    vec2 o2=ro.xz; vec2 d2=rd.xz; float dd2=dot(d2,d2);',
+    '    float tl=(dd2>1e-5)?-dot(o2,d2)/dd2:1e5; tl=max(tl,0.);',
+    '    float yv=ro.y+rd.y*tl;',
+    '    if((hit<.5||tl<t)&&yv>-.3&&yv<5.7){ vec2 cp=o2+d2*tl; float ds=dot(cp,cp);',
+    '      col+=mix(uFog,uLight,.35)*exp(-ds*900.)*Bright*.6;',
+    '      col+=uFog*exp(-ds*60.)*Bright*.22; } }',
+
+    # aperture: a soft ember hanging deep in the throat
+    '  if(uScene>12.5){',
+    '    vec3 lw=vec3(0.,0.,-5.5);',
+    '    float tp=max(dot(lw-ro,rd),0.);',
+    '    if(hit<.5||tp<t){ vec3 cp3=lw-ro-rd*tp; float ds3=dot(cp3,cp3);',
+    '      col+=mix(uFog,uLight,.6)*exp(-ds3*.55)*Bright*.5; } }',
+    # ridge: the lantern itself — a soft warm orb hanging in the saddle air
+    '  if(uScene>9.5&&uScene<10.5){',
+    '    vec3 lw=vec3(-2.2,.95,-1.2);',
+    '    float tp=max(dot(lw-ro,rd),0.);',
+    '    if(hit<.5||tp<t){ vec3 cp3=lw-ro-rd*tp; float ds3=dot(cp3,cp3);',
+    '      col+=vec3(1.,.96,.88)*exp(-ds3*30.)*.55; } }',
+
     '  col+=(h21(gl_FragCoord.xy*.5+fract(uTime)*vec2(31,17))-.5)*.012;',
-    '  float vig=1.-.30*pow(length(uv)*.55,2.2); col*=clamp(vig,0.,1.);',
+    '  float vig=1.-.36*pow(length(uv)*.55,2.2); col*=clamp(vig,0.,1.);',
     '  gl_FragColor=vec4(clamp(col,0.,1.),1.); }',
 ]
 
@@ -641,6 +866,19 @@ html = f"""<!DOCTYPE html>
 </body>
 </html>"""
 
-with open('/mnt/user-data/outputs/form-world.html','w') as f:
+import os
+here = os.path.dirname(os.path.abspath(__file__))
+
+with open(os.path.join(here, 'form-world.html'), 'w') as f:
     f.write(html)
-print(f"written: {len(html)} bytes")
+print(f"written: form-world.html ({len(html)} bytes)")
+
+# Background variant: identical engine, panel/hint hidden — served to Storybook.
+bg = html.replace(
+    '</style>\n</head>',
+    '</style>\n<style>#panel{display:none!important}#hint{display:none!important}body{cursor:default!important}</style>\n</head>',
+    1,
+)
+with open(os.path.join(here, 'form-world-bg.html'), 'w') as f:
+    f.write(bg)
+print(f"written: form-world-bg.html ({len(bg)} bytes)")
