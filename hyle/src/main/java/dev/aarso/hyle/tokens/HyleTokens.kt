@@ -30,6 +30,8 @@ object HyleTokens {
         const val colorPaletteMaterialStone: Argb = 0xFF9B958CL
         const val colorPaletteMaterialSmog: Argb = 0xFFCC1A0AL
         const val colorPaletteMaterialLight: Argb = 0xFFFFD2B0L
+        const val colorPaletteTerminalWell: Argb = 0xFF08080AL
+        const val colorPaletteTerminalSelection: Argb = 0x2EC7EF9EL
         const val colorTextPrimary: Argb = 0xEBECE8E4L
         const val colorTextSecondary: Argb = 0x6BECE8E4L
         const val colorTextFaint: Argb = 0x2EECE8E4L
@@ -51,6 +53,14 @@ object HyleTokens {
         const val colorFeedbackDanger: Argb = 0xFFE5564BL
         const val colorFeedbackWarning: Argb = 0xFFE0941AL
         const val colorFeedbackSuccess: Argb = 0xFF5BBF7AL
+        const val colorTerminalGround: Argb = 0xFF08080AL
+        const val colorTerminalInk: Argb = 0xEBECE8E4L
+        const val colorTerminalDim: Argb = 0x6BECE8E4L
+        const val colorTerminalFaint: Argb = 0x2EECE8E4L
+        const val colorTerminalPrompt: Argb = 0xFFC7EF9EL
+        const val colorTerminalCursor: Argb = 0xFFC7EF9EL
+        const val colorTerminalHairline: Argb = 0x14FFFFFFL
+        const val colorTerminalSelection: Argb = 0x2EC7EF9EL
         const val controlSurface: Argb = 0xFF16161AL
         const val controlSurfaceRaised: Argb = 0xFF212128L
         const val controlSurfaceHigh: Argb = 0xFF2C2C34L

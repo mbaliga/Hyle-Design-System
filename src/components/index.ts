@@ -55,6 +55,8 @@ export type { HyInputSize } from './input/hy-input.js';
 // — Surfaces —
 export { HyCard } from './card/hy-card.js';
 export type { HyCardElevation } from './card/hy-card.js';
+export { HyTerminal } from './terminal/hy-terminal.js';
+export type { HyTerminalState } from './terminal/hy-terminal.js';
 
 // — Colour (the kit's 3D THREE.js picker, verbatim) —
 export { HyColorPicker } from './color-picker/hy-color-picker.js';

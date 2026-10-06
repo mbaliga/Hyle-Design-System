@@ -22,6 +22,8 @@
   <color name="color_palette_material_stone">#ff9b958c</color>
   <color name="color_palette_material_smog">#ffcc1a0a</color>
   <color name="color_palette_material_light">#ffffd2b0</color>
+  <color name="color_palette_terminal_well">#ff08080a</color>
+  <color name="color_palette_terminal_selection">#2ec7ef9e</color>
   <color name="color_text_primary">#ebece8e4</color>
   <color name="color_text_secondary">#6bece8e4</color>
   <color name="color_text_faint">#2eece8e4</color>
@@ -43,6 +45,14 @@
   <color name="color_feedback_danger">#ffe5564b</color>
   <color name="color_feedback_warning">#ffe0941a</color>
   <color name="color_feedback_success">#ff5bbf7a</color>
+  <color name="color_terminal_ground">#ff08080a</color>
+  <color name="color_terminal_ink">#ebece8e4</color>
+  <color name="color_terminal_dim">#6bece8e4</color>
+  <color name="color_terminal_faint">#2eece8e4</color>
+  <color name="color_terminal_prompt">#ffc7ef9e</color>
+  <color name="color_terminal_cursor">#ffc7ef9e</color>
+  <color name="color_terminal_hairline">#14ffffff</color>
+  <color name="color_terminal_selection">#2ec7ef9e</color>
   <color name="control_surface">#ff16161a</color>
   <color name="control_surface_raised">#ff212128</color>
   <color name="control_surface_high">#ff2c2c34</color>
