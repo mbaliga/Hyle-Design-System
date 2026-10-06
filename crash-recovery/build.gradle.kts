@@ -1,9 +1,19 @@
-// :crash-recovery — a shared reliability utility, deliberately NOT part of `:hyle`. It has
-// zero dependency on the `:hyle` design-tokens module (no Compose, no Material, plain
-// `android.widget` views only) so apps with their own visual identity that must never
-// depend on Hyle (Animalcules, Horizkeeb — Personal-Tracker DECISIONS.md D-L) can still
-// take this one dependency. See D-O for why this lives in this repo as a separate artifact
-// rather than inside `:hyle` or duplicated per-app.
+// :crash-recovery — TOMBSTONE.
+//
+// The real module moved to mbaliga/Shared-Libraries-asoc (see MOVED.md). What remains here is a
+// stub that keeps the `dev.aarso:crash-recovery` coordinate resolvable, so consumers get an
+// actionable compile error naming the new home instead of Gradle's uninformative
+// "Could not find dev.aarso:crash-recovery".
+//
+// This module deliberately still builds and still declares its coordinate. It must NOT fail at
+// configuration time: Gradle configures every project in an `includeBuild`, so a configuration
+// failure here would break consumers that only use `dev.aarso:hyle` and never touched
+// crash-recovery. The failure is a DeprecationLevel.ERROR in the Kotlin source, which fires only
+// at real call sites.
+//
+// Delete this module once every consumer has migrated. Known holdouts at time of writing: the
+// three unmerged adoption PRs (BOS_launcher#3, Clackpad#5, hnm_playground#3), which pin this
+// repo at 4bd8746 and would otherwise wire up a submodule whose crash-recovery is this stub.
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
@@ -58,6 +68,4 @@ afterEvaluate {
     }
 }
 
-dependencies {
-    testImplementation(libs.junit)
-}
+// No dependencies: the tombstone has no implementation and no tests.
