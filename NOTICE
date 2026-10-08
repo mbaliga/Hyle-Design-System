@@ -1,17 +1,32 @@
 Hyle-Design-System — Third-Party NOTICE
 ========================================================================
 
-This repository's own code (the `hyle`, `hyle-probe`, `crash-recovery`, `kit`, `tokens`, `src`,
-`scripts`, `stories` trees and the token pipeline) is licensed under Apache-2.0 — see `LICENSE`.
+Required Notice: Copyright 2026 Madhav Baliga (https://asystemofcells.com)
 
-**Fonts (`fonts/*`) are NOT covered by the Apache-2.0 grant above.** Each typeface family under
-`fonts/` carries its own SIL Open Font License 1.1 declaration in that family's own
-`LICENSE-NOTE.txt` (e.g. `fonts/HyleGroteskClassic/LICENSE-NOTE.txt`). Several are explicitly
-noted as derivative works of existing open fonts (e.g. Hyle Grotesk Classic, built on Space
-Grotesk with Archivo letterforms substituted) — free to use/modify/redistribute under the OFL,
-same as their source fonts, but distinct from this repo's own Apache-2.0 code.
+This repository's own code and design-token definitions (the `hyle`, `hyle-probe`, `crash-recovery`,
+`kit`, `tokens`, `src`, `scripts`, `stories` trees and the token pipeline) are source-available under
+the PolyForm Noncommercial License 1.0.0 — see `LICENSE`. Noncommercial use is free; commercial use
+needs a commercial licence — see `COMMERCIAL-LICENSE.md`. Versions released earlier under Apache-2.0
+stay available under it to whoever received them; the PolyForm licence applies from the next version on.
 
-**`assets/primitives/` is also NOT covered by the Apache-2.0 grant above.** It is a raw
+## Fonts keep the SIL Open Font License
+
+**Everything under the fonts directories (`fonts/*`) keeps its font licence and is NOT covered by the
+PolyForm Noncommercial License.** This repository's `LICENSE` covers the code and design-token
+definitions only; it does not change or supersede the licences of the typeface families under
+`fonts/`, and the PolyForm noncommercial restriction does not apply to them. Each family carries its
+own SIL Open Font License 1.1 declaration in that family's own `LICENSE-NOTE.txt` (e.g.
+`fonts/HyleGroteskClassic/LICENSE-NOTE.txt`; `fonts/HyleDeco/` ships its own `OFL.txt`). Several are
+explicitly noted as derivative works of existing open fonts (e.g. Hyle Grotesk Classic, built on Space
+Grotesk with Archivo letterforms substituted) — free to use/modify/redistribute under the OFL, same as
+their source fonts, but distinct from this repo's own code licence. Per their own notes, Hyle Classic
+and Hyle Deco Pro sit on the DejaVu Sans chassis and so also carry the Bitstream Vera licence alongside
+the OFL; both notices apply to those two families. The per-family `LICENSE-NOTE.txt` files are the
+authority for each family. See `TRADEMARKS.md` for the family-name carve-outs.
+
+## Other carve-outs
+
+**`assets/primitives/` is also NOT covered by the PolyForm Noncommercial License.** It is a raw
 third-party icon/logo reference pack from a free Figma Community file (no attribution required
 by the source) — see `assets/primitives/LICENSE-NOTE.txt`. It is reference material only, not
 wired into any component, build, or Storybook output.

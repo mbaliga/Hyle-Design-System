@@ -152,3 +152,11 @@ The provenance hues are aligned across platforms: `provenance.native`
 
 > Both large authored artifacts (the Form-World engine and the Tactile Kit) are
 > **generated/standalone HTML** — see their own READMEs under `field/` and `kit/`.
+
+## Licence
+
+Source-available, free for noncommercial use under the [PolyForm Noncommercial License 1.0.0](LICENSE). If you make money with it, you need a commercial licence: see [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md).
+
+The Hyle Worlds live wallpaper (`wallpaper/`) is freemium: free to install and use, with optional paid extras. The store listing covers the app; this licence covers the source.
+
+The typefaces under `fonts/` are not covered by this licence. They keep their own font licences (SIL Open Font License 1.1); see [NOTICE](NOTICE).
