@@ -1,7 +1,8 @@
 # Trademarks
 
-This repository's **code and design-token definitions** are licensed under Apache-2.0 (see
-`LICENSE`). Apache-2.0 §6 is explicit that the code license does not grant any trademark rights —
+This repository's **code and design-token definitions** are source-available under the PolyForm
+Noncommercial License 1.0.0 (see `LICENSE`). That licence grants copyright and patent licences only
+and states that it implies no other licences ("No Other Rights"), so it grants no trademark rights —
 this file states this project's trademark policy separately.
 
 ## What's covered
@@ -14,12 +15,14 @@ this file states this project's trademark policy separately.
   reuse/modification while reserving the *name* — renamed derivatives are fine and expected under
   OFL; using the original family name for a modified font is not.
 - Any Hyle logo/wordmark/icon assets, once added to this repo, under a separate all-rights-reserved
-  (or CC-BY-ND, once chosen) notice placed alongside those files — never the Apache-2.0 code
-  license. No such asset files exist in this repo as of this writing.
+  (or CC-BY-ND, once chosen) notice placed alongside those files — never the PolyForm code
+  licence. No such asset files exist in this repo as of this writing.
 
 ## What you may do
 
-- Use `dev.aarso:hyle` as a dependency, fork the code, modify it — Apache-2.0 already grants this.
+- Use `dev.aarso:hyle` as a dependency, fork the code, modify it for noncommercial use — the
+  PolyForm Noncommercial License already grants this. Commercial use needs a commercial licence
+  (see `COMMERCIAL-LICENSE.md`).
 - Modify and redistribute the OFL fonts under their own OFL terms, **with a different family
   name** for your modified version (standard OFL practice — the Reserved Font Name mechanism).
 - Refer to this project by name in truthful, non-confusing statements with a no-affiliation
