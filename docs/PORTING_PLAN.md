@@ -363,6 +363,36 @@ Owner questions in the program register that concern this repo (status as of 202
 
 When the owner confirms or changes the line, this repo's original cells above stay as the engineering detail; only the verdicts and re-costs in program section 5A change.
 
+## Update 2026-10-14: the market lens, iPadOS and the owner's latest answers
+
+Status: PLAN. Nothing here is built, run on a device, signed or submitted. This update follows the section "Owner rulings and the proposed line (added 2026-10-07)" above and the program plan's section 5A.12 (Personal-Tracker `PORTING_PROGRAM.md`, [PR #10](https://github.com/mbaliga/Personal-Tracker/pull/10)), which governs where the two differ. It records the owner's market lens and answers of 2026-10-13 and 2026-10-14; the proposed line is still a proposal. Two tests were added to the program's section 5A.1: (d) a real gap, or we are better or cheaper ("better" only where it has been measured; free alone is no gap when free tools exist); (w) mature free alternatives abound and the app adds nothing.
+
+### Where Hyle-Design-System sits now (program section 5A.12, a proposal)
+
+| Target       | Verdict, weeks and flags |
+| ------------ | ------------------------ |
+| Ubuntu Touch | follows 4w               |
+| Linux        | follows 3w               |
+| iPhone       | follows                  |
+| iPad         | follows 3w               |
+| macOS        | follows 1.5w             |
+| Windows      | follows 1w               |
+
+The Apple column is now split: iPhone and iPad are judged apart. Where an app ports to both, the weeks are counted once on the lead cell and the other reads follows. The wave (early or later) is for the iPad, and for the iPhone where it leads.
+
+### What changed for this repo
+
+- iPhone and iPad both follow (the earlier section had one iOS cell, follows 3w).
+- **The skin contract's home.** The owner chose Tier 1 everywhere first (OQ-39); the decisions taken for the owner include that the validator and reference loader live in a Hyle module that does not depend on Hyle's look, with Typewright as the first consumer. The draft spec is Personal-Tracker porting/skin-contract/SPEC-DRAFT.md (checked by two read-only reviewers; findings in its REVIEW-LOG.md; not built).
+- The owner chose Hyle's tokens/color.json values as the canonical default palette (cloud cyan #35E0FF, on-device radium #C7EF9E) for skins; both hues still ship, and the open radiant-hue decision (binding rule 13) is not settled by it. Draft PR #16 uses a different set (cyan #08FED5, ink #0E0F12) and is to be reworked onto them; that rework is not done. PRs #16 and #10 both add cells/ and theme/ to :hyle and #11 edits tokens/ and the generated Kotlin and XML (section 1 of this plan), so the three need triage before the skin work starts.
+
+### Owner answers that apply here
+
+- **Mac mini timing (OQ-31, 2026-10-14):** "Use hosted macOS runners on public repos first, buy later". This repo is public, so its iOS token-package and XCFramework simulator builds (I1 to I3) can use free hosted macOS runners once their gates open (OQ-17, OQ-38); the Mac mini stays chosen and not bought.
+- **Ubuntu Touch device (OQ-37, 2026-10-14):** "Wait for the OnePlus 6 on a newer image". No second device is bought; the research reads the OnePlus 6 as 20.04-only (the installed image is not stated, OQ-33), so it only takes the S-UT1 (focal) pre-spike, and every Ubuntu Touch device gate stays NDV until it runs 24.04.
+
+When the owner confirms or changes the line, this repo's original cells above stay as the engineering detail; only the verdicts and re-costs in program section 5A.12 change.
+
 ## 10. Progress ledger
 
 None. Nothing in this plan has been built, run or verified. Entries append here as dated lines carrying their
