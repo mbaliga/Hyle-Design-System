@@ -117,6 +117,7 @@ Mock apps that compose the components live under **Storybook → Mock Apps**.
 | `kit/`                    | The Tactile Kit (physical-control language) + its README.        |
 | `public/`                 | Engine + kit served to Storybook (`<hy-field>`, Tactile Kit story). |
 | `docs/PHILOSOPHY.md`      | Hyle — Ethos & Lineage (the theory behind the law).              |
+| `docs/PORTING_PLAN.md`    | Multi-platform porting plan (Ubuntu Touch, Linux, iOS/iPadOS, macOS, Windows) — a plan only, nothing built. |
 | `stories/`                | Storybook Introduction + Foundations (token) docs.               |
 | `build/`                  | **Generated** web/iOS token artifacts (git-ignored).             |
 | `assets/primitives/`      | Raw third-party icon/logo reference pack — not wired into components or Storybook. See `assets/primitives/LICENSE-NOTE.txt`. |
