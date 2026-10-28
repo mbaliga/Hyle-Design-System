@@ -83,3 +83,15 @@ export const HX = {
   toggle: () => navigator.vibrate?.([18, 24, 10]),
   tick: () => navigator.vibrate?.([4]),
 };
+
+/**
+ * Feel override. The kit's SFX/HX are the defaults; an app with a richer feel engine
+ * (HAfx Studio) can replace any of them, or silence them and drive feel from the
+ * components' own hy-input / hy-change events instead. Pass `null` to mute one.
+ */
+type Fn = (...a: any[]) => any;
+export function setKitFeel(next: { sfx?: Partial<Record<keyof typeof SFX, Fn | null>>; hx?: Partial<Record<keyof typeof HX, Fn | null>> }) {
+  const noop = () => {};
+  for (const [k, f] of Object.entries(next.sfx || {})) (SFX as any)[k] = f || noop;
+  for (const [k, f] of Object.entries(next.hx || {})) (HX as any)[k] = f || noop;
+}

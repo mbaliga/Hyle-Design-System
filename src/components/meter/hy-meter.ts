@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { customElement, query, queryAll } from 'lit/decorators.js';
+import { customElement, property, query, queryAll } from 'lit/decorators.js';
 import { KitElement } from '../../kit/kit-element.js';
 
 /**
@@ -14,6 +14,10 @@ import { KitElement } from '../../kit/kit-element.js';
  */
 @customElement('hy-meter')
 export class HyMeter extends KitElement {
+  /** 0..1 left (or both). When set, bars follow it instead of the kit's idle random walk. */
+  @property({ type: Number }) level = NaN;
+  /** 0..1 right channel; falls back to `level`. */
+  @property({ type: Number, attribute: 'level-r' }) levelR = NaN;
   @query('.pk') private _pk!: HTMLSpanElement;
   @queryAll('.mbars') private _rows!: NodeListOf<HTMLElement>;
 
@@ -54,8 +58,10 @@ export class HyMeter extends KitElement {
     // Verbatim (line 1018): random-walk both channels, update header peak.
     const animFrame = () => {
       [bL, bR].forEach((bars, c) => {
-        const t = 0.18 + Math.random() * 0.65;
-        lvl[c] += (t - lvl[c]) * 0.28;
+        const want = c === 1 && !Number.isNaN(this.levelR) ? this.levelR : this.level;
+        const driven = !Number.isNaN(want);
+        const t = driven ? Math.max(0, Math.min(1, want)) : 0.18 + Math.random() * 0.65;
+        lvl[c] += (t - lvl[c]) * (driven ? (t > lvl[c] ? 0.5 : 0.12) : 0.28);
         litBars(bars, lvl[c]);
       });
       const db = -20 + lvl[0] * 25;

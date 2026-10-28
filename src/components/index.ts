@@ -32,6 +32,8 @@ export { HyKey } from './key/hy-key.js';
 export type { HyKeyVariant } from './key/hy-key.js';
 export { HyJoystick } from './joystick/hy-joystick.js';
 export { HyDial } from './dial/hy-dial.js';
+export { HyVoice } from './voice/hy-voice.js';
+export type { HyVoiceAxis } from './voice/hy-voice.js';
 
 // — Displays & surfaces —
 export { HyWaveform } from './waveform/hy-waveform.js';

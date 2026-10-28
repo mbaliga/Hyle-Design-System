@@ -20,6 +20,11 @@ export type HyDigitalDisplayVariant = 'halo' | 'led';
 @customElement('hy-digital-display')
 export class HyDigitalDisplay extends KitElement {
   @property() variant: HyDigitalDisplayVariant = 'halo';
+  /** LED variant: the ticker message (defaults to the kit's). */
+  @property() text = 'HYLE   169.99  +0.88%      TACTILE KIT      ';
+  /** LED variant: scroll speed in dots per frame; 0 holds the message still. */
+  @property({ type: Number }) speed = 0.4;
+  private _rebuild?: () => void;
 
   @query('canvas') private _cv!: HTMLCanvasElement;
   private _raf = 0;
@@ -134,15 +139,17 @@ export class HyDigitalDisplay extends KitElement {
       rows = 0;
     const CELL = 6;
     const off = document.createElement('canvas');
-    const octx = off.getContext('2d');
+    // willReadFrequently: the glyph strip is read on the CPU, so keep it off the GPU.
+    const octx = off.getContext('2d', { willReadFrequently: true });
     if (!octx) return;
-    const TXT = 'HYLE   169.99  +0.88%      TACTILE KIT      ';
+    let strip: Uint8ClampedArray | null = null; // cached glyph alpha, read once per message
     let textW = 0;
     const build = () => {
       if (rows < 1) return;
       off.height = rows;
       const fs = Math.round(rows * 0.96);
       octx.font = '700 ' + fs + 'px ui-monospace,Menlo,monospace';
+      const TXT = this.text;
       textW = Math.ceil(octx.measureText(TXT).width) + cols + 4;
       off.width = textW;
       octx.font = '700 ' + fs + 'px ui-monospace,Menlo,monospace';
@@ -150,6 +157,7 @@ export class HyDigitalDisplay extends KitElement {
       octx.fillStyle = '#fff';
       octx.clearRect(0, 0, off.width, off.height);
       octx.fillText(TXT, cols, rows / 2);
+      strip = off.width > 0 && rows > 0 ? octx.getImageData(0, 0, off.width, rows).data : null;
     };
     const resize = () => {
       const r = cv.getBoundingClientRect();
@@ -167,20 +175,18 @@ export class HyDigitalDisplay extends KitElement {
     const frame = () => {
       const acc = this._accRGB([140, 123, 255]);
       ctx.clearRect(0, 0, W, H);
-      scroll += 0.4;
+      scroll += this.speed;
       if (scroll >= textW - cols) scroll = 0;
       const sx = Math.floor(scroll);
-      let data;
-      try {
-        data = octx.getImageData(sx, 0, cols, rows).data;
-      } catch (e) {
+      if (!strip) {
         this._raf = requestAnimationFrame(frame);
         return;
       }
+      const sw = off.width;
       const A = 'rgba(' + acc[0] + ',' + acc[1] + ',' + acc[2] + ',';
       for (let j = 0; j < rows; j++) {
         for (let i = 0; i < cols; i++) {
-          const lit = data[(j * cols + i) * 4 + 3] > 90;
+          const lit = sx + i < sw && strip[(j * sw + sx + i) * 4 + 3] > 90;
           const cx = (i + 0.5) * CELL,
             cy = (j + 0.5) * CELL;
           ctx.beginPath();
@@ -191,10 +197,15 @@ export class HyDigitalDisplay extends KitElement {
       }
       this._raf = requestAnimationFrame(frame);
     };
+    this._rebuild = () => { scroll = 0; build(); };
     this._ro = new ResizeObserver(resize);
     this._ro.observe(cv);
     resize();
     this._raf = requestAnimationFrame(frame);
+  }
+
+  protected updated(changed: Map<string, unknown>) {
+    if (changed.has('text') && this._rebuild) this._rebuild();
   }
 
   render() {

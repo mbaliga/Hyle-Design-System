@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { customElement, query } from 'lit/decorators.js';
+import { customElement, property, query } from 'lit/decorators.js';
 import { KitElement } from '../../kit/kit-element.js';
 
 /**
@@ -14,6 +14,8 @@ import { KitElement } from '../../kit/kit-element.js';
  */
 @customElement('hy-vu')
 export class HyVu extends KitElement {
+  /** 0..1. When set, the needle follows it with VU ballistics instead of the kit's idle random walk. */
+  @property({ type: Number }) level = NaN;
   @query('.vu-sc') private _g!: SVGGElement;
   @query('.vu-needle') private _needle!: SVGLineElement;
 
@@ -62,8 +64,9 @@ export class HyVu extends KitElement {
     // Verbatim needle animation (line 1018): random-walk drives the rotation.
     const lvl = [0.42];
     const animFrame = () => {
-      const t = 0.18 + Math.random() * 0.65;
-      lvl[0] += (t - lvl[0]) * 0.28;
+      const driven = !Number.isNaN(this.level);
+      const t = driven ? Math.max(0, Math.min(1.08, this.level)) : 0.18 + Math.random() * 0.65;
+      lvl[0] += (t - lvl[0]) * (driven ? (t > lvl[0] ? 0.32 : 0.09) : 0.28);
       this._needle.style.transform = `rotate(${18 - lvl[0] * 80}deg)`;
       this._raf = requestAnimationFrame(animFrame);
     };
