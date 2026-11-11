@@ -19,7 +19,8 @@ tokens/*.json   ──►  scripts/build-tokens.js (Style Dictionary)  ──►
    ├─► Android   hyle/src/main/java/dev/aarso/hyle/tokens/HyleTokens.kt   (Kotlin, Argb)
    │             hyle/src/main/res/values/hyle_tokens_*.xml               (colors / dimens)
    ├─► Web       build/web/tokens.css · _tokens.scss · tokens.js
-   └─► iOS       build/ios/Tokens.swift
+   ├─► iOS       build/ios/Tokens.swift
+   └─► Apple     apple/HyleTokens (Swift package, committed; see apple/README.md)
 ```
 
 ### Android side — `:hyle` (the native render contract)

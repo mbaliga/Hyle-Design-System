@@ -1,0 +1,50 @@
+name: Ubuntu Touch tokens
+
+# Checks the generated QML token singleton has not drifted from tokens/*.json and that the
+# meaning-colour roles still carry a shape and a word. QML is not loaded in a Qt engine
+# here: qmllint is skipped (Qt 5 tools are not installed on the runner), and rendering on
+# a device is not verified.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "tokens/**"
+      - "scripts/**"
+      - "hyle/src/qml/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/ubuntu-touch.yml"
+  pull_request:
+    paths:
+      - "tokens/**"
+      - "scripts/**"
+      - "hyle/src/qml/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/ubuntu-touch.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ubuntu-touch-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qml-tokens:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+      - run: npm ci
+      - name: Regenerate tokens and check the QML output has not drifted
+        run: |
+          npm run tokens:build
+          git diff --exit-code hyle/src/qml/
+      - name: Meaning-colour role check
+        run: npm run tokens:check

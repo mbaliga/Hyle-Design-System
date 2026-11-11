@@ -397,3 +397,6 @@ When the owner confirms or changes the line, this repo's original cells above st
 
 None. Nothing in this plan has been built, run or verified. Entries append here as dated lines carrying their
 evidence label, with real command output pasted and no fabricated logs (program rule R7).
+
+- 2026-11-11, I1 (scaffold, `CONTAINER-ONLY`): `scripts/build-tokens.js` has a `swift` platform writing `apple/HyleTokens/` (Package.swift, Sources, Tests); `npm run tokens:build` is idempotent. Not compiled: no Swift here. `.github/workflows/ios.yml` (macos-latest, public repo only, unsigned, no uploads) is unrun. Owner steps in `apple/README.md`. I2 and I3 not started (blocked on the L1 KMP ruling).
+- 2026-11-11, U1 remainder: the QML singleton lives at `hyle/src/qml/Hyle/`, not `ubuntu-touch/qml/` as section 6.2 wrote. Added `.github/workflows/ubuntu-touch.yml` (token drift and `tokens:check`; qmllint skipped, no Qt tools on the runner) and `hyle/src/qml/README.md` (fonts and OFL notice a click must bundle). Rendering `NDV`.
