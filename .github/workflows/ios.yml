@@ -54,11 +54,12 @@ jobs:
         working-directory: apple/HyleTokens
         run: swift test
       # Compile-only for the UIKit branch (iPhone and iPad share it). Unsigned. The scheme
-      # name HyleTokens-Package is SwiftPM's usual one but has not been run yet.
+      # SwiftPM names the scheme after the library product (HyleTokens); the -Package scheme
+      # exists only for packages with several products. First run on a real runner failed on it.
       - name: Compile for iOS Simulator (unsigned)
         working-directory: apple/HyleTokens
         run: >
           xcodebuild build-for-testing
-          -scheme HyleTokens-Package
+          -scheme HyleTokens
           -destination 'generic/platform=iOS Simulator'
           CODE_SIGNING_ALLOWED=NO
