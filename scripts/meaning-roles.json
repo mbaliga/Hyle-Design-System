@@ -1,0 +1,18 @@
+{
+  "$description": "Meaning-colour roles and the non-colour channel (shape and word) each must carry (directive I-3: colour never carries meaning alone). Read by scripts/check-meaning-colours.js. Hand-written; not a Style Dictionary source.",
+  "roles": {
+    "selected": { "tokens": ["color.palette.accent.violet", "color.action.primary", "color.text.accent", "color.border.focus"], "shape": "ring", "word": "Selected" },
+    "on-device": { "tokens": ["color.palette.provenance.native", "color.provenance.native"], "shape": "disc", "word": "On-device" },
+    "cloud": { "tokens": ["color.palette.provenance.cloud", "color.provenance.cloud"], "shape": "diamond", "word": "Cloud" },
+    "error": { "tokens": ["color.palette.signal.danger", "color.feedback.danger"], "shape": "cross", "word": "Error" },
+    "warning": { "tokens": ["color.palette.signal.warning", "color.feedback.warning"], "shape": "triangle", "word": "Warning" },
+    "success": { "tokens": ["color.palette.signal.success", "color.feedback.success"], "shape": "check", "word": "Done" }
+  },
+  "red": {
+    "token": "color.palette.signal.danger",
+    "role": "error",
+    "nonMeaningRedExceptions": {
+      "color.palette.material.smog": "Form-World atmosphere/fog colour for generative art (field/); never a UI status colour, never referenced by a role."
+    }
+  }
+}
