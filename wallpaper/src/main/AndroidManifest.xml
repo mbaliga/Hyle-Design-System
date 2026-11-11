@@ -26,7 +26,14 @@
         <activity
             android:name=".WallpaperSettingsActivity"
             android:exported="true"
-            android:label="@string/settings_label">
+            android:label="@string/settings_label"
+            android:resizeableActivity="true"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|density|keyboard|keyboardHidden|navigation|uiMode">
+            <layout
+                android:defaultWidth="560dp"
+                android:defaultHeight="720dp"
+                android:minWidth="320dp"
+                android:minHeight="360dp" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

@@ -19,7 +19,8 @@ tokens/*.json   ──►  scripts/build-tokens.js (Style Dictionary)  ──►
    ├─► Android   hyle/src/main/java/dev/aarso/hyle/tokens/HyleTokens.kt   (Kotlin, Argb)
    │             hyle/src/main/res/values/hyle_tokens_*.xml               (colors / dimens)
    ├─► Web       build/web/tokens.css · _tokens.scss · tokens.js
-   └─► iOS       build/ios/Tokens.swift
+   ├─► iOS       build/ios/Tokens.swift
+   └─► Apple     apple/HyleTokens (Swift package, committed; see apple/README.md)
 ```
 
 ### Android side — `:hyle` (the native render contract)
@@ -117,6 +118,7 @@ Mock apps that compose the components live under **Storybook → Mock Apps**.
 | `kit/`                    | The Tactile Kit (physical-control language) + its README.        |
 | `public/`                 | Engine + kit served to Storybook (`<hy-field>`, Tactile Kit story). |
 | `docs/PHILOSOPHY.md`      | Hyle — Ethos & Lineage (the theory behind the law).              |
+| `docs/PORTING_PLAN.md`    | Multi-platform porting plan (Ubuntu Touch, Linux, iOS/iPadOS, macOS, Windows) — a plan only, nothing built. |
 | `stories/`                | Storybook Introduction + Foundations (token) docs.               |
 | `build/`                  | **Generated** web/iOS token artifacts (git-ignored).             |
 | `assets/primitives/`      | Raw third-party icon/logo reference pack — not wired into components or Storybook. See `assets/primitives/LICENSE-NOTE.txt`. |

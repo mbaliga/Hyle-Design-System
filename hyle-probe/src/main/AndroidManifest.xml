@@ -5,7 +5,14 @@
         android:theme="@android:style/Theme.Material.NoActionBar">
         <activity
             android:name=".HyleProbeActivity"
-            android:exported="true">
+            android:exported="true"
+            android:resizeableActivity="true"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|density|keyboard|keyboardHidden|navigation|uiMode">
+            <layout
+                android:defaultWidth="900dp"
+                android:defaultHeight="640dp"
+                android:minWidth="360dp"
+                android:minHeight="360dp" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
