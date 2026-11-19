@@ -46,6 +46,9 @@ import dev.aarso.hyle.theme.LocalHyleColors
  * the top, and the cap carries the little fold hook at its top-right corner. Tapping the
  * uncovered side slides the cap across; the slanted edge mirrors so it always faces inward.
  *
+ * [onSelect] null draws the toggle display-only (no tap targets, full strength) for a row that
+ * is itself the control; [enabled] = false is the faded, inert state.
+ *
  * API mirrors HyleWellToggle (optionA/optionB/selected/onSelect) so the two A/B controls are
  * drop-in interchangeable. Active label renders on the cap in the tray's light tone; the
  * inactive label sits directly on the tray in ink. Dual-channel: the cap's position AND the
@@ -56,7 +59,7 @@ fun HyleCapToggle(
     optionA: String,
     optionB: String,
     selected: Int,
-    onSelect: (Int) -> Unit,
+    onSelect: ((Int) -> Unit)?,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
 ) {
@@ -86,23 +89,25 @@ fun HyleCapToggle(
         val trayW = maxWidth
         val capW = trayW * 0.55f
         // Two tap halves (whole control is one toggle; tapping either half selects it).
-        Row(Modifier.fillMaxSize()) {
-            Box(
-                Modifier.weight(1f).fillMaxHeight().clickable(
-                    enabled = enabled,
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    role = Role.Switch,
-                ) { onSelect(0) },
-            )
-            Box(
-                Modifier.weight(1f).fillMaxHeight().clickable(
-                    enabled = enabled,
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    role = Role.Switch,
-                ) { onSelect(1) },
-            )
+        if (onSelect != null) {
+            Row(Modifier.fillMaxSize()) {
+                Box(
+                    Modifier.weight(1f).fillMaxHeight().clickable(
+                        enabled = enabled,
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        role = Role.Switch,
+                    ) { onSelect(0) },
+                )
+                Box(
+                    Modifier.weight(1f).fillMaxHeight().clickable(
+                        enabled = enabled,
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        role = Role.Switch,
+                    ) { onSelect(1) },
+                )
+            }
         }
 
         // The sliding cap: 55% of the tray, outer corners on the tray radius, inner edge
