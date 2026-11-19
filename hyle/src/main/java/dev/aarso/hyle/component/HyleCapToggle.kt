@@ -61,8 +61,8 @@ import dev.aarso.hyle.theme.Success
  * while the straight edge leans in — rather than a shape that slides, mirrors or fades.
  *
  * Two ways to use it:
- *  - [HyleOnOffToggle]: a boolean. The cap stays black and the tray stays grey; when ON the cap
- *    TURNS green and GLOWS green (owner, 2026-11-19: "It has to turn green and glow green"),
+ *  - [HyleOnOffToggle]: a boolean. The tray stays grey; when ON the black cap
+ *    turns green and glows green (owner, 2026-11-19: "It has to turn green and glow green"),
  *    when off it does not. Labels optional (none, or "No"/"Yes").
  *  - [HyleCapToggle]: a choice between two peers (`#` / `*`, "Phone" / "Remote"). Ink cap.
  *
@@ -97,8 +97,8 @@ sealed interface HyleCapLabel {
     data class Text(val value: String) : HyleCapLabel
 }
 
-/** [Ink]: a plain near-black cap (a choice between peers). [State]: the same black cap, glowing
- *  green while it is on the right (on); no glow when it is on the left (off). */
+/** [Ink]: a plain near-black cap (a choice between peers). [State]: the cap turns green and glows
+ *  green while it is on the right (on); black, no glow when on the left (off). */
 enum class HyleCapTone { Ink, State }
 
 /** Labels for [HyleOnOffToggle]. */
