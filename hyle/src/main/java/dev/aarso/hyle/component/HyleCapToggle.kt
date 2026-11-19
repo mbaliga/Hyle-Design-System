@@ -123,13 +123,12 @@ fun HyleOnOffToggle(
     val haptics = rememberHyleHaptics()
     val left = if (labels == HyleOnOffLabels.YesNo) HyleCapLabel.Text("No") else HyleCapLabel.None
     val right = if (labels == HyleOnOffLabels.YesNo) HyleCapLabel.Text("Yes") else HyleCapLabel.None
+    // Order matters: toggleable first, semantics after, so the description and state description
+    // are merged INTO the toggleable's node (one control for a screen reader), not left on a
+    // separate outer node.
     Box(
         modifier
             .size(HyleCapToggleWidth, HyleControlHeight)
-            .semantics {
-                if (description != null) contentDescription = description
-                stateDescription = if (checked) "On" else "Off"
-            }
             .then(
                 if (onCheckedChange != null) {
                     Modifier.toggleable(
@@ -143,7 +142,11 @@ fun HyleOnOffToggle(
                 } else {
                     Modifier
                 },
-            ),
+            )
+            .semantics {
+                if (description != null) contentDescription = description
+                stateDescription = if (checked) "On" else "Off"
+            },
     ) {
         CapToggleFace(
             toRight = checked,
