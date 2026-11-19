@@ -168,11 +168,11 @@ class HyleKitRenderTest {
         compose.setContent {
             Ground(c) {
                 Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                    Caption("HyleToggle — off · on · disabled", c)
+                    Caption("HyleCapToggle — # selected · * selected · disabled", c)
                     Row(horizontalArrangement = Arrangement.spacedBy(22.dp)) {
-                        HyleToggle(checked = false, onCheckedChange = {})
-                        HyleToggle(checked = true, onCheckedChange = {})
-                        HyleToggle(checked = false, onCheckedChange = null, enabled = false)
+                        HyleCapToggle("#", "*", selected = 0, onSelect = {})
+                        HyleCapToggle("#", "*", selected = 1, onSelect = {})
+                        HyleCapToggle("#", "*", selected = 0, onSelect = {}, enabled = false)
                     }
                     Caption("HyleKeycapPair — emphasis SECOND · FIRST · NONE", c)
                     Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {

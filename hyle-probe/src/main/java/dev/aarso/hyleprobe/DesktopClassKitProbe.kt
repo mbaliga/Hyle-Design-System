@@ -15,6 +15,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -29,7 +30,7 @@ import dev.aarso.hyle.component.HyleField
 import dev.aarso.hyle.component.HyleKeycap
 import dev.aarso.hyle.component.HyleKeycapEmphasis
 import dev.aarso.hyle.component.HyleKeycapPair
-import dev.aarso.hyle.component.HyleToggle
+import dev.aarso.hyle.component.HyleCapToggle
 import dev.aarso.hyle.component.HyleTree
 import dev.aarso.hyle.component.HyleTreeIconKind
 import dev.aarso.hyle.component.HyleTreeItem
@@ -37,7 +38,7 @@ import dev.aarso.hyle.theme.LocalHyleColors
 
 /**
  * Previews for the desktop-class kit (docs/design/desktop-class-kit.md in the core repo):
- * [HyleField], [HyleToggle], [HyleKeycap], [HyleTree], [HyleContextMenu] — one probe function
+ * [HyleField], [HyleCapToggle], [HyleKeycap], [HyleTree], [HyleContextMenu] — one probe function
  * per component, every state the spec names. Render/gesture feel is owner-verified on device;
  * this only proves the components compose and states switch, from the host activity.
  */
@@ -138,13 +139,13 @@ fun HyleFieldProbe() {
     }
 }
 
-// ── B. HyleToggle ───────────────────────────────────────────────────────────────────
+// ── B. HyleCapToggle ────────────────────────────────────────────────────────────────
 
 @Composable
 fun HyleToggleProbe() {
     val c = LocalHyleColors.current
-    var off by remember { mutableStateOf(false) }
-    var on by remember { mutableStateOf(true) }
+    var first by remember { mutableIntStateOf(0) }
+    var second by remember { mutableIntStateOf(1) }
 
     Column(
         Modifier
@@ -153,16 +154,15 @@ fun HyleToggleProbe() {
             .padding(horizontal = PANEL_DP.dp, vertical = 28.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp),
     ) {
-        Text("HyleToggle", color = c.textHigh, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
-        ToggleRow("Off (tap to toggle)", off) { off = it }
-        ToggleRow("On (tap to toggle)", on) { on = it }
-        ToggleRow("Disabled, off", checked = false, onCheckedChange = null)
-        ToggleRow("Disabled, on", checked = true, onCheckedChange = null)
+        Text("HyleCapToggle", color = c.textHigh, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+        CapToggleRow("# selected (tap to switch)") { HyleCapToggle("#", "*", first, { first = it }) }
+        CapToggleRow("* selected (tap to switch)") { HyleCapToggle("#", "*", second, { second = it }) }
+        CapToggleRow("Disabled") { HyleCapToggle("#", "*", 0, {}, enabled = false) }
     }
 }
 
 @Composable
-private fun ToggleRow(label: String, checked: Boolean, onCheckedChange: ((Boolean) -> Unit)?) {
+private fun CapToggleRow(label: String, toggle: @Composable () -> Unit) {
     val c = LocalHyleColors.current
     Row(
         Modifier.fillMaxWidth(),
@@ -170,7 +170,7 @@ private fun ToggleRow(label: String, checked: Boolean, onCheckedChange: ((Boolea
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(label, color = c.textMid, fontSize = 13.sp)
-        HyleToggle(checked = checked, onCheckedChange = onCheckedChange, enabled = onCheckedChange != null)
+        toggle()
     }
 }
 
