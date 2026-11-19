@@ -141,7 +141,7 @@ fun resolveHyleField(
 }
 
 private val FIELD_SHAPE_RADIUS = 15.dp // spec: "generously rounded rect (~14-16dp radius)"
-private val FIELD_MIN_HEIGHT = 52.dp
+private val FIELD_MIN_HEIGHT = HyleControlHeight
 private val TICK_WIDTH = 5.dp
 private val TICK_CORNER = 2.dp
 private val TICK_HEIGHT_SINGLE = 22.dp // "slightly taller than the text line"

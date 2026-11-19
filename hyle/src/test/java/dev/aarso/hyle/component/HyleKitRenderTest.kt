@@ -174,6 +174,14 @@ class HyleKitRenderTest {
                         HyleCapToggle("#", "*", selected = 1, onSelect = {})
                         HyleCapToggle("#", "*", selected = 0, onSelect = {}, enabled = false)
                     }
+                    Caption("HyleOnOffToggle — empty off · on · Yes/No off · on · disabled", c)
+                    Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                        HyleOnOffToggle(checked = false, onCheckedChange = {})
+                        HyleOnOffToggle(checked = true, onCheckedChange = {})
+                        HyleOnOffToggle(checked = false, onCheckedChange = {}, labels = HyleOnOffLabels.YesNo)
+                        HyleOnOffToggle(checked = true, onCheckedChange = {}, labels = HyleOnOffLabels.YesNo)
+                        HyleOnOffToggle(checked = true, onCheckedChange = {}, enabled = false)
+                    }
                     Caption("HyleKeycapPair — emphasis SECOND · FIRST · NONE", c)
                     Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                         HyleKeycapPair("#", "*", emphasis = HyleKeycapEmphasis.SECOND)

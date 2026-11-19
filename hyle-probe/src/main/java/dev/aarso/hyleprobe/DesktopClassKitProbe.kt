@@ -31,6 +31,8 @@ import dev.aarso.hyle.component.HyleKeycap
 import dev.aarso.hyle.component.HyleKeycapEmphasis
 import dev.aarso.hyle.component.HyleKeycapPair
 import dev.aarso.hyle.component.HyleCapToggle
+import dev.aarso.hyle.component.HyleOnOffLabels
+import dev.aarso.hyle.component.HyleOnOffToggle
 import dev.aarso.hyle.component.HyleTree
 import dev.aarso.hyle.component.HyleTreeIconKind
 import dev.aarso.hyle.component.HyleTreeItem
@@ -158,6 +160,11 @@ fun HyleToggleProbe() {
         CapToggleRow("# selected (tap to switch)") { HyleCapToggle("#", "*", first, { first = it }) }
         CapToggleRow("* selected (tap to switch)") { HyleCapToggle("#", "*", second, { second = it }) }
         CapToggleRow("Disabled") { HyleCapToggle("#", "*", 0, {}, enabled = false) }
+        var emptyOn by remember { mutableStateOf(true) }
+        var yesNoOn by remember { mutableStateOf(false) }
+        CapToggleRow("On/off, empty (glows when on)") { HyleOnOffToggle(emptyOn, { emptyOn = it }) }
+        CapToggleRow("On/off, Yes/No") { HyleOnOffToggle(yesNoOn, { yesNoOn = it }, labels = HyleOnOffLabels.YesNo) }
+        CapToggleRow("On/off, disabled") { HyleOnOffToggle(true, {}, enabled = false) }
     }
 }
 
