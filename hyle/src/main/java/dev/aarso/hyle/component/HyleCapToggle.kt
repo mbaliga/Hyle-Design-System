@@ -62,7 +62,7 @@ import dev.aarso.hyle.theme.Success
  *
  * Two ways to use it:
  *  - [HyleOnOffToggle]: a boolean. The cap stays black and the tray stays grey; when ON the cap
- *    GLOWS green (owner, 2026-11-19: "the black could glow instead of the grey changing colour"),
+ *    TURNS green and GLOWS green (owner, 2026-11-19: "It has to turn green and glow green"),
  *    when off it does not. Labels optional (none, or "No"/"Yes").
  *  - [HyleCapToggle]: a choice between two peers (`#` / `*`, "Phone" / "Remote"). Ink cap.
  *
@@ -301,9 +301,11 @@ private fun DrawScope.drawCapToggle(
         }
     }
 
-    // The cap: one path, morphed. It is always black; "on" is a green glow, not a colour change.
-    val base = CapInk
-    val highlight = Color(0xFF565656)
+    // The cap: one path, morphed. Ink tone stays black. State tone turns the cap green AND glows
+    // green when on (owner, 2026-11-19: "It has to turn green and glow green").
+    val on = if (tone == HyleCapTone.State) t else 0f
+    val base = androidx.compose.ui.graphics.lerp(CapInk, Success, on)
+    val highlight = androidx.compose.ui.graphics.lerp(Color(0xFF565656), Success.copy(alpha = 1f).let { androidx.compose.ui.graphics.lerp(it, Color.White, 0.35f) }, on)
     val capPath = g.morph(g.capLeft, g.capRight, t, close = true)
     if (tone == HyleCapTone.State && t > 0.001f) {
         clipPath(trayPath) {
