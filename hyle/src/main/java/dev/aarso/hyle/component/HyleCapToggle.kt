@@ -61,7 +61,7 @@ import dev.aarso.hyle.theme.Success
  * while the straight edge leans in — rather than a shape that slides, mirrors or fades.
  *
  * Two ways to use it:
- *  - [HyleOnOffToggle]: a boolean. The tray stays grey; when ON the black cap
+ *  - [HyleCapSwitch]: a boolean (PARKED 2026-11-20: the round [HyleOnOffToggle] replaced it everywhere; kept here for later use). The tray stays grey; when ON the black cap
  *    turns green and glows green (owner, 2026-11-19: "It has to turn green and glow green"),
  *    when off it does not. Labels optional (none, or "No"/"Yes").
  *  - [HyleCapToggle]: a choice between two peers (`#` / `*`, "Phone" / "Remote"). Ink cap.
@@ -101,18 +101,19 @@ sealed interface HyleCapLabel {
  *  green while it is on the right (on); black, no glow when on the left (off). */
 enum class HyleCapTone { Ink, State }
 
-/** Labels for [HyleOnOffToggle]. */
+/** Labels for [HyleCapSwitch]. */
 enum class HyleOnOffLabels { None, YesNo }
 
 /** Tray width for the toggle height: the design's 639 x 321 proportion. */
 val HyleCapToggleWidth = HyleControlHeight * (639f / 321f)
 
 /**
- * A boolean. Tap anywhere to flip it. [onCheckedChange] null draws it display-only (no tap, no
+ * PARKED, not used by any app: the slanted-cap on/off switch. The live on/off control is the round
+ * [HyleOnOffToggle]. A boolean. Tap anywhere to flip it. [onCheckedChange] null draws it display-only (no tap, no
  * role) for a row that is itself the one control.
  */
 @Composable
-fun HyleOnOffToggle(
+fun HyleCapSwitch(
     checked: Boolean,
     onCheckedChange: ((Boolean) -> Unit)?,
     modifier: Modifier = Modifier,

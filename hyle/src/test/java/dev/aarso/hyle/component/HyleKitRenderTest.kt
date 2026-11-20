@@ -174,13 +174,23 @@ class HyleKitRenderTest {
                         HyleCapToggle("#", "*", selected = 1, onSelect = {})
                         HyleCapToggle("#", "*", selected = 0, onSelect = {}, enabled = false)
                     }
-                    Caption("HyleOnOffToggle — empty off · on · Yes/No off · on · disabled", c)
+                    Caption("HyleOnOffToggle (round) — rest off · on · negative off · disabled · auto off/auto/on", c)
                     Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                         HyleOnOffToggle(checked = false, onCheckedChange = {})
                         HyleOnOffToggle(checked = true, onCheckedChange = {})
-                        HyleOnOffToggle(checked = false, onCheckedChange = {}, labels = HyleOnOffLabels.YesNo)
-                        HyleOnOffToggle(checked = true, onCheckedChange = {}, labels = HyleOnOffLabels.YesNo)
+                        HyleOnOffToggle(checked = false, onCheckedChange = {}, offTone = HyleDiscOff.Negative)
                         HyleOnOffToggle(checked = true, onCheckedChange = {}, enabled = false)
+                        HyleAutoToggle(HyleAutoState.Off, {}, pose = HyleDiscPose.Lean45)
+                        HyleAutoToggle(HyleAutoState.Auto, {}, pose = HyleDiscPose.Lean45)
+                        HyleAutoToggle(HyleAutoState.On, {}, pose = HyleDiscPose.Lean45)
+                    }
+                    Caption("HyleCapSwitch (parked) — empty off · on · Yes/No off · on · disabled", c)
+                    Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                        HyleCapSwitch(checked = false, onCheckedChange = {})
+                        HyleCapSwitch(checked = true, onCheckedChange = {})
+                        HyleCapSwitch(checked = false, onCheckedChange = {}, labels = HyleOnOffLabels.YesNo)
+                        HyleCapSwitch(checked = true, onCheckedChange = {}, labels = HyleOnOffLabels.YesNo)
+                        HyleCapSwitch(checked = true, onCheckedChange = {}, enabled = false)
                     }
                     Caption("HyleKeycapPair — emphasis SECOND · FIRST · NONE", c)
                     Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {

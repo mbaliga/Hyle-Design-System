@@ -31,6 +31,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import dev.aarso.hyle.cells.rememberHyleHaptics
 
 /**
  * The flat disc + white pill toggle (owner's pick from the round-toggle study, 2026-11-20:
@@ -78,6 +79,7 @@ fun HyleDiscToggle(
     pose: HyleDiscPose = HyleDiscPose.Flip,
     description: String? = null,
 ) {
+    val haptics = rememberHyleHaptics()
     val state = if (checked) HyleAutoState.On else HyleAutoState.Off
     DiscFace(
         state = state, pose = pose, offTone = offTone, enabled = enabled,
@@ -88,7 +90,7 @@ fun HyleDiscToggle(
                 role = Role.Switch,
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
-                onValueChange = { onCheckedChange?.invoke(it) },
+                onValueChange = { haptics.tap(); onCheckedChange?.invoke(it) },
             )
             .semantics {
                 if (description != null) contentDescription = description
@@ -188,3 +190,21 @@ private fun DrawScope.drawDisc(fill: Color, angleDeg: Float) {
         drawRoundRect(Color.White, tl, Size(9f * u, 44f * u), CornerRadius(4.5f * u))
     }
 }
+
+/**
+ * The app-wide on/off control: [HyleDiscToggle] with the long-standing `HyleOnOffToggle` name and
+ * call shape, so existing call sites keep working. Replaces the slanted-cap switch (now parked as
+ * [HyleCapSwitch]). [labels] is ignored — the round toggle has none; the parameter stays only so
+ * old calls compile.
+ */
+@Composable
+fun HyleOnOffToggle(
+    checked: Boolean,
+    onCheckedChange: ((Boolean) -> Unit)?,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    @Suppress("UNUSED_PARAMETER") labels: HyleOnOffLabels = HyleOnOffLabels.None,
+    description: String? = null,
+    offTone: HyleDiscOff = HyleDiscOff.Rest,
+    pose: HyleDiscPose = HyleDiscPose.Flip,
+) = HyleDiscToggle(checked, onCheckedChange, modifier, enabled, offTone, pose, description)
